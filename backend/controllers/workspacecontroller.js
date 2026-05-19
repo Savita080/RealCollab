@@ -50,3 +50,47 @@ export const getUserWorkspaces = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
+
+// Update Workspace Name (OWNER ONLY)
+export const updateWorkspace = async (req, res) => {
+    try {
+        const { name } = req.body;
+        
+        if (!name) {
+            return res.status(400).json({ message: "Workspace name is required" });
+        }
+
+        // Update the name and regenerate the slug
+        req.workspace.name = name;
+        req.workspace.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        
+        await req.workspace.save();
+
+        res.status(200).json({
+            message: "Workspace updated successfully",
+            workspace: req.workspace
+        });
+
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ message: "A workspace with a similar name already exists" });
+        }
+        console.error("Error updating workspace:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// Delete Workspace (OWNER ONLY)
+export const deleteWorkspace = async (req, res) => {
+    try {
+        // Because the middleware already fetched the workspace, we just delete it
+        await req.workspace.deleteOne();
+        
+        res.status(200).json({ message: "Workspace deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting workspace:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
