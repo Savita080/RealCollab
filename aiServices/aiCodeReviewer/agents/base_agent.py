@@ -31,6 +31,23 @@ Schema:
 }
 """
 
+# Add this to BASE prompt in base_agent.py so every agent inherits it
+_SCOPE_BOUNDARY = """
+IMPORTANT — SCOPE BOUNDARIES:
+This is a multi-agent system. Other agents handle these — do NOT flag them:
+- Security vulnerabilities (SQL injection, hardcoded secrets, MD5) → security agent
+- Unused variables, dead code, unused imports → clean_code agent  
+- Syntax errors, type errors → syntax agent
+- Naming, comments, formatting, magic numbers → readability agent
+- Time/space complexity, Big-O, data structures → performance agent
+- Edge cases, null inputs, boundary values → robustness agent
+
+Only flag issues that fall strictly within YOUR criteria.
+If you see an issue outside your scope, ignore it entirely.
+STRICT RULE: Your issues list must contain ZERO items outside your scope. 
+Do not write 'this is out of scope' — just omit the item entirely. 
+A shorter accurate list is better than a longer list with out-of-scope items.
+"""
 
 class BaseReviewAgent:
     CRITERIA_NAME: str = "base"
@@ -51,12 +68,22 @@ class BaseReviewAgent:
         return self._parse_response(response.content)
 
     def _build_messages(self, input: ReviewInput):
+        context_line = (
+            f"Code purpose (context): {input.context}\n"
+            if input.context else ""
+        )
         system = (
             f"{self.SYSTEM_PROMPT}\n\n"
             f"Language: {input.language}\n"
+            f"{_SCOPE_BOUNDARY}\n\n" 
+            f"{context_line}"
+            f"Line numbers are provided. You MUST reference exact line numbers "
+            f"when reporting issues. Do not guess or approximate.\n"
             f"{_JSON_SCHEMA}"
         )
-        human = f"```{input.language.lower()}\n{input.code}\n```"
+        # use numbered_code so model can't hallucinate line numbers
+        code_block = input.numbered_code if input.numbered_code else input.code
+        human = f"```\n{code_block}\n```"
         return [SystemMessage(content=system), HumanMessage(content=human)]
 
     def _parse_response(self, raw: str) -> AgentResult:

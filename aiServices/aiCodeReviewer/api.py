@@ -31,6 +31,7 @@ load_dotenv()
 from models import ReviewInput, ReviewReport
 from orchestrator import ReviewOrchestrator, DEFAULT_AGENTS
 
+from preflight import run_preflight
 
 # ── Lifespan ──────────────────────────────────────────────────────────────────
 
@@ -58,10 +59,11 @@ app.add_middleware(
 
 
 # ── Schema of request─────────────────────────────────────────────────────────
-
+# added context as a parameter in request
 class ReviewRequest(BaseModel):
     code: str = Field(..., description="Raw source code as plain text.")
     language: str = Field(..., description='Programming language, e.g. "Python", "TypeScript".')
+    context: Optional[str] = Field(None, description="Purpose of the code in ≤50 words.")
     weights: Optional[Dict[str, float]] = Field(
         default=None,
         description=(
@@ -118,19 +120,41 @@ def list_agents():
 # main entry point
 @app.post("/review", tags=["Review"])
 async def review(req: ReviewRequest):
-    """Run all agents in parallel, return the full report."""
-    # reaches next step iff req matches request schema 
     _validate(req)
 
-    orchestrator: ReviewOrchestrator = app.state.orchestrator
-    review_input = ReviewInput(code=req.code, language=req.language)
+    # ── Pre-flight: static analysis ───────────────────────────────────────
+    preflight = run_preflight(req.code, req.language)
+    if preflight["has_fatal_syntax_error"]:
+        return JSONResponse({
+            "language": req.language,
+            "fatal_syntax_error": preflight["errors"],
+            "agent_results": [],
+            "raw_scores": {},
+            "weighted_score": None,
+            "duration_ms": 0,
+        })
 
+    # ── Inject line numbers ───────────────────────────────────────────────
+    numbered_code = "\n".join(
+    f"[L{i+1}] {line}"
+    for i, line in enumerate(req.code.splitlines())
+    )
+
+    review_input = ReviewInput(
+        code=req.code,
+        language=req.language,
+        context=req.context,
+        numbered_code=numbered_code,
+        preflight=preflight,   # carry static errors into agents
+    )
+    # temporarily in api.py
+    print("PREFLIGHT:", preflight)
+    orchestrator: ReviewOrchestrator = app.state.orchestrator
     t0 = time.monotonic()
     report: ReviewReport = await asyncio.get_event_loop().run_in_executor(
         None, orchestrator.run, review_input
     )
     duration_ms = int((time.monotonic() - t0) * 1000)
-
     return JSONResponse(_serialize(report, req.weights, duration_ms))
 
 
