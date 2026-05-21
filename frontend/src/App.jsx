@@ -1,6 +1,11 @@
-import Login from "./pages/Login"
+import React from "react";
+import LandingPage from "./pages/LandingPage";
 
 function App(){
-  return <Login />
+  return (
+    <div>
+      <LandingPage />
+    </div>
+  );
 }
 export default App
