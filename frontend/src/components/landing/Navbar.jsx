@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   return (
@@ -11,18 +12,18 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Logo */}
-        <div className="flex items-center gap-2.5 cursor-pointer group">
+        <Link to="/" className="flex items-center gap-2.5 cursor-pointer group">
           <span className="font-sans font-black text-xl tracking-tight text-white group-hover:text-[#00D4FF] transition-colors duration-300">
             RealCollab
           </span>
-        </div>
+        </Link>
 
         {/* Mid Navigation Links */}
         <div className="hidden md:flex items-right gap-9 font-bold text-lg">
           {["Features", "Pricing", "About"].map((link) => (
             <a
               key={link}
-              href={`#${link.toLowerCase()}`}
+              href={`/#${link.toLowerCase()}`}
               className="relative text-gray-400 hover:text-white transition-colors duration-300 group"
             >
               {link}
@@ -33,20 +34,21 @@ export default function Navbar() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="px-5 py-2 text-lg text-gray-300 font-semibold hover:text-white hover:bg-white/5 rounded-xl border border-transparent hover:border-white/10 transition-all duration-300"
           >
             Login
-          </a>
-          <motion.a
-            href="/register"
-            whileHover={{ scale: 1.03, boxShadow: "0 0 25px rgba(108,99,255,0.6)" }}
-            whileTap={{ scale: 0.98 }}
-            className="px-5 py-2.5 text-lg text-white font-bold rounded-full bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] shadow-[0_8px_20px_rgba(108,99,255,0.3)] transition-all duration-300"
-          >
-            Get Started
-          </motion.a>
+          </Link>
+          <Link to="/login">
+            <motion.span
+              whileHover={{ scale: 1.03, boxShadow: "0 0 25px rgba(108,99,255,0.6)" }}
+              whileTap={{ scale: 0.98 }}
+              className="px-5 py-2.5 text-lg text-white font-bold rounded-full bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] shadow-[0_8px_20px_rgba(108,99,255,0.3)] transition-all duration-300 inline-block"
+            >
+              Get Started
+            </motion.span>
+          </Link>
         </div>
       </div>
     </motion.nav>
