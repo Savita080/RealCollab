@@ -1,18 +1,31 @@
 """
 Shared Pydantic models for the code review pipeline.
 """
-# __future__ makes forward referencing possible
 from __future__ import annotations
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
-# CHANGE SINCE LAST VERSION: added context as a input parameter, also added 
+
 class ReviewInput(BaseModel):
     code: str = Field(..., description="The raw source code to review.")
     language: str = Field(..., description="Programming language (e.g. 'Python', 'TypeScript').")
     context: Optional[str] = Field(None, description="Purpose of the code in ≤50 words.")
-    numbered_code: str = Field("", description="Code with line numbers injected — set by pipeline, not user.")
-    preflight: dict = Field(default_factory=dict, description="Static analysis results from parser.")
+    numbered_code: str = Field(
+        "",
+        description="Original code with [L<n>] line numbers — set by pipeline, not user.",
+    )
+    dead_code_free_numbered_code: str = Field(
+        "",
+        description=(
+            "Dead-code-free source with [L<n>] line numbers — dead lines blanked, "
+            "commented-out blocks replaced. Used by Security/Readability/Performance/Robustness agents."
+        ),
+    )
+    preflight: dict = Field(
+        default_factory=dict,
+        description="Static analysis results from preflight (errors, dead_code, commented_out_blocks).",
+    )
+
 
 class AgentResult(BaseModel):
     """Output from a single review agent."""
@@ -27,8 +40,6 @@ class ReviewReport(BaseModel):
     """Final aggregated report returned to the caller."""
     language: str
     agent_results: List[AgentResult]
-    # weighted_score is computed externally (client/Node side) from agent_results + weights
-    # but we expose a helper here for Python callers
     raw_scores: dict = Field(default_factory=dict, description="criteria -> score mapping.")
 
     def weighted_score(self, weights: dict[str, float]) -> float:
