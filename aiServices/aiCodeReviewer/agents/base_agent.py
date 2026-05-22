@@ -1,7 +1,13 @@
-'''
-the base agent class each agent inherits from
-'''
+"""
+base_agent.py — Base class all review agents inherit from.
 
+The two specialised agents (CleanCodeAgent / SyntaxAgent) override
+_build_messages to receive only static-analysis findings — no source code.
+
+The four general agents (Security, Readability, Performance, Robustness)
+use the base implementation which feeds them the dead-code-free numbered
+source so they aren't distracted by already-catalogued issues.
+"""
 
 from __future__ import annotations
 import json
@@ -31,7 +37,6 @@ Schema:
 }
 """
 
-# Add this to BASE prompt in base_agent.py so every agent inherits it
 _SCOPE_BOUNDARY = """
 IMPORTANT — SCOPE BOUNDARIES:
 This is a multi-agent system. Other agents handle these — do NOT flag them:
@@ -48,6 +53,7 @@ STRICT RULE: Your issues list must contain ZERO items outside your scope.
 Do not write 'this is out of scope' — just omit the item entirely. 
 A shorter accurate list is better than a longer list with out-of-scope items.
 """
+
 
 class BaseReviewAgent:
     CRITERIA_NAME: str = "base"
@@ -68,6 +74,10 @@ class BaseReviewAgent:
         return self._parse_response(response.content)
 
     def _build_messages(self, input: ReviewInput):
+        """
+        Default: feed the dead-code-free numbered source to the agent.
+        CleanCodeAgent and SyntaxAgent override this to send only findings.
+        """
         context_line = (
             f"Code purpose (context): {input.context}\n"
             if input.context else ""
@@ -75,14 +85,21 @@ class BaseReviewAgent:
         system = (
             f"{self.SYSTEM_PROMPT}\n\n"
             f"Language: {input.language}\n"
-            f"{_SCOPE_BOUNDARY}\n\n" 
+            f"{_SCOPE_BOUNDARY}\n\n"
             f"{context_line}"
-            f"Line numbers are provided. You MUST reference exact line numbers "
-            f"when reporting issues. Do not guess or approximate.\n"
+            f"Line numbers are provided as [L<n>] prefixes. You MUST reference exact "
+            f"line numbers when reporting issues. Do not guess or approximate.\n"
+            f"NOTE: Lines marked blank or '[commented-out code block removed]' have "
+            f"already been handled by other agents — skip them entirely.\n"
             f"{_JSON_SCHEMA}"
         )
-        # use numbered_code so model can't hallucinate line numbers
-        code_block = input.numbered_code if input.numbered_code else input.code
+        # Use dead-code-free version so agents aren't distracted by already-catalogued issues.
+        # Fall back to numbered_code if dead_code_free version wasn't populated.
+        code_block = (
+            input.dead_code_free_numbered_code
+            or input.numbered_code
+            or input.code
+        )
         human = f"```\n{code_block}\n```"
         return [SystemMessage(content=system), HumanMessage(content=human)]
 
