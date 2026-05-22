@@ -1,10 +1,12 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
+import redis from './config/redis.js'; // Import Redis so it connects!
 import authroutes from './routes/authroutes.js';
 import workspaceroutes from './routes/workspaceroutes.js';
 import projectroutes from './routes/projectroutes.js';
 import taskroutes from './routes/taskroutes.js';
+import notificationroutes from './routes/notificationroutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupKanbanSockets } from './sockets/kanbanSocket.js';
@@ -23,11 +25,18 @@ connectDB();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Attach Socket.io to every request so our controllers can use it!
+app.use((req, res, next) => {
+    req.io = io;
+    next();
+});
+
 //routes
 app.use("/api/auth",authroutes);
 app.use("/api/workspaces", workspaceroutes);
 app.use("/api/workspaces/:workspaceId/projects", projectroutes);
 app.use("/api/workspaces/:workspaceId/projects/:projectId/tasks", taskroutes);
+app.use("/api/notifications", notificationroutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "RealCollab Backend Is running" });

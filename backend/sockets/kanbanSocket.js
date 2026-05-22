@@ -1,8 +1,18 @@
 import Task from '../models/task.js';
+import redis from '../config/redis.js';
 
 export const setupKanbanSockets = (io) => {
     io.on('connection', (socket) => {
         console.log(`[Socket] User connected: ${socket.id}`);
+
+        // WHEN A USER LOGS IN (Tracking Presence)
+        socket.on('user_online', async (userId) => {
+            if (redis) {
+                await redis.set(`user:online:${userId}`, socket.id);
+                await redis.set(`socket:${socket.id}`, userId); 
+                console.log(`[Redis] User ${userId} is now online!`);
+            }
+        });
 
         // 1. JOIN ROOM: The frontend tells us which project they are looking at
         socket.on('join_project', (projectId) => {
@@ -40,8 +50,17 @@ export const setupKanbanSockets = (io) => {
             }
         });
 
-        socket.on('disconnect', () => {
+        // WHEN A USER LOGS OUT / CLOSES TAB
+        socket.on('disconnect', async () => {
             console.log(`[Socket] User disconnected: ${socket.id}`);
+            if (redis) {
+                const userId = await redis.get(`socket:${socket.id}`);
+                if (userId) {
+                    await redis.del(`user:online:${userId}`);
+                    await redis.del(`socket:${socket.id}`);
+                    console.log(`[Redis] User ${userId} is now offline.`);
+                }
+            }
         });
     });
 };
