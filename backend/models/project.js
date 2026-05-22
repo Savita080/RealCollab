@@ -14,7 +14,11 @@ const projectSchema = new mongoose.Schema({
     description: { 
         type: String, 
         default: '' 
-    }
+    },
+    members: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User' 
+    }]
 }, {
     timestamps: true 
 });
