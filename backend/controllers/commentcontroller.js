@@ -15,9 +15,16 @@ export const createComment = async (req, res) => {
             content
         });
 
-        // make a separate POST request to /api/notifications to trigger the notification bus!
-        
-        res.status(201).json({ message: "Comment added", comment: newComment });
+        // Fetch the created comment and populate author so the live event has the name/avatar
+        const populatedComment = await TaskComment.findById(newComment._id).populate('author', 'name avatar');
+
+        // Make it LIVE! Broadcast to everyone in the project room
+        // Note: The frontend needs to pass the projectId in the body to know which room to broadcast to
+        if (req.body.projectId) {
+            req.io.to(req.body.projectId).emit('task_comment_added', populatedComment);
+        }
+
+        res.status(201).json({ message: "Comment added", comment: populatedComment });
     } catch (error) {
         console.error("Error adding comment:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -46,6 +53,14 @@ export const deleteComment = async (req, res) => {
         
         if (!deletedComment) {
             return res.status(404).json({ message: "Comment not found" });
+        }
+        
+        // Make the deletion LIVE too!
+        if (req.body.projectId) {
+            req.io.to(req.body.projectId).emit('task_comment_deleted', { 
+                commentId, 
+                taskId: deletedComment.task 
+            });
         }
         
         res.status(200).json({ message: "Comment deleted" });
