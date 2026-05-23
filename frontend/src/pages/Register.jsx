@@ -191,9 +191,6 @@ export default function Register() {
           {/* logo + heading */}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2 mb-5 text-white font-bold text-xl">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shadow-[0_0_20px_rgba(167,139,250,0.4)]">
-                <Zap size={17} className="text-white" />
-              </div>
               RealCollab
             </Link>
             <h1 className="text-2xl font-black text-white tracking-tight">Create your account</h1>

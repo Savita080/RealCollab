@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
 import Register from './pages/Register';
 
+
 function App() {
   return (
     <Router>
@@ -12,7 +13,13 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        {/* <Route path="/Login" element={<Login />} /> */}
+        
+        {/* all protected pages go inside here */}
+        {/* <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/kanban"    element={<Kanban />} />
+          <Route path="/snippets"  element={<Snippets />} />
+        </Route> */}
       </Routes>
       <Toaster
         position="top-right"

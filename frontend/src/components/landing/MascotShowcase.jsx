@@ -62,14 +62,14 @@ export default function MascotShowcase() {
 
         {/* Right Column: Copywriting & Stats */}
         <div className="lg:col-span-6 flex flex-col space-y-6 text-left items-start z-10">
-          <span className="text-xs font-bold tracking-widest text-[#6C63FF] uppercase bg-[#6C63FF]/10 px-3.5 py-1.5 rounded-full border border-[#6C63FF]/20">
+          <span className="text-xs font-bold tracking-widest text-[#6C63FF] uppercase px-3.5 py-1.5  ">
             Meet Your Companion
           </span>
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
-            Meet Octo,<br />Your AI Team Mascot.
+            Meet Octo,<br />Your AI Code Reviewer.
           </h2>
           <p className="text-gray-400 text-base leading-relaxed max-w-xl">
-            Octo integrates directly into your workspace pipelines. Monitoring git checkins, triggering smart sprint reports, notifying blockers, and celebrating task completions. 
+            Octo integrates directly into your workspace pipelines. Monitoring git checkins, triggering smart sprint reports, and analyzing code snippets. 
           </p>
 
           <div className="grid grid-cols-2 gap-6 w-full pt-4">
@@ -90,7 +90,7 @@ export default function MascotShowcase() {
               whileTap={{ scale: 0.98 }}
               className="px-8 py-3.5 text-sm bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] text-white font-bold rounded-xl shadow-[0_8px_20px_rgba(108,99,255,0.3)] inline-block transition-transform"
             >
-              Integrate Octo Free
+              Try Octo Free
             </motion.a>
           </div>
         </div>

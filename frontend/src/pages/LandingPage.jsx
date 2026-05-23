@@ -4,7 +4,7 @@ import CustomCursor from "../components/ui/CustomCursor";
 import Navbar from "../components/landing/Navbar";
 import Hero from "../components/landing/Hero";
 import Features from "../components/landing/Features";
-// import MascotShowcase from "../components/landing/MascotShowcase";
+import MascotShowcase from "../components/landing/MascotShowcase";
 import Pricing from "../components/landing/Pricing";
 import Footer from "../components/landing/Footer";
 
@@ -53,7 +53,7 @@ export default function LandingPage() {
       <main className="relative z-10 w-full flex flex-col">
         <Hero />
         <Features />
-        {/* <MascotShowcase /> */}
+        <MascotShowcase />
         <Pricing />
       </main>
 
