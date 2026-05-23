@@ -15,7 +15,6 @@ export const createComment = async (req, res) => {
             content
         });
 
-        // NOTE: The frontend should parse the content for "@Suhani" and 
         // make a separate POST request to /api/notifications to trigger the notification bus!
         
         res.status(201).json({ message: "Comment added", comment: newComment });
