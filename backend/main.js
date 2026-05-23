@@ -10,6 +10,7 @@ import notificationroutes from './routes/notificationroutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupKanbanSockets } from './sockets/kanbanSocket.js';
+import { setupWhiteboardSockets } from './sockets/whiteboardSocket.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,8 +43,9 @@ app.get("/", (req, res) => {
     res.json({ message: "RealCollab Backend Is running" });
 });
 
-// Activate the Kanban WebSockets!
+// Activate the WebSockets!
 setupKanbanSockets(io);
+setupWhiteboardSockets(io);
 
 const PORT = process.env.PORT || 3000;
 httpServer.listen(PORT, () => {
