@@ -15,9 +15,21 @@ const projectSchema = new mongoose.Schema({
         type: String, 
         default: '' 
     },
-    members: [{ 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+    members: [{
+        user: { 
+            type: mongoose.Schema.Types.ObjectId, 
+            ref: 'User',
+            required: true
+        },
+        role: { 
+            type: String, 
+            enum: ['CONTRIBUTOR', 'VIEWER'], 
+            default: 'VIEWER' 
+        },
+        joinedAt: { 
+            type: Date, 
+            default: Date.now 
+        }
     }]
 }, {
     timestamps: true 
