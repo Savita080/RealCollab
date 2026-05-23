@@ -1,7 +1,8 @@
 import express from 'express';
 import { 
     createWorkspace, getUserWorkspaces, updateWorkspace, deleteWorkspace, 
-    generateInvite, acceptInvite, getWorkspaceMembers, updateMemberRole, removeMember 
+    generateInvite, acceptInvite, getWorkspaceMembers, updateMemberRole, removeMember,
+    transferOwnership
 } from '../controllers/workspacecontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole } from '../middleware/rbac.js';
@@ -15,6 +16,7 @@ router.get('/', protectRoute, getUserWorkspaces);
 
 router.patch('/:workspaceId', protectRoute, requireRole('OWNER'), updateWorkspace);
 router.delete('/:workspaceId', protectRoute, requireRole('OWNER'), deleteWorkspace);
+router.patch('/:workspaceId/transfer-ownership', protectRoute, requireRole('OWNER'), transferOwnership);
 
 router.post('/:workspaceId/invite', protectRoute, requireRole('ADMIN'), generateInvite);
 router.post('/invite/accept/:token', protectRoute, acceptInvite);

@@ -234,3 +234,42 @@ export const removeMember = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const transferOwnership = async (req, res) => {
+    try {
+        const { newOwnerId } = req.body;
+
+        if (!newOwnerId) {
+            return res.status(400).json({ message: "newOwnerId is required" });
+        }
+
+        // Ensure the new owner exists in the workspace
+        const newOwnerIndex = req.workspace.members.findIndex(m => m.user.toString() === newOwnerId);
+        if (newOwnerIndex === -1) {
+            return res.status(404).json({ message: "The specified user is not a member of this workspace" });
+        }
+
+        // Find the current owner (the requester)
+        const currentOwnerIndex = req.workspace.members.findIndex(m => m.user.toString() === req.userId);
+        
+        // Safety check (handled by requireRole middleware, but good to have)
+        if (currentOwnerIndex === -1 || req.workspace.members[currentOwnerIndex].role !== 'OWNER') {
+            return res.status(403).json({ message: "Only the current owner can transfer ownership" });
+        }
+
+        // Transfer the title
+        req.workspace.members[currentOwnerIndex].role = 'ADMIN'; // Demote current owner to ADMIN
+        req.workspace.members[newOwnerIndex].role = 'OWNER'; // Promote new user to OWNER
+
+        await req.workspace.save();
+
+        res.status(200).json({ 
+            message: "Ownership transferred successfully", 
+            members: req.workspace.members 
+        });
+
+    } catch (error) {
+        console.error("Error transferring ownership:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
