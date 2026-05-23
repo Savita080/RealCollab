@@ -7,6 +7,9 @@ import workspaceroutes from './routes/workspaceroutes.js';
 import projectroutes from './routes/projectroutes.js';
 import taskroutes from './routes/taskroutes.js';
 import notificationroutes from './routes/notificationroutes.js';
+import commentroutes from './routes/commentroutes.js';
+import snippetroutes from './routes/snippetroutes.js';
+import airoutes from './routes/airoutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupKanbanSockets } from './sockets/kanbanSocket.js';
@@ -37,7 +40,10 @@ app.use("/api/auth",authroutes);
 app.use("/api/workspaces", workspaceroutes);
 app.use("/api/workspaces/:workspaceId/projects", projectroutes);
 app.use("/api/workspaces/:workspaceId/projects/:projectId/tasks", taskroutes);
+app.use("/api/workspaces/:workspaceId/projects/:projectId/snippets", snippetroutes);
+app.use("/api/tasks/:taskId/comments", commentroutes);
 app.use("/api/notifications", notificationroutes);
+app.use("/api/ai", airoutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "RealCollab Backend Is running" });
