@@ -184,3 +184,53 @@ export const acceptInvite = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+export const getWorkspaceMembers = async (req, res) => {
+    try {
+        // req.workspace is already populated with members from the middleware, but we might want full user details
+        const workspace = await Workspace.findById(req.workspace._id).populate('members.user', 'name email avatar');
+        res.status(200).json({ members: workspace.members });
+    } catch (error) {
+        console.error("Error fetching members:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const updateMemberRole = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { role } = req.body;
+
+        const memberIndex = req.workspace.members.findIndex(m => m.user.toString() === userId);
+        if (memberIndex === -1) return res.status(404).json({ message: "Member not found" });
+
+        // Ensure OWNER role can't be freely given/removed unless it's the OWNER doing it, etc.
+        // For hackathon, just update it:
+        req.workspace.members[memberIndex].role = role;
+        await req.workspace.save();
+
+        res.status(200).json({ message: "Role updated successfully", members: req.workspace.members });
+    } catch (error) {
+        console.error("Error updating role:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const removeMember = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Prevent removing the OWNER
+        const member = req.workspace.members.find(m => m.user.toString() === userId);
+        if (!member) return res.status(404).json({ message: "Member not found" });
+        if (member.role === 'OWNER') return res.status(400).json({ message: "Cannot remove the workspace owner" });
+
+        req.workspace.members = req.workspace.members.filter(m => m.user.toString() !== userId);
+        await req.workspace.save();
+
+        res.status(200).json({ message: "Member removed successfully" });
+    } catch (error) {
+        console.error("Error removing member:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
