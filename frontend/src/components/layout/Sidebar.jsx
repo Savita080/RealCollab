@@ -20,11 +20,8 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-screen w-[260px] flex flex-col bg-[#070d1f] border-r border-white/[0.06] z-40">
 
       {/* logo */}
-      <div className="px-6 py-5 border-b border-white/[0.06]">
+      <div className="px-6 py-5 bg-gradient-to-r from-violet-500 to-cyan-500 border-b border-white/[0.06]">
         <Link to="/dashboard" className="flex items-center gap-2.5 text-white font-bold text-lg">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-            <Zap size={15} className="text-white" />
-          </div>
           RealCollab
         </Link>
       </div>
@@ -62,7 +59,7 @@ export default function Sidebar() {
           </div>
           <p className="text-[11px] text-white/40 leading-relaxed">Unlock unlimited members, AI logs & priority support.</p>
           <button className="w-full rounded-lg py-2 text-xs font-semibold text-white bg-gradient-to-r from-violet-500 to-cyan-500 hover:brightness-110 transition-all duration-200">
-            Start Pro Trial
+            Start with Pro
           </button>
         </div>
       </div>

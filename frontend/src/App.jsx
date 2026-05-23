@@ -4,7 +4,13 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import { Toaster } from "react-hot-toast";
 import Register from './pages/Register';
-
+import AppLayout from "./components/layout/AppLayout";
+import Dashboard from "./pages/Dashboard";
+import Kanban from "./pages/Kanban";
+import Snippets from "./pages/Snippets";
+import Wiki from "./pages/Wiki";
+import Collab from "./pages/Collab";
+import ActivityFeed from "./pages/ActivityFeed";
 
 function App() {
   return (
@@ -15,11 +21,15 @@ function App() {
         <Route path="/register" element={<Register />} />
         
         {/* all protected pages go inside here */}
-        {/* <Route element={<AppLayout />}>
+        <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/kanban"    element={<Kanban />} />
-          <Route path="/snippets"  element={<Snippets />} />
-        </Route> */}
+          <Route path="/kanban" element={<Kanban />} />
+          <Route path="/kanban/:projectId" element={<Kanban />} />
+          <Route path="/snippets" element={<Snippets />} />
+          <Route path="/wiki" element={<Wiki />} />
+          <Route path="/collab" element={<Collab />} />
+          <Route path="/activity" element={<ActivityFeed />} />
+        </Route>
       </Routes>
       <Toaster
         position="top-right"
