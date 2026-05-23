@@ -13,6 +13,10 @@ const wikiPageVersionSchema = new mongoose.Schema({
     savedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    commitMessage: {
+        type: String,
+        default: 'Auto-saved version'
     }
 }, {
     // We only need createdAt for versions, which timestamps: true will provide

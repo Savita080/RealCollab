@@ -26,27 +26,34 @@ export const setupWhiteboardSockets = (io) => {
             }
         });
 
-        // 2. Someone drew a line or moved a shape!
+        // 2. Someone drew a line or moved a shape! (Receives ONLY the diff)
         socket.on('whiteboard_draw', async (data) => {
-            const { whiteboardId, elements } = data; // elements is the Excalidraw state
+            const { whiteboardId, elements } = data; // elements is just the diff/changed shapes
 
             // Broadcast to everyone else immediately! 0-latency
             socket.to(`whiteboard:${whiteboardId}`).emit('whiteboard_update', elements);
-
-            // Cache the live state in Redis immediately (Suhani's performance trick!)
-            if (redis) {
-                await redis.set(`whiteboard:${whiteboardId}`, JSON.stringify(elements));
-            }
+            
+            // Note: We DO NOT save to Redis here anymore, because `elements` is only a diff.
+            // If we saved it here, we would accidentally overwrite the whole canvas with just the diff!
         });
 
-        // 3. Save to MongoDB (Frontend should emit this every 10 seconds, not on every stroke)
+        // 3. Save to MongoDB & Redis (Frontend should emit this every 10 seconds with the FULL array)
         socket.on('save_whiteboard', async (data) => {
             const { whiteboardId, elements } = data;
             try {
+                const stringifiedElements = JSON.stringify(elements);
+                
+                // Save full state to MongoDB
                 await Whiteboard.findByIdAndUpdate(whiteboardId, {
-                    canvasState: JSON.stringify(elements)
+                    canvasState: stringifiedElements
                 });
-                console.log(`[MongoDB] Saved whiteboard ${whiteboardId}`);
+                
+                // Save full state to Redis so new users joining get the full snapshot
+                if (redis) {
+                    await redis.set(`whiteboard:${whiteboardId}`, stringifiedElements);
+                }
+                
+                console.log(`[MongoDB & Redis] Saved full whiteboard state ${whiteboardId}`);
             } catch (error) {
                 console.error("Error saving whiteboard to DB:", error);
             }
