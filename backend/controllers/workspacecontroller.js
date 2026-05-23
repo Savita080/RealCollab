@@ -38,7 +38,6 @@ export const createWorkspace = async (req, res) => {
     }
 };
 
-// Next, we'll write a function to fetch all workspaces a user belongs to!
 export const getUserWorkspaces = async (req, res) => {
     try {
         // Find all workspaces where the "members" array contains an object with this user's ID

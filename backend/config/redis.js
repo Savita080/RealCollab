@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// We will connect to the hosted URL once you paste it into your .env
 const redis = process.env.REDIS_URL ? new Redis(process.env.REDIS_URL) : null;
 
 if (redis) {
