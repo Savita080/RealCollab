@@ -5,6 +5,7 @@ import {
 } from '../controllers/workspacecontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole } from '../middleware/rbac.js';
+import { sendWorkspaceMessage, getWorkspaceMessages } from '../controllers/workspacechatcontroller.js';
 
 
 const router = express.Router();
@@ -21,4 +22,9 @@ router.post('/invite/accept/:token', protectRoute, acceptInvite);
 router.get('/:workspaceId/members', protectRoute, requireRole('VIEWER'), getWorkspaceMembers);
 router.patch('/:workspaceId/members/:userId/role', protectRoute, requireRole('ADMIN'), updateMemberRole);
 router.delete('/:workspaceId/members/:userId', protectRoute, requireRole('ADMIN'), removeMember);
+
+// Workspace Global Chat
+router.post('/:workspaceId/chat', protectRoute, requireRole('MEMBER'), sendWorkspaceMessage);
+router.get('/:workspaceId/chat', protectRoute, requireRole('VIEWER'), getWorkspaceMessages);
+
 export default router;
