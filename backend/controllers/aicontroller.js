@@ -3,7 +3,7 @@ export const reviewCode = async (req, res) => {
         const { code, language, snippetId } = req.body;
         const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
-        const response = await fetch(`${aiServiceUrl}/api/review-code`, {
+        const response = await fetch(`${aiServiceUrl}/review`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ code, language, snippetId })
@@ -22,7 +22,7 @@ export const reviewCode = async (req, res) => {
 export const generateStandup = async (req, res) => {
     try {
         const { projectId } = req.body;
-        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const aiServiceUrl = process.env.AI_STANDUP_URL || 'http://localhost:8002';
 
         const response = await fetch(`${aiServiceUrl}/api/standup`, {
             method: 'POST',
@@ -43,9 +43,9 @@ export const generateStandup = async (req, res) => {
 export const summarizeProject = async (req, res) => {
     try {
         const { projectId } = req.body;
-        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const aiServiceUrl = process.env.AI_SUMMARY_URL || 'http://localhost:8003';
 
-        const response = await fetch(`${aiServiceUrl}/api/summarize-project`, {
+        const response = await fetch(`${aiServiceUrl}/api/summarize`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ projectId })
@@ -85,9 +85,9 @@ export const generateTasks = async (req, res) => {
 export const findBottlenecks = async (req, res) => {
     try {
         const { projectId } = req.body;
-        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const aiServiceUrl = process.env.AI_BLOCKER_URL || 'http://localhost:8001';
 
-        const response = await fetch(`${aiServiceUrl}/api/bottleneck`, {
+        const response = await fetch(`${aiServiceUrl}/find-bottleneck`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ projectId })

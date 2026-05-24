@@ -16,7 +16,7 @@ const PANELS = [
 ];
 
 export default function AIPanel() {
-  const { currentProject } = useWorkspace();
+  const { currentProject, current: currentWorkspace } = useWorkspace();
   const { toast } = useUI();
   const [active, setActive] = useState('summary');
   const [result, setResult] = useState('');
@@ -25,18 +25,18 @@ export default function AIPanel() {
   const [planInput, setPlanInput] = useState('');
 
   const run = async () => {
-    if (!currentProject && active !== 'review') {
+    if (!currentProject) {
       toast('Select a project first', 'error'); return;
     }
     setLoading(true);
     setResult('');
     try {
       let data;
-      if (active === 'summary')  ({ data } = await aiApi.summarise(currentProject._id));
-      if (active === 'blockers') ({ data } = await aiApi.blockers(currentProject._id));
-      if (active === 'standup')  ({ data } = await aiApi.standup(currentProject._id));
-      if (active === 'plan')     ({ data } = await aiApi.plan(currentProject._id, { description: planInput }));
-      if (active === 'review')   ({ data } = await aiApi.review({ code: codeInput }));
+      if (active === 'summary')  ({ data } = await aiApi.summarise(currentWorkspace._id, currentProject._id));
+      if (active === 'blockers') ({ data } = await aiApi.blockers(currentWorkspace._id, currentProject._id));
+      if (active === 'standup')  ({ data } = await aiApi.standup(currentWorkspace._id, currentProject._id));
+      if (active === 'plan')     ({ data } = await aiApi.plan(currentWorkspace._id, currentProject._id, { description: planInput }));
+      if (active === 'review')   ({ data } = await aiApi.review({ code: codeInput, language: 'JavaScript', projectId: currentProject._id }));
       setResult(typeof data === 'string' ? data : JSON.stringify(data, null, 2));
     } catch (err) {
       setResult('Error: ' + (err.response?.data?.message || err.message));

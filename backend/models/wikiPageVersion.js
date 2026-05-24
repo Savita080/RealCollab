@@ -8,7 +8,7 @@ const wikiPageVersionSchema = new mongoose.Schema({
     },
     content: {
         type: String,
-        required: true
+        default: ''
     },
     savedBy: {
         type: mongoose.Schema.Types.ObjectId,
