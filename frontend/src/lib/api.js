@@ -45,11 +45,12 @@ api.interceptors.response.use(
 
 // ── Auth ──────────────────────────────────────────────
 export const auth = {
-  register: d  => api.post('/auth/register', d),
-  login:    d  => api.post('/auth/login', d),
-  refresh:  d  => api.post('/auth/refresh', d),
-  logout:   d  => api.post('/auth/logout', d),
-  me:       () => api.get('/auth/me'),
+  register:    d  => api.post('/auth/register', d),
+  login:       d  => api.post('/auth/login', d),
+  googleLogin: d  => api.post('/auth/google', d),
+  refresh:     d  => api.post('/auth/refresh', d),
+  logout:      d  => api.post('/auth/logout', d),
+  me:          () => api.get('/auth/me'),
 };
 
 // ── Workspaces ────────────────────────────────────────

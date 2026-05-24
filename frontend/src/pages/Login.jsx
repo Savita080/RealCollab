@@ -7,6 +7,7 @@ import { useAuth } from "../store/auth";
 import { cn } from "../lib/utils";
 import FloatingInput from "../components/login/FloatingInput";
 import LeftPanel from "../components/login/LeftPanel";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -141,14 +142,8 @@ export default function Login() {
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
 
-            {/* OAuth placeholder */}
-            <button
-              type="button"
-              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] py-3 text-sm text-white/60 hover:text-white hover:border-white/20 hover:bg-white/[0.06] transition-all duration-200 flex items-center justify-center gap-2.5"
-            >
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" height="16" alt="Google" />
-              Continue with Google
-            </button>
+            {/* Google OAuth Button */}
+            <GoogleAuthButton label="Continue with Google" />
 
             <p className="mt-6 text-center text-xs text-white/30">
               Don't have an account?{" "}

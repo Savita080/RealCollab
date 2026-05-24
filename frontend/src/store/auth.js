@@ -39,6 +39,20 @@ export const useAuth = create((set, get) => ({
     return data;
   },
 
+  googleLogin: async (creds) => {
+    const { data } = await authApi.googleLogin(creds);
+    if (!data.token) throw new Error(data.message || 'Google Login failed');
+    localStorage.setItem('rc_token', data.token);
+    if (data.refreshToken) localStorage.setItem('rc_refresh_token', data.refreshToken);
+    set({ user: data.user, token: data.token });
+    try {
+      connectSocket(data.token);
+      const uid = data.user?.id || data.user?._id;
+      if (uid) setTimeout(() => emitUserOnline(uid), 500);
+    } catch (_) {}
+    return data;
+  },
+
   register: async (creds) => {
     await authApi.register(creds);
     const { data } = await authApi.login({ email: creds.email, password: creds.password });

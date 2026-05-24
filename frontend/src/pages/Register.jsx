@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader2, ArrowRight, User, Mail, Lock } from "lucide-react
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import { cn } from "../lib/utils";
+import GoogleAuthButton from "../components/GoogleAuthButton";
 
 const dots = Array.from({ length: 28 }, (_, i) => ({
   id: i,
@@ -249,13 +250,7 @@ export default function Register() {
             <div className="flex-1 h-px bg-white/[0.07]" />
           </div>
 
-          <button
-            type="button"
-            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] py-3 text-sm text-white/55 hover:text-white hover:border-white/20 hover:bg-white/[0.06] transition-all flex items-center justify-center gap-2.5"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16" height="16" alt="Google" />
-            Sign up with Google
-          </button>
+          <GoogleAuthButton label="Sign up with Google" />
 
           <p className="mt-6 text-center text-xs text-white/30">
             Already have an account?{" "}

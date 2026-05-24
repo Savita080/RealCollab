@@ -158,15 +158,17 @@ export const googleLogin = async (req, res) => {
             return res.status(400).json({ message: "No Google credential provided" });
         }
 
-        // 1. Verify the token with Google's servers
-        const ticket = await googleClient.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID,
+        // 1. Fetch user profile from Google using the access token
+        const googleResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${credential}` }
         });
 
+        if (!googleResponse.ok) {
+            return res.status(401).json({ message: "Invalid Google access token" });
+        }
+
         // 2. Extract the user's verified details
-        const payload = ticket.getPayload();
-        const { email, name, picture } = payload;
+        const { email, name, picture } = await googleResponse.json();
 
         // 3. Check if user already exists in our DB
         let user = await User.findOne({ email });
