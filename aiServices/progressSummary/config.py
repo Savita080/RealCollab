@@ -27,12 +27,12 @@ class Settings(BaseSettings):
     # ── LLM Provider ──────────────────────────────────────────────────────────
     LLM_PROVIDER: str = "groq"          # groq | openai | anthropic | ollama
     LLM_MODEL: str = "llama3-8b-8192"   # Fast Groq model for low latency
-    GROK_API_KEY: str = os.getenv("GROK_API_KEY", "")
+    GROQ_API_KEY: str = os.getenv("GROK_API_KEY", "")
     OPENAI_API_KEY: str = ""
 
     # ── CORS ──────────────────────────────────────────────────────────────────
     # CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
-    CORS_ORIGINS=["*"]
+    CORS_ORIGINS: list[str] = ["*"]
 
     # ── ML Health Score weights (must sum to 100) ─────────────────────────────
     # These can be tuned via .env without touching code
