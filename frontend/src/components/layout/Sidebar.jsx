@@ -85,7 +85,6 @@ export default function Sidebar() {
       <aside className={s.sidebar}>
         {/* Brand */}
         <div className={s.brand}>
-          <div className={s.brandLogo}>RC</div>
           <span className={s.brandName}>REALCOLLAB</span>
         </div>
 
