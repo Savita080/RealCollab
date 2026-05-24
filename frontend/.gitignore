@@ -1,0 +1,4 @@
+node_modules
+.env
+PRD_BACKEND (2).md
+testEmail.js

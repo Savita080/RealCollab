@@ -115,7 +115,6 @@ export const notifications = {
   markAll:  () => api.patch('/notifications/read-all'),
 };
 
-// ── AI (Suhani's service) ─────────────────────────────
 export const ai = {
   summarise: (wid, pid)      => api.post(`/ai/summarize-project`, { projectId: pid }),
   blockers:  (wid, pid)      => api.post(`/ai/generate-tasks`, { projectId: pid }),
@@ -123,5 +122,53 @@ export const ai = {
   plan:      (wid, pid, d)   => api.post(`/ai/generate-tasks`, { projectId: pid, ...d }),
   review:    d               => api.post('/ai/review-code', d),
 };
+
+// ============================================================================
+// 🛑 TEMPORARY BACKEND BYPASS FOR VERCEL PREVIEW
+// Set to true to bypass backend. When real backend is ready, set to false.
+// ============================================================================
+export const BYPASS_BACKEND = true;
+
+if (BYPASS_BACKEND) {
+  console.warn("⚠️ BYPASS_BACKEND is ENABLED! Using mock data instead of real API.");
+  
+  const mockUser = { _id: 'u1', id: 'u1', name: 'Demo User', email: 'demo@example.com', role: 'Owner' };
+  const mockWs = { _id: 'w1', name: 'Demo Workspace', owner: 'u1' };
+  const mockProj1 = { _id: 'p1', name: 'Website Redesign', workspace: 'w1' };
+  const mockProj2 = { _id: 'p2', name: 'Mobile App', workspace: 'w1' };
+
+  const getMockData = (url) => {
+    if (url.includes('/auth/login') || url.includes('/auth/register')) return { token: 'demo-token', user: mockUser };
+    if (url.includes('/auth/me')) return { user: mockUser };
+    if (url.match(/\/workspaces$/)) return { workspaces: [mockWs] };
+    if (url.includes('/projects') && !url.includes('/tasks') && !url.includes('/members') && !url.includes('/activity') && !url.includes('/wiki') && !url.includes('/snippets') && !url.includes('/chat')) {
+      return { projects: [mockProj1, mockProj2] };
+    }
+    if (url.includes('/members')) return { members: [{ user: mockUser, role: 'Owner' }] };
+    if (url.includes('/tasks')) return { tasks: [
+      { _id: 't1', title: 'Design Homepage', status: 'To Do', priority: 'P1', assignee: mockUser },
+      { _id: 't2', title: 'Setup DB', status: 'In Progress', priority: 'P0', assignee: mockUser },
+      { _id: 't3', title: 'Deploy Frontend', status: 'Done', priority: 'P2', assignee: mockUser }
+    ] };
+    if (url.includes('/activity')) return { activities: [] };
+    if (url.includes('/standup')) return { done: 'Finished mock setup', today: 'Testing Vercel frontend', blockers: 'None', summary: 'Everything looks good!' };
+    if (url.includes('/chat')) return { messages: [] };
+    if (url.includes('/wiki')) return [];
+    if (url.includes('/snippets')) return { snippets: [] };
+    if (url.includes('/notifications')) return { unread: 0 };
+    return {};
+  };
+
+  const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+  api.get = async (url) => { await delay(200); return { data: getMockData(url) }; };
+  api.post = async (url) => { 
+    await delay(300); 
+    if (url.includes('login') || url.includes('register')) localStorage.setItem('rc_token', 'demo-token');
+    return { data: getMockData(url) }; 
+  };
+  api.patch = async (url) => { await delay(200); return { data: getMockData(url) }; };
+  api.delete = async (url) => { await delay(200); return { data: getMockData(url) }; };
+}
 
 export default api;

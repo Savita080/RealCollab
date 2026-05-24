@@ -1,145 +1,235 @@
-import React from "react";
-import { motion } from "framer-motion";
-import Tilt from "react-parallax-tilt";
+// components/Features.jsx
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Layout, Sparkles, Code2, BookOpen, Users, Zap } from "lucide-react";
 
 const features = [
   {
     icon: Layout,
     title: "Kanban Board",
+    sub: "Ship sprints faster",
     desc: "Drag tasks across customizable columns. Ship features faster every single sprint.",
-    bg: "from-[#FF6B6B]/20 to-[#FF8E53]/5",
-    border: "group-hover:border-[#FF8E53]/50",
-    glow: "rgba(255, 142, 83, 0.15)",
-    iconColor: "text-[#FF6B6B]"
+    rating: "4.8",
+    bg: "linear-gradient(160deg, #7c3aed, #4c1d95)",
+    glow: "rgba(124,58,237,0.45)",
   },
   {
     icon: Sparkles,
     title: "Smart Assistant",
+    sub: "AI-powered standups",
     desc: "AI-powered automatic standups, blockage detectors, and workspace summaries.",
-    bg: "from-[#A78BFA]/20 to-[#6C63FF]/5",
-    border: "group-hover:border-[#6C63FF]/50",
-    glow: "rgba(108, 99, 255, 0.15)",
-    iconColor: "text-[#A78BFA]"
+    rating: "4.9",
+    bg: "linear-gradient(160deg, #db2777, #831843)",
+    glow: "rgba(219,39,119,0.45)",
   },
   {
     icon: Code2,
     title: "Code Snippets",
+    sub: "Live syntax highlight",
     desc: "Save, share, and review reusable code blocks with full live syntax highlighting.",
-    bg: "from-[#06B6D4]/20 to-[#0284C7]/5",
-    border: "group-hover:border-[#0284C7]/50",
-    glow: "rgba(2, 132, 199, 0.15)",
-    iconColor: "text-[#06B6D4]"
+    rating: "4.7",
+    bg: "linear-gradient(160deg, #0ea5e9, #0369a1)",
+    glow: "rgba(14,165,233,0.45)",
   },
   {
     icon: BookOpen,
     title: "Team Wiki",
+    sub: "Version-controlled docs",
     desc: "Rich wiki documentation. Complete with inline editors, search, and full version logs.",
-    bg: "from-[#34D399]/20 to-[#059669]/5",
-    border: "group-hover:border-[#059669]/50",
-    glow: "rgba(5, 150, 105, 0.15)",
-    iconColor: "text-[#34D399]"
+    rating: "4.6",
+    bg: "linear-gradient(160deg, #10b981, #065f46)",
+    glow: "rgba(16,185,129,0.45)",
   },
   {
     icon: Users,
     title: "Live Collab",
+    sub: "Peer presence live",
     desc: "Real-time peer presence indicators. Instantly know who is working on what.",
-    bg: "from-[#FBBF24]/20 to-[#F97316]/5",
-    border: "group-hover:border-[#F97316]/50",
-    glow: "rgba(249, 115, 22, 0.15)",
-    iconColor: "text-[#FBBF24]"
+    rating: "4.5",
+    bg: "linear-gradient(160deg, #f59e0b, #92400e)",
+    glow: "rgba(245,158,11,0.45)",
   },
   {
     icon: Zap,
     title: "Activity Feed",
+    sub: "Real-time log stream",
     desc: "A centralized operational logging feed of commits, tasks, and updates in real time.",
-    bg: "from-[#EF4444]/20 to-[#EF4444]/5",
-    border: "group-hover:border-[#EF4444]/50",
-    glow: "rgba(239, 68, 68, 0.15)",
-    iconColor: "text-[#EF4444]"
-  }
+    rating: "4.4",
+    bg: "linear-gradient(160deg, #ef4444, #7f1d1d)",
+    glow: "rgba(239,68,68,0.45)",
+  },
 ];
 
 export default function Features() {
-  return (
-    <section id="features" className="py-32 relative overflow-hidden bg-transparent">
-      {/* Background radial gradient to frame section */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[#6C63FF]/5 blur-[120px] rounded-full pointer-events-none" />
+  const [focus, setFocus] = useState(2);
 
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center max-w-2xl mx-auto mb-20">
+  const getCardStyle = (i) => {
+    const rel = i - focus;
+    const absRel = Math.abs(rel);
+    const rotate = rel * 10;
+    const translateX = rel * 88;
+    const translateY = absRel === 0 ? -24 : absRel === 1 ? 0 : 18;
+    const scale = absRel === 0 ? 1.08 : absRel === 1 ? 0.97 : 0.88;
+    const zIndex = features.length - absRel;
+    const brightness = absRel > 2 ? 0.55 : absRel > 0 ? 1 - absRel * 0.08 : 1;
+
+    return {
+      transform: `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotate}deg) scale(${scale})`,
+      zIndex,
+      filter: `brightness(${brightness})`,
+    };
+  };
+
+  return (
+    <section
+      id="features"
+      className="relative overflow-hidden bg-transparent py-28"
+    >
+      {/* Ambient glow behind focused card */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-[100px] transition-all duration-700"
+        style={{ background: features[focus].glow }}
+      />
+
+      <div className="relative mx-auto max-w-5xl px-6">
+        {/* Heading */}
+        <div className="mb-20 text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-black tracking-tight text-white mt-6"
+            className="text-5xl font-black tracking-tight text-white"
           >
-            Built For High-Velocity Squads
+            Built For High-<br />Velocity Squads
           </motion.h2>
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-gray-400 text-base mt-4"
+            transition={{ delay: 0.15 }}
+            className="mx-auto mt-4 max-w-md text-base text-gray-500"
           >
-            All tools required for modern agile product shipping, packed into a single modular, unified interface.
+            All tools required for modern agile product shipping, packed into a
+            single modular, unified interface.
           </motion.p>
         </div>
 
-        {/* 3D Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feat, index) => {
-            const IconComponent = feat.icon;
+        {/* Fan stage */}
+        <div
+          className="relative flex items-end justify-center"
+          style={{ height: 380, perspective: 1200 }}
+        >
+          {features.map((feat, i) => {
+            const Icon = feat.icon;
+            const rel = Math.abs(i - focus);
+
             return (
-              <Tilt
-                key={index}
-                tiltMaxAngleX={15}
-                tiltMaxAngleY={15}
-                perspective={1000}
-                scale={1.03}
-                transitionSpeed={1200}
-                className="h-full"
+              <motion.div
+                key={feat.title}
+                animate={getCardStyle(i)}
+                transition={{ type: "spring", stiffness: 280, damping: 28 }}
+                onClick={() => setFocus(i)}
+                className="absolute cursor-pointer select-none"
+                style={{
+                  width: 190,
+                  height: 300,
+                  borderRadius: 22,
+                  background: feat.bg,
+                  transformOrigin: "center 110%",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.6)",
+                  padding: "22px 18px 20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+                whileHover={{
+                  y: -20,
+                  transition: { type: "spring", stiffness: 400, damping: 20 },
+                }}
               >
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05, duration: 0.5 }}
-                  className={`group relative h-full p-8 rounded-3xl bg-gradient-to-b ${feat.bg} border border-white/5 hover:bg-black/40 hover:border-white/10 hover:shadow-2xl transition-all duration-300 flex flex-col justify-between text-left`}
+                {/* Icon */}
+                <div
                   style={{
-                    boxShadow: `0 10px 30px -10px rgba(0, 0, 0, 0.5)`,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 14,
+                    background: "rgba(255,255,255,0.15)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
-                  {/* Glowing background on hover */}
+                  <Icon size={22} color="#fff" />
+                </div>
+
+                {/* Bottom content */}
+                <div>
+                  {/* Rating pill */}
                   <div
-                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                     style={{
-                      background: `radial-gradient(circle at 50% 50%, ${feat.glow}, transparent 70%)`,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      background: "rgba(255,255,255,0.18)",
+                      borderRadius: 99,
+                      padding: "3px 10px",
+                      marginBottom: 8,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#fff",
                     }}
-                  />
-
-                  {/* Icon */}
-                  <div className="mb-8 z-10">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                      <IconComponent size={24} className={`${feat.iconColor}`} />
-                    </div>
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    {feat.rating}
                   </div>
-
-                  {/* Content */}
-                  <div className="z-10 mt-auto">
-                    <h3 className="text-xl font-bold text-white mb-3 group-hover:text-[#00D4FF] transition-colors duration-300">
-                      {feat.title}
-                    </h3>
-                    <p className="text-gray-400 text-sm leading-relaxed">
-                      {feat.desc}
-                    </p>
-                  </div>
-                </motion.div>
-              </Tilt>
+                  <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", margin: "0 0 3px", lineHeight: 1.1 }}>
+                    {feat.title}
+                  </p>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", margin: 0, fontWeight: 500 }}>
+                    {feat.sub}
+                  </p>
+                </div>
+              </motion.div>
             );
           })}
+        </div>
+
+        {/* Focused card description */}
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={focus}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="mx-auto mt-10 max-w-xs text-center text-sm text-gray-400"
+          >
+            {features[focus].desc}
+          </motion.p>
+        </AnimatePresence>
+
+        {/* Dot navigation */}
+        <div className="mt-6 flex items-center justify-center gap-3">
+          {features.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setFocus(i)}
+              className="transition-all duration-200"
+              style={{
+                width: i === focus ? 24 : 8,
+                height: 8,
+                borderRadius: 99,
+                background: i === focus ? "#fff" : "rgba(255,255,255,0.2)",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
+              aria-label={features[i].title}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -8,7 +8,13 @@ export const socket = io(URL, {
   withCredentials: true,
 });
 
+import { BYPASS_BACKEND } from './api';
+
 export const connectSocket = (token) => {
+  if (BYPASS_BACKEND) {
+    console.log('[Socket] BYPASS_BACKEND is true. Skipping real socket connection.');
+    return;
+  }
   socket.auth = { token };
   socket.connect();
 };

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Zap } from "lucide-react";
-
+import mascot from "../../assets/mascot.png";
 export default function LeftPanel() {
   const orbs = [
     { size: 420, x: "-10%", y: "-15%", color: "rgba(99,102,241,0.35)", dur: 18 },
@@ -47,17 +47,31 @@ export default function LeftPanel() {
         }}
       />
 
-      {/* content */}
-      <div className="relative z-10">
+      {/* content top */}
+      <div className="relative z-10 flex-none">
         <Link to="/" className="flex items-center gap-2 text-white font-bold text-xl tracking-tight">
-          {/* <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center">
-            <Zap size={16} className="text-white" />
-          </div> */}
           RealCollab
         </Link>
       </div>
 
-      <div className="relative z-10 space-y-6">
+      {/* Mascot centered */}
+      <div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none mt-8 mb-8">
+        <motion.img 
+          src={mascot} 
+          alt="RealCollab Mascot" 
+          className="w-72 lg:w-96 object-contain drop-shadow-2xl"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1, y: [0, -12, 0] }}
+          transition={{ 
+            opacity: { duration: 1 },
+            scale: { duration: 1 },
+            y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+          }}
+        />
+      </div>
+
+      {/* content bottom */}
+      <div className="relative z-10 space-y-6 flex-none">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
