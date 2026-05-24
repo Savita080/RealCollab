@@ -127,7 +127,7 @@ export const ai = {
 // 🛑 TEMPORARY BACKEND BYPASS FOR VERCEL PREVIEW
 // Set to true to bypass backend. When real backend is ready, set to false.
 // ============================================================================
-export const BYPASS_BACKEND = true;
+export const BYPASS_BACKEND = false;
 
 if (BYPASS_BACKEND) {
   console.warn("⚠️ BYPASS_BACKEND is ENABLED! Using mock data instead of real API.");

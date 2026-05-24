@@ -25,16 +25,20 @@ import { setupWhiteboardSockets } from './sockets/whiteboardSocket.js';
 
 const app = express();
 const httpServer = createServer(app);
+const allowedOrigins = process.env.FRONTEND_URL
+    ? [process.env.FRONTEND_URL]
+    : ["http://localhost:5173"];
+
 const io = new Server(httpServer, {
     cors: {
-        origin: process.env.FRONTEND_URL || "http://localhost:5173",
+        origin: allowedOrigins,
         credentials: true,
         methods: ["GET", "POST", "PATCH", "DELETE"]
     }
 });
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true
 }));
 connectDB();
