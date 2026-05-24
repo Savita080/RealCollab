@@ -1,35 +1,78 @@
 <div align="center">
 
+<br />
+
+<img src="https://img.shields.io/badge/-DEVCOLLAB-1a1a2e?style=for-the-badge&labelColor=1a1a2e" alt="DevCollab" height="40" />
+
 # 🚀 DevCollab
 
-### **The all-in-one workspace where student dev teams actually ship.**
+### **One workspace. Zero context-switching. Ship faster.**
 
-*GitHub's code intelligence. Notion's docs. Slack's chat. Linear's kanban. One tab. Zero context-switching.*
+*The tool student dev teams reach for when Trello + GitHub + Notion + Discord stops cutting it.*
 
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Express](https://img.shields.io/badge/Express-5.x-000000?style=flat&logo=express&logoColor=white)](https://expressjs.com)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat&logo=mongodb&logoColor=white)](https://mongodb.com)
-[![Socket.IO](https://img.shields.io/badge/Socket.IO-4.x-010101?style=flat&logo=socket.io&logoColor=white)](https://socket.io)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![LangChain](https://img.shields.io/badge/LangChain-Groq-1C3C3C?style=flat)](https://langchain.com)
-[![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
+<br />
 
-**Built for [DevFusion 2.0](#) Hackathon** · *3-person team · 10 days · ~30 endpoints · 6 AI agents*
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-4.x-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![LangChain](https://img.shields.io/badge/LangChain-Groq-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain.com)
 
-[Features](#-features) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [API Docs](docs/api/backend_api.md) · [Plans](#-pricing)
+<br />
+
+```
+🏆  Built for DevFusion 2.0  ·  3 devs  ·  10 days  ·  ~30 endpoints  ·  6 AI agents  ·  16 socket events
+```
+
+<br />
+
+[**🌐 Live Demo**](#) · [**📖 Documentation**](docs/api/backend_api.md) · [**🚀 Quick Start**](#-quick-start) · [**🧠 Architecture**](#%EF%B8%8F-architecture) · [**💎 Pricing**](#-pricing) · [**🗺️ Roadmap**](#%EF%B8%8F-roadmap)
+
+<br />
 
 ---
 
 </div>
 
-## 💡 The Problem
+## 💡 Why DevCollab?
 
-Student dev teams spend more time **switching tools** than **shipping code**. Tasks live in Trello. Code lives in GitHub. Notes live in Notion. Discussions die in Discord. Standups never happen because no one wants to summarize what they did yesterday.
+> Student teams spend more time **switching tools** than **shipping code**.
+> Tasks live in Trello. Code lives in GitHub. Notes live in Notion. Discussions die in Discord. Standups never happen because nobody wants to summarize what they did yesterday.
 
-## ✨ The Solution
+**DevCollab** is the workspace that fixes that. Plan, code, document, draw, and chat — all in one tab — with an AI layer that handles the boring parts so your team can focus on building.
 
-**DevCollab** unifies it all — and adds a layer of AI that handles the boring parts so your team can focus on building.
+<br />
+
+<table>
+<tr>
+<td width="33%" align="center" valign="top">
+
+### ⚡
+**Real-time First**
+
+Every kanban move, comment, mention, and whiteboard stroke broadcasts instantly. Built on Socket.IO with Redis presence.
+
+</td>
+<td width="33%" align="center" valign="top">
+
+### 🤖
+**AI That Actually Helps**
+
+6 specialist agents review your code in parallel. Generate standups, detect bottlenecks, scaffold task lists from a feature description.
+
+</td>
+<td width="33%" align="center" valign="top">
+
+### 💳
+**Zero-Friction Billing**
+
+Razorpay Orders API with HMAC verification — **no KYC required for dev**. Test keys work out of the box.
+
+</td>
+</tr>
+</table>
 
 ---
 
@@ -49,10 +92,10 @@ Drag-and-drop tasks across `TODO` → `IN_PROGRESS` → `IN_REVIEW` → `DONE`. 
 Per-project and per-workspace channels. Messages broadcast over Socket.IO with online-presence tracking via Redis.
 
 ### 🧠 AI Project Assistant
-One-click **standup reports**, **project summaries**, **bottleneck analysis**, and **AI-generated task breakdowns** — just describe a feature, get a backlog.
+One-click **standup reports**, **project summaries**, **bottleneck analysis**, and **AI-generated task breakdowns** — describe a feature, get a backlog.
 
 ### 🔍 AI Code Reviewer
-Paste any snippet → six specialist agents review it in parallel: clean code, syntax, security, readability, performance, robustness. Returns a scored report with line-level feedback.
+Six specialist agents review your code in parallel: clean code, syntax, security, readability, performance, robustness. Returns a scored report with line-level feedback. SSE streaming supported.
 
 </td>
 <td width="50%" valign="top">
@@ -69,15 +112,35 @@ Language-tagged snippets per project with search, syntax highlighting, and AI re
 ### 🔔 @Mentions & Notifications
 `@username` in comments auto-detects, persists a notification, and pushes a live Socket.IO event if the user is online. Mark-all-read. Done.
 
-### 📊 Activity Feed
-Per-project audit trail of every action — task moves, wiki edits, member changes, role updates. Latest 50 entries, populated with user details.
-
-### 💳 Razorpay Payments
-FREE → PRO upgrade flow using Razorpay **Orders API** with HMAC signature verification. **No KYC required for development** — test keys work out of the box.
+### 📊 Activity Feed & Profiles
+Per-project audit trail of every action — task moves, wiki edits, role changes. Rich profiles with bio, avatar, GitHub URL, and skill tags.
 
 </td>
 </tr>
 </table>
+
+---
+
+## 🆚 How It Compares
+
+<div align="center">
+
+| Capability | DevCollab | Trello | Notion | Linear | Slack |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Real-time Kanban | ✅ | ✅ | ⚠️ | ✅ | ❌ |
+| Versioned Wiki | ✅ | ❌ | ⚠️ | ❌ | ❌ |
+| Collaborative Whiteboard | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Code Snippet Library | ✅ | ❌ | ⚠️ | ❌ | ⚠️ |
+| AI Code Review | ✅ | ❌ | ❌ | ❌ | ❌ |
+| AI Standups & Bottleneck Detection | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Real-time Chat | ✅ | ❌ | ❌ | ❌ | ✅ |
+| @Mention Notifications | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Activity Feed | ✅ | ✅ | ⚠️ | ✅ | ❌ |
+| **All-in-one** | ✅ | ❌ | ❌ | ❌ | ❌ |
+
+✅ Native · ⚠️ Limited / via plugin · ❌ Not supported
+
+</div>
 
 ---
 
@@ -114,6 +177,27 @@ Three independent services. Each runs on its own port. Each scales on its own.
        └──────────────┘  └──────────────┘  └───────────────────────┘
 ```
 
+<details>
+<summary><b>🔬 How a single drag-and-drop flows through the system</b></summary>
+
+```
+  User drags task          
+       │                    
+       ▼                    
+  Socket emits ─────► Backend                      
+  "task_move"        │                              
+                     ├── Validates JWT             
+                     ├── Checks project RBAC       
+                     ├── Updates MongoDB position  
+                     └── Broadcasts ─────► All clients in
+                         "task_moved"             project room
+                                                  (instant sync)
+```
+
+</details>
+
+<br />
+
 | Service | Stack | Purpose |
 |---|---|---|
 | 🟢 **`backend/`** | Node.js · Express 5 · Socket.IO 4 · Mongoose 9 · Redis · JWT · Razorpay · Brevo | REST API, real-time events, auth, RBAC, billing, plan limits |
@@ -147,18 +231,27 @@ Three independent services. Each runs on its own port. Each scales on its own.
 
 ## ⚡ Quick Start
 
+> Get all three services running locally in under 5 minutes.
+
 ### Prerequisites
+
 - **Node.js** v18+ · **Python** 3.10+
 - **MongoDB Atlas** account (or local MongoDB)
 - **Redis** *(optional — backend degrades gracefully)*
 
-### 1️⃣ Clone
+<br />
+
+<details open>
+<summary><b>1️⃣ &nbsp; Clone the repo</b></summary>
 
 ```bash
 git clone <repo-url> RealCollab && cd RealCollab
 ```
 
-### 2️⃣ Backend
+</details>
+
+<details open>
+<summary><b>2️⃣ &nbsp; Backend</b> <i>(:3000)</i></summary>
 
 ```bash
 cd backend
@@ -169,7 +262,10 @@ npm run dev                # → http://localhost:3000
 
 > 📖 Full env reference: [`backend/README.md`](backend/README.md)
 
-### 3️⃣ Frontend
+</details>
+
+<details open>
+<summary><b>3️⃣ &nbsp; Frontend</b> <i>(:5173)</i></summary>
 
 ```bash
 cd frontend
@@ -177,7 +273,10 @@ npm install
 npm run dev                # → http://localhost:5173
 ```
 
-### 4️⃣ AI Services
+</details>
+
+<details>
+<summary><b>4️⃣ &nbsp; AI Services</b> <i>(:8000+, optional)</i></summary>
 
 Each AI service is a standalone FastAPI app. Run any subset you need.
 
@@ -189,14 +288,19 @@ python api.py              # → http://localhost:8000
 
 Repeat for `standupReport/`, `blocker/`, `progressSummary/`.
 
-### ✅ Verify
+</details>
+
+<details>
+<summary><b>✅ &nbsp; Verify everything's running</b></summary>
 
 ```bash
 curl http://localhost:3000
 # { "message": "RealCollab Backend Is running" }
 ```
 
-Open `http://localhost:5173` and you're in.
+Open `http://localhost:5173` and you're in. 🎉
+
+</details>
 
 ---
 
@@ -217,7 +321,7 @@ Open `http://localhost:5173` and you're in.
 
 </div>
 
-Enforced at the API layer via `planLimits` middleware. Upgrades go through Razorpay's Orders API with HMAC-SHA256 signature verification — no webhooks, no KYC, no friction.
+Limits enforced at the API layer via `planLimits` middleware. Upgrades flow through Razorpay's Orders API with HMAC-SHA256 signature verification — **no webhooks, no KYC, no friction**.
 
 ---
 
@@ -225,8 +329,9 @@ Enforced at the API layer via `planLimits` middleware. Upgrades go through Razor
 
 ```
 RealCollab/
+│
 ├── 🟢 backend/                    Node.js · Express 5 · Socket.IO
-│   ├── controllers/              Domain handlers (auth, tasks, wiki…)
+│   ├── controllers/              Domain handlers (auth, tasks, wiki, …)
 │   ├── middleware/               auth · rbac · planLimits
 │   ├── models/                   13 Mongoose schemas
 │   ├── routes/                   Express routers (one per domain)
@@ -251,7 +356,7 @@ RealCollab/
 
 ## 📡 API at a Glance
 
-```
+```http
 POST   /api/auth/register                                     Register
 POST   /api/auth/login                                        Email/password
 POST   /api/auth/google                                       Google OAuth
@@ -270,53 +375,139 @@ POST   /api/subscriptions/:wId/subscribe                      Razorpay order
 POST   /api/subscriptions/:wId/verify                         HMAC verify → PRO
 ```
 
-> 📖 **Full reference (30+ endpoints + 16 Socket.IO events):** [`docs/api/backend_api.md`](docs/api/backend_api.md)
+> 📖 **Full reference (30+ REST endpoints + 16 Socket.IO events):** [`docs/api/backend_api.md`](docs/api/backend_api.md)
 
 ---
 
 ## 🌟 What Makes It Different
 
-- ⚡ **Real-time first** — every kanban move, comment, whiteboard stroke broadcasts instantly
-- 🔐 **Two-tier RBAC** — workspace roles + project roles, with workspace admins bypassing project checks
-- 📜 **Git-style wiki** — required commit messages on every content change, full version history
-- 🤖 **Multi-agent AI** — 6 parallel specialists per code review, not a single-prompt pass
-- 💳 **Friction-free billing** — Razorpay Orders API means **no KYC for dev**, just test keys
-- 🛡️ **Graceful degradation** — Redis is optional, AI services are optional, app keeps running
-- 📦 **Zero monorepo tooling** — three independent services, three independent deploys
+<table>
+<tr>
+<td width="50%" valign="top">
+
+#### ⚡ Real-time first
+Every kanban move, comment, whiteboard stroke broadcasts instantly via Socket.IO rooms.
+
+#### 🔐 Two-tier RBAC
+Workspace roles + project roles, with workspace admins bypassing project checks.
+
+#### 📜 Git-style wiki
+Required commit messages (min 10 chars) on every content change. Full version history. Rollback any page.
+
+</td>
+<td width="50%" valign="top">
+
+#### 🤖 Multi-agent AI
+6 parallel specialists per code review — not a single-prompt pass. Streaming via SSE.
+
+#### 💳 Friction-free billing
+Razorpay Orders API means **no KYC for dev**, just test keys.
+
+#### 🛡️ Graceful degradation
+Redis is optional. AI services are optional. App keeps running.
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Core REST API (workspaces, projects, tasks, RBAC)
+- [x] Real-time Kanban with Socket.IO
+- [x] Versioned wiki with commit messages
+- [x] Collaborative whiteboard with Redis cache
+- [x] @Mentions + notifications
+- [x] AI code reviewer (6-agent pipeline)
+- [x] AI standup / bottleneck / progress services
+- [x] Razorpay billing (Orders API)
+- [x] Google OAuth
+- [x] Workspace ownership transfer
+- [ ] Frontend SPA (in progress)
+- [ ] AI services integration with backend (in progress)
+- [ ] GitHub integration (commits → activity feed)
+- [ ] Email digest summaries
+- [ ] Mobile-responsive UI polish
 
 ---
 
 ## 👥 Team
 
-Built by a 3-person hackathon squad in 14 days:
+Built by a 3-person hackathon squad in 10 days for **DevFusion 2.0**:
 
-| Role | Owner | Scope |
-|---|---|---|
-| 🟢 **Backend** | Aditya | REST API, real-time, RBAC, billing, infra |
-| 🔵 **Frontend** | — | React SPA, Kanban UI, whiteboard, wiki editor |
-| 🟣 **AI** | — | 4 FastAPI services, multi-agent pipelines, LangChain + Groq |
+<table>
+<tr>
+<td align="center" width="33%">
+
+🟢 **Backend**
+<br /><sub>Aditya</sub>
+<br /><br />
+REST API · Real-time<br />RBAC · Billing · Infra
+
+</td>
+<td align="center" width="33%">
+
+🔵 **Frontend**
+<br /><sub>Teammate</sub>
+<br /><br />
+React SPA · Kanban UI<br />Whiteboard · Wiki Editor
+
+</td>
+<td align="center" width="33%">
+
+🟣 **AI Services**
+<br /><sub>Teammate</sub>
+<br /><br />
+4 FastAPI services<br />Multi-agent · LangChain + Groq
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## 📖 Documentation
 
-- 🟢 [**Backend Setup & Env Vars**](backend/README.md)
-- 📡 [**Full API Reference**](docs/api/backend_api.md) — every REST endpoint + every Socket.IO event
-- 🟣 [**AI Services Overview**](aiServices/ai_services_documentation.md)
-- 🤖 [**AI Technical Report**](aiServices/ai_services_technical_report.md)
+| Doc | What's inside |
+|---|---|
+| 🟢 [**Backend Setup**](backend/README.md) | Env vars · scripts · plan limits · verify steps |
+| 📡 [**Full API Reference**](docs/api/backend_api.md) | Every REST endpoint · every Socket.IO event |
+| 🟣 [**AI Services Overview**](aiServices/ai_services_documentation.md) | Architecture of all 4 microservices |
+| 🤖 [**AI Technical Report**](aiServices/ai_services_technical_report.md) | Agent design · model choices · benchmarks |
+
+---
+
+## 🤝 Contributing
+
+This is a hackathon project, but we welcome PRs and issues:
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feat/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feat/amazing-feature`)
+5. Open a Pull Request
 
 ---
 
 ## 📜 License
 
-ISC
+Released under the **ISC License** — see [`LICENSE`](LICENSE) for details.
+
+<br />
 
 <div align="center">
 
 ---
 
-**Made with ☕ and panic for DevFusion 2.0**
+### **Made with ☕ and panic for DevFusion 2.0**
 
-*If you ship faster with this, that's the point.*
+*If you ship faster with this, that's the whole point.*
+
+<br />
+
+⭐ **Star us on GitHub** if DevCollab saved your team some context-switching
+
+<br />
 
 </div>
