@@ -15,7 +15,7 @@
 [![LangChain](https://img.shields.io/badge/LangChain-Groq-1C3C3C?style=flat)](https://langchain.com)
 [![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
 
-**Built for [DevFusion 2.0](#) Hackathon** · *3-person team · 14 days · ~30 endpoints · 6 AI agents*
+**Built for [DevFusion 2.0](#) Hackathon** · *3-person team · 10 days · ~30 endpoints · 6 AI agents*
 
 [Features](#-features) · [Architecture](#-architecture) · [Quick Start](#-quick-start) · [API Docs](docs/api/backend_api.md) · [Plans](#-pricing)
 
