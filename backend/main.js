@@ -17,6 +17,7 @@ import wikiroutes from './routes/wikiroutes.js';
 import chatroutes from './routes/chatroutes.js';
 import whiteboardroutes from './routes/whiteboardroutes.js';
 import activityroutes from './routes/activityroutes.js';
+import subscriptionroutes from './routes/subscriptionroutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupKanbanSockets } from './sockets/kanbanSocket.js';
@@ -59,6 +60,7 @@ app.use("/api/workspaces/:workspaceId/projects/:projectId/activity", activityrou
 app.use("/api/tasks/:taskId/comments", commentroutes);
 app.use("/api/notifications", notificationroutes);
 app.use("/api/ai", airoutes);
+app.use("/api/subscriptions", subscriptionroutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "RealCollab Backend Is running" });
