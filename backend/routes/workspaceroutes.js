@@ -6,12 +6,13 @@ import {
 } from '../controllers/workspacecontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole } from '../middleware/rbac.js';
+import { checkWorkspaceLimit } from '../middleware/planLimits.js';
 import { sendWorkspaceMessage, getWorkspaceMessages } from '../controllers/workspacechatcontroller.js';
 
 
 const router = express.Router();
 
-router.post('/', protectRoute, createWorkspace);
+router.post('/', protectRoute, checkWorkspaceLimit, createWorkspace);
 router.get('/', protectRoute, getUserWorkspaces);
 
 router.patch('/:workspaceId', protectRoute, requireRole('OWNER'), updateWorkspace);

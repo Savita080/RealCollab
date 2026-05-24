@@ -75,12 +75,15 @@ export const requireProjectRole = (minRole) => async (req, res, next) => {
                 isSuperAdmin = true;
             }
         } else {
-            // If the workspace isn't injected yet, we should look it up
             const workspace = await Workspace.findById(project.workspace);
             if (workspace) {
+                req.workspace = workspace;
                 const wsMember = workspace.members.find(m => m.user.toString() === req.userId);
-                if (wsMember && (wsMember.role === 'OWNER' || wsMember.role === 'ADMIN')) {
-                    isSuperAdmin = true;
+                if (wsMember) {
+                    req.memberRole = wsMember.role;
+                    if (wsMember.role === 'OWNER' || wsMember.role === 'ADMIN') {
+                        isSuperAdmin = true;
+                    }
                 }
             }
         }

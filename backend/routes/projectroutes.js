@@ -1,14 +1,15 @@
 import express from 'express';
-import { 
+import {
     createProject, getWorkspaceProjects, updateProject, deleteProject,
     getProjectMembers, addProjectMember, removeProjectMember
 } from '../controllers/projectcontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole, requireProjectRole } from '../middleware/rbac.js';
+import { checkLimit } from '../middleware/planLimits.js';
 
 const router = express.Router({ mergeParams: true });
 
-router.post('/', protectRoute, requireRole('MEMBER'), createProject);
+router.post('/', protectRoute, requireRole('MEMBER'), checkLimit('projects'), createProject);
 router.get('/', protectRoute, requireRole('VIEWER'), getWorkspaceProjects);
 router.patch('/:projectId', protectRoute, requireProjectRole('CONTRIBUTOR'), updateProject);
 router.delete('/:projectId', protectRoute, requireProjectRole('CONTRIBUTOR'), deleteProject);
