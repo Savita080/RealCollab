@@ -26,10 +26,10 @@ export const useAuth = create((set, get) => ({
   },
 
   login: async (creds) => {
-    // Backend returns { message, token, user: { id, name, email } }
     const { data } = await authApi.login(creds);
     if (!data.token) throw new Error(data.message || 'Login failed');
     localStorage.setItem('rc_token', data.token);
+    if (data.refreshToken) localStorage.setItem('rc_refresh_token', data.refreshToken);
     set({ user: data.user, token: data.token });
     try {
       connectSocket(data.token);
@@ -40,13 +40,11 @@ export const useAuth = create((set, get) => ({
   },
 
   register: async (creds) => {
-    // Backend register returns { message, user } with NO token
-    // So we auto-login immediately after register
     await authApi.register(creds);
-    // Now login to get a token
     const { data } = await authApi.login({ email: creds.email, password: creds.password });
     if (!data.token) throw new Error('Registration succeeded but login failed');
     localStorage.setItem('rc_token', data.token);
+    if (data.refreshToken) localStorage.setItem('rc_refresh_token', data.refreshToken);
     set({ user: data.user, token: data.token });
     try {
       connectSocket(data.token);
@@ -57,8 +55,12 @@ export const useAuth = create((set, get) => ({
   },
 
   logout: async () => {
-    // Backend has no /auth/logout route — just clear locally
+    const refreshToken = localStorage.getItem('rc_refresh_token');
+    if (refreshToken) {
+      try { await authApi.logout({ refreshToken }); } catch (_) {}
+    }
     localStorage.removeItem('rc_token');
+    localStorage.removeItem('rc_refresh_token');
     try { disconnectSocket(); } catch (_) {}
     set({ user: null, token: null });
   },

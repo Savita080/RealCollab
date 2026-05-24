@@ -12,12 +12,29 @@ api.interceptors.request.use(cfg => {
   return cfg;
 });
 
-// Simple 401 handler — just clear token and redirect to login
+// 401 handler — silently refresh access token, retry original request once
 api.interceptors.response.use(
   r => r,
   async err => {
-    if (err.response?.status === 401) {
+    const original = err.config;
+    if (err.response?.status === 401 && !original._retry) {
+      original._retry = true;
+      const refreshToken = localStorage.getItem('rc_refresh_token');
+      if (refreshToken) {
+        try {
+          const { data } = await axios.post(
+            (import.meta.env.VITE_API_URL || '') + '/api/auth/refresh',
+            { refreshToken }
+          );
+          localStorage.setItem('rc_token', data.token);
+          original.headers.Authorization = `Bearer ${data.token}`;
+          return api(original);
+        } catch {
+          // refresh failed — fall through to logout
+        }
+      }
       localStorage.removeItem('rc_token');
+      localStorage.removeItem('rc_refresh_token');
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
@@ -30,6 +47,8 @@ api.interceptors.response.use(
 export const auth = {
   register: d  => api.post('/auth/register', d),
   login:    d  => api.post('/auth/login', d),
+  refresh:  d  => api.post('/auth/refresh', d),
+  logout:   d  => api.post('/auth/logout', d),
   me:       () => api.get('/auth/me'),
 };
 

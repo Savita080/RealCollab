@@ -46,14 +46,24 @@ export const login = async (req, res) => {
 
        
         const accessToken = jwt.sign(
-            { userId: user._id }, 
-            process.env.JWT_SECRET, 
-            { expiresIn: '15m' } // Token expires in 15 minutes for security
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '15m' }
         );
+
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_REFRESH_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        user.refreshToken = refreshToken;
+        await user.save();
 
         res.status(200).json({
             message: "Login successful",
             token: accessToken,
+            refreshToken,
             user: {
                 id: user._id,
                 name: user.name,
@@ -104,6 +114,42 @@ export const updateProfile = async (req, res) => {
     }
 };
 
+export const refresh = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) return res.status(400).json({ message: "Refresh token is required" });
+
+        const user = await User.findOne({ refreshToken });
+        if (!user) return res.status(403).json({ message: "Invalid refresh token" });
+
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+        const accessToken = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '15m' }
+        );
+
+        res.status(200).json({ token: accessToken });
+    } catch (error) {
+        res.status(403).json({ message: "Invalid or expired refresh token" });
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        const user = await User.findOne({ refreshToken });
+        if (user) {
+            user.refreshToken = null;
+            await user.save();
+        }
+        res.status(200).json({ message: "Logged out" });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
 export const googleLogin = async (req, res) => {
     try {
         const { credential } = req.body; // The token sent from React
@@ -137,17 +183,25 @@ export const googleLogin = async (req, res) => {
             });
         }
 
-        // 5. Generate our standard Access Token (just like normal login)
         const accessToken = jwt.sign(
-            { userId: user._id }, 
-            process.env.JWT_SECRET, 
-            { expiresIn: '15m' } 
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '15m' }
         );
 
-        // 6. Send the exact same response format as normal login
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_REFRESH_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
         res.status(200).json({
             message: "Google Login successful",
             token: accessToken,
+            refreshToken,
             user: {
                 id: user._id,
                 name: user.name,
