@@ -1,7 +1,7 @@
 export const reviewCode = async (req, res) => {
     try {
         const { code, language, snippetId } = req.body;
-        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const aiServiceUrl = process.env.AI_REVIEW_URL || 'http://localhost:8000';
 
         const response = await fetch(`${aiServiceUrl}/review`, {
             method: 'POST',
@@ -64,7 +64,7 @@ export const summarizeProject = async (req, res) => {
 export const generateTasks = async (req, res) => {
     try {
         const { projectId, featureDescription } = req.body;
-        const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        const aiServiceUrl = process.env.AI_BLOCKER_URL || 'http://localhost:8001';
 
         const response = await fetch(`${aiServiceUrl}/api/generate-tasks`, {
             method: 'POST',
