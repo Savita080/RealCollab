@@ -42,15 +42,26 @@ export const createNotification = async (req, res) => {
     }
 };
 
-// Flowchart Step 5: Next login -> GET /notifications/unread
 export const getUnreadNotifications = async (req, res) => {
     try {
-        const notifications = await Notification.find({ 
-            recipient: req.userId, 
-            seen: false 
+        const notifications = await Notification.find({
+            recipient: req.userId,
+            seen: false
         }).sort('-createdAt');
 
         res.status(200).json({ notifications });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const markNotificationsRead = async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { recipient: req.userId, seen: false },
+            { $set: { seen: true } }
+        );
+        res.status(200).json({ message: "Notifications marked as read" });
     } catch (error) {
         res.status(500).json({ error: "Internal Server Error" });
     }
