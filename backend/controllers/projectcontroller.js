@@ -12,7 +12,11 @@ export const createProject = async (req, res) => {
         const newProject = await Project.create({
             workspace: workspaceId,
             name,
-            description
+            description,
+            members: [{
+                user: req.userId,
+                role: 'CONTRIBUTOR'
+            }]
         });
 
         res.status(201).json({
@@ -80,7 +84,7 @@ export const deleteProject = async (req, res) => {
 export const getProjectMembers = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const project = await Project.findById(projectId).populate('members', 'name email avatar');
+        const project = await Project.findById(projectId).populate('members.user', 'name email avatar');
         if (!project) return res.status(404).json({ message: "Project not found" });
         res.status(200).json({ members: project.members });
     } catch (error) {
@@ -92,16 +96,21 @@ export const getProjectMembers = async (req, res) => {
 export const addProjectMember = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const { userId } = req.body;
+        const { userId, role } = req.body;
 
         const project = await Project.findById(projectId);
         if (!project) return res.status(404).json({ message: "Project not found" });
 
-        if (project.members.includes(userId)) {
+        // Check if user is already a member (subdocument comparison)
+        const alreadyMember = project.members.some(m => m.user.toString() === userId);
+        if (alreadyMember) {
             return res.status(400).json({ message: "User is already a member of this project" });
         }
 
-        project.members.push(userId);
+        project.members.push({
+            user: userId,
+            role: role || 'VIEWER'
+        });
         await project.save();
 
         res.status(200).json({ message: "Member added to project", members: project.members });
@@ -115,13 +124,14 @@ export const removeProjectMember = async (req, res) => {
     try {
         const { projectId, userId } = req.params;
         
-        const project = await Project.findByIdAndUpdate(
-            projectId,
-            { $pull: { members: userId } },
-            { new: true }
-        );
-
+        const project = await Project.findById(projectId);
         if (!project) return res.status(404).json({ message: "Project not found" });
+
+        const memberExists = project.members.some(m => m.user.toString() === userId);
+        if (!memberExists) return res.status(404).json({ message: "Member not found in this project" });
+
+        project.members = project.members.filter(m => m.user.toString() !== userId);
+        await project.save();
 
         res.status(200).json({ message: "Member removed from project", members: project.members });
     } catch (error) {

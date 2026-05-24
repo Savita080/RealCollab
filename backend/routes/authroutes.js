@@ -1,11 +1,12 @@
 import express from 'express';
-import { login, register } from '../controllers/authcontroller.js';
+import { login, register, googleLogin } from '../controllers/authcontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 
 const router = express.Router();
 
 router.post('/register',register);
 router.post('/login', login);
+router.post('/google', googleLogin);
 
 router.get('/me', protectRoute, async (req, res) => {
     try {

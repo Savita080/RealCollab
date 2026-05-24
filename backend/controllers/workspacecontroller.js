@@ -1,5 +1,6 @@
 import Workspace from '../models/workspace.js';
 import crypto from 'crypto';
+import { sendEmail } from '../utils/email.js';
 
 
 export const createWorkspace = async (req, res) => {
@@ -119,9 +120,25 @@ export const generateInvite = async (req, res) => {
 
         await req.workspace.save();
 
-        // For the hackathon, we won't set up actual email sending (like SendGrid).
-        // We will just return the link in the API response so you can copy/paste it!
-        const inviteLink = `http://localhost:3000/invite/accept/${token}`;
+        // Get the frontend URL from env (fallback to localhost for dev)
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const inviteLink = `${frontendUrl}/invite/accept/${token}`;
+
+        // Send actual email via Brevo
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>You've been invited to join ${req.workspace.name}!</h2>
+                <p>You have been invited to collaborate on RealCollab as a <strong>${role || 'MEMBER'}</strong>.</p>
+                <br/>
+                <a href="${inviteLink}" style="padding: 12px 24px; background: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Accept Invitation</a>
+                <br/><br/>
+                <p style="color: #666; font-size: 14px;">If the button doesn't work, copy and paste this link into your browser:</p>
+                <p style="color: #666; font-size: 14px; word-break: break-all;">${inviteLink}</p>
+            </div>
+        `;
+        
+        // We do NOT await this. It fires in the background so the API responds instantly.
+        sendEmail(email, `Invitation to join ${req.workspace.name}`, htmlContent);
 
         res.status(200).json({
             message: "Invite generated successfully",
@@ -231,6 +248,45 @@ export const removeMember = async (req, res) => {
         res.status(200).json({ message: "Member removed successfully" });
     } catch (error) {
         console.error("Error removing member:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const transferOwnership = async (req, res) => {
+    try {
+        const { newOwnerId } = req.body;
+
+        if (!newOwnerId) {
+            return res.status(400).json({ message: "newOwnerId is required" });
+        }
+
+        // Ensure the new owner exists in the workspace
+        const newOwnerIndex = req.workspace.members.findIndex(m => m.user.toString() === newOwnerId);
+        if (newOwnerIndex === -1) {
+            return res.status(404).json({ message: "The specified user is not a member of this workspace" });
+        }
+
+        // Find the current owner (the requester)
+        const currentOwnerIndex = req.workspace.members.findIndex(m => m.user.toString() === req.userId);
+        
+        // Safety check (handled by requireRole middleware, but good to have)
+        if (currentOwnerIndex === -1 || req.workspace.members[currentOwnerIndex].role !== 'OWNER') {
+            return res.status(403).json({ message: "Only the current owner can transfer ownership" });
+        }
+
+        // Transfer the title
+        req.workspace.members[currentOwnerIndex].role = 'ADMIN'; // Demote current owner to ADMIN
+        req.workspace.members[newOwnerIndex].role = 'OWNER'; // Promote new user to OWNER
+
+        await req.workspace.save();
+
+        res.status(200).json({ 
+            message: "Ownership transferred successfully", 
+            members: req.workspace.members 
+        });
+
+    } catch (error) {
+        console.error("Error transferring ownership:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
