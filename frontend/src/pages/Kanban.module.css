@@ -1,0 +1,79 @@
+/* pages/Kanban.module.css */
+.page { display: flex; flex-direction: column; gap: 24px; height: calc(100vh - 56px - 56px); }
+
+.header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.title { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-1); }
+.project { font-size: 12px; color: var(--text-3); font-family: var(--font-mono); margin-top: 4px; }
+.headerRight { display: flex; align-items: center; gap: 14px; }
+
+.presence {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--green); font-family: var(--font-mono);
+}
+.presenceDot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+/* Board */
+.board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex: 1; overflow-x: auto; min-height: 0; }
+
+.column {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  display: flex; flex-direction: column; gap: 0;
+  min-height: 400px;
+  transition: border-color 0.2s, background 0.2s;
+  overflow: hidden;
+}
+.column.dragOver { border-color: var(--indigo); background: rgba(99,102,241,0.04); }
+
+.colHeader {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0;
+  background: var(--bg-2);
+  z-index: 1;
+}
+.colDot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+.colName { font-size: 13px; font-weight: 600; color: var(--text-1); flex: 1; }
+.colCount {
+  font-size: 11px; font-family: var(--font-mono);
+  background: rgba(255,255,255,0.06); color: var(--text-3);
+  padding: 1px 7px; border-radius: 10px;
+}
+
+.cards { display: flex; flex-direction: column; gap: 8px; padding: 12px; flex: 1; overflow-y: auto; }
+
+/* Task card */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px;
+  cursor: grab;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s, opacity 0.15s;
+  user-select: none;
+}
+.card:hover { border-color: rgba(99,102,241,0.35); box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+.card:active { cursor: grabbing; }
+.card.dragging { opacity: 0.4; transform: scale(0.97); }
+
+.taskTitle { font-size: 13px; font-weight: 500; color: var(--text-1); line-height: 1.4; }
+.taskDesc { font-size: 11px; color: var(--text-3); line-height: 1.5; }
+.cardMeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.due { font-size: 10px; color: var(--text-3); font-family: var(--font-mono); margin-left: auto; }
+
+.labels { display: flex; gap: 4px; flex-wrap: wrap; }
+.label {
+  font-size: 10px; padding: 1px 7px; border-radius: 10px;
+  background: rgba(99,102,241,0.1); color: var(--indigo);
+  border: 1px solid rgba(99,102,241,0.2);
+  font-family: var(--font-mono);
+}
+
+.empty { padding: 60px 20px; text-align: center; color: var(--text-3); font-size: 14px; }
+
+@media (max-width: 900px) { .board { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 600px) { .board { grid-template-columns: 1fr; } }

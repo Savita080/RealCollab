@@ -1,0 +1,85 @@
+/* components/ui/Badge.module.css */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--c, var(--indigo)) 15%, transparent);
+  color: var(--c, var(--cyan));
+  border: 1px solid color-mix(in srgb, var(--c, var(--indigo)) 30%, transparent);
+}
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--c, var(--cyan));
+}
+
+/* Avatar */
+.avatar {
+  position: relative;
+  display: inline-flex;
+  width: var(--sz, 32px);
+  height: var(--sz, 32px);
+  border-radius: 50%;
+  overflow: visible;
+  flex-shrink: 0;
+}
+.avatar img, .avatar span:first-child {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--sz, 32px) * 0.4);
+  font-weight: 700;
+  background: hsl(var(--hue, 240), 60%, 35%);
+  color: #fff;
+  border: 1.5px solid var(--border);
+}
+.online {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 9px; height: 9px;
+  background: var(--green);
+  border-radius: 50%;
+  border: 1.5px solid var(--bg);
+}
+
+/* Group */
+.group {
+  display: inline-flex;
+  align-items: center;
+}
+.group > * { margin-left: -8px; }
+.group > *:first-child { margin-left: 0; }
+.more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  font-size: 10px;
+  color: var(--text-2);
+  margin-left: -8px;
+}
+
+/* Chip */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+}

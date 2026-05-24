@@ -1,0 +1,179 @@
+// pages/Wiki.jsx
+import { useEffect, useState } from 'react';
+import { useWorkspace } from '../store/workspace';
+import { wiki as wikiApi } from '../lib/api';
+import { useUI } from '../store/ui';
+import { fmtRelative } from '../lib/utils';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import { Input } from '../components/ui/Input';
+import WikiEditor from '../components/wiki/WikiEditor';
+import s from './Wiki.module.css';
+
+export default function Wiki() {
+  const { current: ws, currentProject } = useWorkspace();
+  const { toast } = useUI();
+  const [pages, setPages] = useState([]);
+  const [activePage, setActivePage] = useState(null);
+  const [activeContent, setActiveContent] = useState('');
+  const [createModal, setCreateModal] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [historyModal, setHistoryModal] = useState(false);
+  const [versions, setVersions] = useState([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+
+  useEffect(() => {
+    if (!currentProject || !ws) return;
+    wikiApi.pages(ws._id, currentProject._id).then(({ data }) => {
+      const list = data.pages ?? data;
+      setPages(list);
+      if (list.length) loadPage(list[0]);
+    });
+  }, [currentProject?._id, ws?._id]);
+
+  const loadPage = async (pg) => {
+    setActivePage(pg);
+    // Pages list only has title, fetch full content separately
+    try {
+      const { data } = await wikiApi.get(ws._id, currentProject._id, pg._id);
+      const full = data.page ?? data;
+      setActiveContent(full.content || '');
+    } catch {
+      setActiveContent(pg.content || '');
+    }
+  };
+
+  const createPage = async (e) => {
+    e.preventDefault();
+    try {
+      const { data } = await wikiApi.create(ws._id, currentProject._id, { title: newTitle, content: '' });
+      const page = data.page ?? data;
+      setPages(p => [page, ...p]);
+      setActivePage(page);
+      setActiveContent('');
+      setCreateModal(false);
+      setNewTitle('');
+      toast('Page created', 'success');
+    } catch { toast('Failed to create page', 'error'); }
+  };
+
+  const savePage = async (content, commitMessage = 'Content update') => {
+    try {
+      await wikiApi.update(ws._id, currentProject._id, activePage._id, { content, commitMessage });
+      setActiveContent(content);
+      setPages(p => p.map(pg => pg._id === activePage._id ? { ...pg, content } : pg));
+      toast('Saved ✓', 'success');
+    } catch { toast('Failed to save', 'error'); }
+  };
+
+  const deletePage = async (pg) => {
+    if (!confirm(`Delete page "${pg.title}"?`)) return;
+    try {
+      await wikiApi.delete(ws._id, currentProject._id, pg._id);
+      const remaining = pages.filter(p => p._id !== pg._id);
+      setPages(remaining);
+      if (activePage?._id === pg._id) {
+        if (remaining.length) loadPage(remaining[0]);
+        else { setActivePage(null); setActiveContent(''); }
+      }
+      toast('Page deleted', 'info');
+    } catch { toast('Failed to delete page', 'error'); }
+  };
+
+  const openHistory = async () => {
+    if (!activePage) return;
+    setHistoryModal(true);
+    setLoadingVersions(true);
+    try {
+      const { data } = await wikiApi.versions(ws._id, currentProject._id, activePage._id);
+      setVersions(data.versions ?? data);
+    } catch { toast('Failed to load history', 'error'); }
+    finally { setLoadingVersions(false); }
+  };
+
+  const restoreVersion = async (v) => {
+    if (!confirm('Restore this version? Current content will be overwritten.')) return;
+    await savePage(v.content, `Restored version from ${fmtRelative(v.createdAt)}`);
+    setHistoryModal(false);
+    toast('Version restored', 'success');
+  };
+
+  if (!currentProject) return <div className={s.empty}>Select a project to view the wiki.</div>;
+
+  return (
+    <div className={s.page}>
+      {/* Sidebar */}
+      <aside className={s.sidebar}>
+        <div className={s.sideHeader}>
+          <span className={s.sideTitle}>Pages</span>
+          <button className={s.addBtn} onClick={() => setCreateModal(true)} title="New page">+</button>
+        </div>
+        <div className={s.pageList}>
+          {pages.map(pg => (
+            <div key={pg._id} className={`${s.pageRow} ${activePage?._id === pg._id ? s.activeRow : ''}`}>
+              <button
+                className={`${s.pageItem} ${activePage?._id === pg._id ? s.active : ''}`}
+                onClick={() => loadPage(pg)}
+              >
+                □ {pg.title}
+              </button>
+              <button className={s.deletePageBtn} onClick={() => deletePage(pg)} title="Delete page">✕</button>
+            </div>
+          ))}
+          {pages.length === 0 && <p className={s.noPages}>No pages yet</p>}
+        </div>
+      </aside>
+
+      {/* Editor */}
+      <main className={s.editor}>
+        {activePage ? (
+          <>
+            <div className={s.editorToolbar}>
+              <h2 className={s.pageTitle}>{activePage.title}</h2>
+              <button className={s.historyBtn} onClick={openHistory} title="Version history">⏱ History</button>
+            </div>
+            <WikiEditor page={{ ...activePage, content: activeContent }} onSave={savePage} />
+          </>
+        ) : (
+          <div className={s.empty}>Select a page or create one to start writing.</div>
+        )}
+      </main>
+
+      {/* Create modal */}
+      <Modal open={createModal} onClose={() => setCreateModal(false)} title="New Wiki Page" size="sm">
+        <form onSubmit={createPage} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Input label="Page title" placeholder="Getting Started" value={newTitle}
+            onChange={e => setNewTitle(e.target.value)} required />
+          <Button type="submit" variant="primary" size="md">Create Page</Button>
+        </form>
+      </Modal>
+
+      {/* Version history modal */}
+      <Modal open={historyModal} onClose={() => setHistoryModal(false)} title={`History — ${activePage?.title}`} size="lg">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 400, overflowY: 'auto' }}>
+          {loadingVersions && <p style={{ color: 'var(--text-3)', textAlign: 'center' }}>Loading versions…</p>}
+          {!loadingVersions && versions.length === 0 && <p style={{ color: 'var(--text-3)', textAlign: 'center' }}>No version history yet.</p>}
+          {versions.map((v, i) => (
+            <div key={v._id} style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 13, color: 'var(--text-1)', marginBottom: 4 }}>
+                  {i === 0 ? '🔵 Latest' : `v${versions.length - i}`}
+                  {v.commitMessage && <span style={{ color: 'var(--text-3)', marginLeft: 8 }}>— {v.commitMessage}</span>}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-3)' }}>
+                  Saved by {v.savedBy?.name || 'Unknown'} · {fmtRelative(v.createdAt)}
+                </p>
+                <p style={{ fontSize: 11, color: 'var(--text-3)', fontFamily: 'var(--font-mono)', marginTop: 4 }}>
+                  {(v.content || '').slice(0, 80)}{v.content?.length > 80 ? '…' : ''}
+                </p>
+              </div>
+              {i > 0 && (
+                <Button variant="ghost" size="sm" onClick={() => restoreVersion(v)}>Restore</Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </Modal>
+    </div>
+  );
+}

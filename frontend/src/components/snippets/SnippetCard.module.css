@@ -1,0 +1,57 @@
+/* components/snippets/SnippetCard.module.css */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:hover { border-color: rgba(99,102,241,0.3); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+.cardHeader { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 16px 10px; gap: 10px; }
+.left { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
+
+.lang {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px; font-family: var(--font-mono); font-weight: 700;
+  color: var(--c); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.lang::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
+
+.title { font-size: 14px; font-weight: 600; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desc { font-size: 12px; color: var(--text-3); padding: 0 16px 10px; line-height: 1.5; }
+
+.actions { display: flex; gap: 4px; flex-shrink: 0; }
+.btn {
+  background: none; border: none;
+  color: var(--text-3); cursor: pointer;
+  font-size: 14px; padding: 4px 8px;
+  border-radius: var(--r-sm);
+  transition: color 0.2s, background 0.2s;
+}
+.btn:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
+
+.code {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.6;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre;
+  margin: 0;
+}
+
+.tags { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px; }
+.tag {
+  font-size: 10px; font-family: var(--font-mono);
+  color: var(--indigo); background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  padding: 2px 8px; border-radius: 10px;
+}

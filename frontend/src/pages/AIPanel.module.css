@@ -1,0 +1,87 @@
+/* pages/AIPanel.module.css */
+.page { display: flex; flex-direction: column; gap: 24px; }
+
+.header {}
+.mascotBadge {
+  display: inline-flex; align-items: center; gap: 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 14px 20px;
+  position: relative;
+}
+.octoIcon { font-size: 32px; }
+.mascotBadge strong { display: block; font-size: 16px; font-weight: 700; color: var(--text-1); font-family: var(--font-display); }
+.mascotBadge span { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
+.onlineDot {
+  position: absolute; top: 14px; right: 14px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+.body { display: grid; grid-template-columns: 280px 1fr; gap: 20px; min-height: 500px; }
+
+/* Panel selector */
+.panels { display: flex; flex-direction: column; gap: 6px; }
+.panelBtn {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 14px;
+  cursor: pointer; text-align: left; width: 100%;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.panelBtn:hover { border-color: rgba(99,102,241,0.35); }
+.panelBtn.activePanel {
+  border-color: var(--indigo);
+  background: rgba(99,102,241,0.08);
+  box-shadow: 0 0 20px rgba(99,102,241,0.1);
+}
+.panelIcon { font-size: 18px; color: var(--indigo); font-family: var(--font-mono); flex-shrink: 0; margin-top: 1px; }
+.panelBtn strong { display: block; font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
+.panelBtn span { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+
+/* Output */
+.output {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--r-lg); display: flex; flex-direction: column; overflow: hidden;
+}
+.outputHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.panelTitle { font-size: 14px; font-weight: 600; color: var(--text-1); font-family: var(--font-mono); }
+
+.extraInput { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.codeInput {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-sm); color: var(--text-1);
+  font-family: var(--font-mono); font-size: 12px;
+  padding: 12px; outline: none; resize: vertical;
+}
+.codeInput:focus { border-color: var(--indigo); }
+
+.resultBox { flex: 1; padding: 20px; overflow-y: auto; display: flex; align-items: flex-start; }
+.placeholder {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 100%; height: 200px; gap: 12px; color: var(--text-3);
+}
+.placeholder span { font-size: 32px; color: var(--indigo); }
+.placeholder p { font-size: 13px; }
+
+.thinking {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; width: 100%; height: 200px; gap: 12px;
+}
+.dots {
+  font-size: 24px; color: var(--indigo);
+  animation: blink 1s step-end infinite;
+  letter-spacing: 4px;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+.result {
+  font-family: var(--font-mono); font-size: 13px; color: var(--text-2);
+  line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+  width: 100%;
+}
+
+@media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
