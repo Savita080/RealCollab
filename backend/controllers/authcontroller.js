@@ -67,6 +67,43 @@ export const login = async (req, res) => {
     }
 };
 
+export const getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('-password -refreshToken');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.status(200).json({ user });
+    } catch (error) {
+        console.error("Error in getProfile:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const updateProfile = async (req, res) => {
+    try {
+        const { name, bio, avatar, githubUrl, skills } = req.body;
+
+        const allowedUpdates = {};
+        if (name !== undefined) allowedUpdates.name = name;
+        if (bio !== undefined) allowedUpdates.bio = bio;
+        if (avatar !== undefined) allowedUpdates.avatar = avatar;
+        if (githubUrl !== undefined) allowedUpdates.githubUrl = githubUrl;
+        if (skills !== undefined) allowedUpdates.skills = skills;
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.userId,
+            { $set: allowedUpdates },
+            { new: true, runValidators: true }
+        ).select('-password -refreshToken');
+
+        if (!updatedUser) return res.status(404).json({ message: "User not found" });
+
+        res.status(200).json({ message: "Profile updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Error in updateProfile:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
 export const googleLogin = async (req, res) => {
     try {
         const { credential } = req.body; // The token sent from React

@@ -38,8 +38,12 @@ const taskSchema = new mongoose.Schema({
         type: Number, 
         required: true 
     },
-    labels: [{ 
-        type: String 
+    labels: [{
+        type: String
+    }],
+    attachments: [{
+        url: { type: String, required: true },
+        name: { type: String, required: true }
     }]
 }, {
     timestamps: true 
