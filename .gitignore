@@ -1,4 +1,4 @@
 node_modules
 .env
 testEmail.js
-docs/
+.claude/
