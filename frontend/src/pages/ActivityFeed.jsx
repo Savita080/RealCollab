@@ -1,44 +1,74 @@
-import React from "react";
-import { Activity, ArrowLeft, Clock, BarChart } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+// pages/ActivityFeed.jsx
+import { useEffect, useState } from 'react';
+import { useWorkspace } from '../store/workspace';
+import { activity as activityApi } from '../lib/api';
+import { fmtRelative } from '../lib/utils';
+import { Avatar } from '../components/ui/Badge';
+import s from './ActivityFeed.module.css';
+
+const ACTION_ICONS = {
+  CREATED_TASK: '✦', COMPLETED_TASK: '✓', MOVED_TASK: '→', UPDATED_TASK: '✎',
+  CREATED_SNIPPET: '</>', CREATED_WIKI: '□', UPDATED_WIKI: '□',
+  JOINED_PROJECT: '●', SENT_MESSAGE: '◎', default: '◈'
+};
+
+const ACTION_LABELS = {
+  CREATED_TASK: 'created task', COMPLETED_TASK: 'completed task', MOVED_TASK: 'moved task',
+  UPDATED_TASK: 'updated task', CREATED_SNIPPET: 'added snippet', CREATED_WIKI: 'created wiki page',
+  UPDATED_WIKI: 'updated wiki', JOINED_PROJECT: 'joined project', SENT_MESSAGE: 'sent a message',
+};
 
 export default function ActivityFeed() {
-  const navigate = useNavigate();
+  const { current: ws, currentProject } = useWorkspace();
+  const [feed, setFeed] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!ws || !currentProject) return;
+    setLoading(true);
+    activityApi.list(ws._id, currentProject._id)
+      .then(({ data }) => setFeed(data.activities ?? data))
+      .catch(() => setFeed([]))
+      .finally(() => setLoading(false));
+  }, [ws?._id, currentProject?._id]);
+
+  if (!currentProject) {
+    return (
+      <div className={s.page}>
+        <div className={s.header}><h1 className={s.title}>Activity Feed</h1></div>
+        <p className={s.empty}>Select a project to view its activity.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(244,63,94,0.3)] animate-pulse">
-        <Activity size={32} className="text-white" />
+    <div className={s.page}>
+      <div className={s.header}>
+        <h1 className={s.title}>Activity Feed</h1>
+        <span className={s.projectBadge}>{currentProject.name}</span>
       </div>
 
-      <h1 className="text-3xl font-extrabold text-white tracking-tight">Activity Feed</h1>
-      <p className="text-white/40 text-sm max-w-md leading-relaxed">
-        Live workspace event history. Monitor commits, whiteboard modifications, task updates, and team changes across all projects in one feed.
-      </p>
-
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg w-full text-left">
-        <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] flex items-start gap-4">
-          <Clock size={20} className="text-pink-400 mt-1 flex-shrink-0" />
-          <div>
-            <h3 className="text-sm font-semibold text-white">Event Log Bus</h3>
-            <p className="text-xs text-white/35 mt-1 leading-relaxed">Streams real-time updates from Node controllers and database transactions.</p>
+      <div className={s.feed}>
+        {loading && <p className={s.empty}>Loading…</p>}
+        {!loading && feed.length === 0 && <p className={s.empty}>No activity yet. Start building!</p>}
+        {feed.map((item, i) => (
+          <div key={item._id || i} className={s.item}>
+            <div className={s.iconWrap}>
+              <span className={s.icon}>{ACTION_ICONS[item.action] || ACTION_ICONS.default}</span>
+            </div>
+            <div className={s.content}>
+              <p className={s.msg}>
+                <strong className={s.actor}>{item.user?.name || 'Someone'}</strong>
+                {' '}
+                {ACTION_LABELS[item.action] || item.action?.toLowerCase().replace(/_/g, ' ')}
+                {item.targetName && <span className={s.target}> "{item.targetName}"</span>}
+              </p>
+              <span className={s.time}>{fmtRelative(item.createdAt)}</span>
+            </div>
+            <Avatar name={item.user?.name || '?'} size={28} />
           </div>
-        </div>
-        <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] flex items-start gap-4">
-          <BarChart size={20} className="text-rose-400 mt-1 flex-shrink-0" />
-          <div>
-            <h3 className="text-sm font-semibold text-white">Analytics</h3>
-            <p className="text-xs text-white/35 mt-1 leading-relaxed">Gain transparency and track performance metrics across development cycles.</p>
-          </div>
-        </div>
+        ))}
       </div>
-
-      <button
-        onClick={() => navigate("/dashboard")}
-        className="mt-8 px-5 py-2.5 rounded-xl border border-white/10 hover:border-white/20 bg-white/[0.03] text-sm text-white/70 hover:text-white transition-all cursor-pointer flex items-center gap-2"
-      >
-        <ArrowLeft size={14} /> Back to Dashboard
-      </button>
     </div>
   );
 }

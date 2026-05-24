@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Loader2, ArrowRight, Zap, User, Mail, Lock } from "lucide-react";
+import { Eye, EyeOff, Loader2, ArrowRight, User, Mail, Lock } from "lucide-react";
 import toast from "react-hot-toast";
-import { registerUser } from "@/api/auth";
-import useAuthStore from "@/store/authStore";
-import { cn } from "@/lib/utils";
+import { useAuth } from "../store/auth";
+import { cn } from "../lib/utils";
 
 const dots = Array.from({ length: 28 }, (_, i) => ({
   id: i,
@@ -111,7 +110,7 @@ function PasswordStrength({ password }) {
 
 export default function Register() {
   const navigate = useNavigate();
-  const setAuth = useAuthStore(s => s.setAuth);
+  const { register } = useAuth();
 
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
@@ -139,8 +138,7 @@ export default function Register() {
     setErrors({});
     setLoading(true);
     try {
-      const { user, token } = await registerUser({ name, email, password });
-      setAuth(user, token);
+      await register({ name, email, password });
       toast.success("Account created! Welcome 🎉");
       navigate("/dashboard");
     } catch (err) {
@@ -153,7 +151,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050818] px-4 py-16 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-[#050811] px-4 py-16 relative overflow-hidden">
 
       {/* background glows */}
       <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-violet-600/10 blur-[140px] pointer-events-none" />

@@ -1,0 +1,140 @@
+/* components/layout/Navbar.module.css */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  background: rgba(5,5,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.logo {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-1);
+}
+
+.wsSelect {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-2);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 5px 10px;
+  outline: none;
+  cursor: pointer;
+  max-width: 200px;
+}
+.wsSelect:focus { border-color: var(--indigo); }
+.wsSelect option { background: var(--bg-2); }
+
+.right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.iconBtn {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 7px;
+  border-radius: var(--r-sm);
+  display: flex;
+  transition: color 0.2s, background 0.2s;
+}
+.iconBtn:hover { color: var(--text-1); background: rgba(255,255,255,0.05); }
+
+.badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 16px; height: 16px;
+  border-radius: 10px;
+  background: var(--indigo);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+  border: 1.5px solid var(--bg);
+}
+
+.userWrap { position: relative; }
+.userBtn {
+  background: none; border: none;
+  cursor: pointer; padding: 3px;
+  border-radius: 50%;
+  display: flex;
+  transition: box-shadow 0.2s;
+}
+.userBtn:hover { box-shadow: 0 0 0 2px var(--indigo); }
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: popIn 0.15s ease;
+  z-index: 300;
+}
+@keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.userInfo {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.userInfo strong { font-size: 13px; color: var(--text-1); }
+.userInfo span { font-size: 11px; color: var(--text-3); }
+
+.sep { border: none; border-top: 1px solid var(--border); }
+
+.item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--text-2);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-family: var(--font-body);
+}
+.item:hover { background: rgba(99,102,241,0.08); color: var(--text-1); }

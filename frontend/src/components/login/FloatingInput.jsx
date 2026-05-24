@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 export default function FloatingInput({ id, label, type = "text", value, onChange, error, autoComplete }) {
   const [focused, setFocused] = useState(false);

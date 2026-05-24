@@ -1,48 +1,56 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/Login";
-import { Toaster } from "react-hot-toast";
-import Register from './pages/Register';
-import AppLayout from "./components/layout/AppLayout";
-import Dashboard from "./pages/Dashboard";
-import Kanban from "./pages/Kanban";
-import Snippets from "./pages/Snippets";
-import Wiki from "./pages/Wiki";
-import Collab from "./pages/Collab";
-import ActivityFeed from "./pages/ActivityFeed";
+// App.jsx
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './store/auth';
 
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        {/* all protected pages go inside here */}
-        <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/kanban" element={<Kanban />} />
-          <Route path="/kanban/:projectId" element={<Kanban />} />
-          <Route path="/snippets" element={<Snippets />} />
-          <Route path="/wiki" element={<Wiki />} />
-          <Route path="/collab" element={<Collab />} />
-          <Route path="/activity" element={<ActivityFeed />} />
-        </Route>
-      </Routes>
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          style: {
-            background: '#0d1117',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.1)',
-          },
-        }}
-      />
-    </Router>
-  );
+import AppShell from './components/layout/AppShell';
+import LandingPage   from './pages/LandingPage';
+import Login         from './pages/Login';
+import Register      from './pages/Register';
+import Dashboard     from './pages/Dashboard';
+import Kanban        from './pages/Kanban';
+import Snippets      from './pages/Snippets';
+import Wiki          from './pages/Wiki';
+import ActivityFeed  from './pages/ActivityFeed';
+import Collab        from './pages/Collab';
+import AIPanel       from './pages/AIPanel';
+import Members       from './pages/Members';
+import AcceptInvite  from './pages/AcceptInvite';
+
+function Guard({ children }) {
+  const { token, loading } = useAuth();
+  if (loading) return <div className="app-loading"><span>RC</span></div>;
+  return token ? children : <Navigate to="/login" replace />;
 }
 
-export default App;
+export default function App() {
+  const { init } = useAuth();
+  useEffect(() => { init(); }, []);
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Public */}
+        <Route path="/"         element={<LandingPage />} />
+        <Route path="/login"    element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        {/* Invite accept — public but uses auth token if available */}
+        <Route path="/invite/accept/:token" element={<AcceptInvite />} />
+
+        {/* Protected — inside AppShell */}
+        <Route element={<Guard><AppShell /></Guard>}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/kanban"    element={<Kanban />} />
+          <Route path="/snippets"  element={<Snippets />} />
+          <Route path="/wiki"      element={<Wiki />} />
+          <Route path="/activity"  element={<ActivityFeed />} />
+          <Route path="/collab"    element={<Collab />} />
+          <Route path="/ai"        element={<AIPanel />} />
+          <Route path="/members"   element={<Members />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

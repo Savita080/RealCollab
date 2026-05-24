@@ -1,0 +1,60 @@
+/* components/layout/NotificationDropdown.module.css */
+.panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card), var(--glow-indigo);
+  z-index: 300;
+  animation: popIn 0.15s ease;
+  overflow: hidden;
+}
+@keyframes popIn { from { opacity:0; transform: translateY(-6px); } to { opacity:1; transform:none; } }
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.all {
+  background: none; border: none;
+  font-size: 11px; color: var(--indigo);
+  cursor: pointer; font-family: var(--font-body);
+}
+.all:hover { text-decoration: underline; }
+
+.list { max-height: 360px; overflow-y: auto; }
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+.item:hover { background: rgba(99,102,241,0.06); }
+.item:last-child { border-bottom: none; }
+
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.unread .dot { background: var(--cyan); }
+
+.content { flex: 1; }
+.msg { font-size: 12px; color: var(--text-1); line-height: 1.4; }
+.time { font-size: 10px; color: var(--text-3); font-family: var(--font-mono); }
+.empty { padding: 24px 16px; text-align: center; color: var(--text-3); font-size: 13px; }

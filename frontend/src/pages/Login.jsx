@@ -3,15 +3,14 @@ import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import { Loader2, ArrowRight, Zap } from "lucide-react";
 import toast from "react-hot-toast";
-import { loginUser } from "@/api/auth";
-import useAuthStore from "@/store/authStore";
-import { cn } from "@/lib/utils";
-import FloatingInput from "@/components/login/FloatingInput";
-import LeftPanel from "@/components/login/LeftPanel";
+import { useAuth } from "../store/auth";
+import { cn } from "../lib/utils";
+import FloatingInput from "../components/login/FloatingInput";
+import LeftPanel from "../components/login/LeftPanel";
 
 export default function Login() {
   const navigate = useNavigate();
-  const setAuth = useAuthStore((s) => s.setAuth);
+  const { login } = useAuth();
 
   const [fields, setFields] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -36,8 +35,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const { user, token } = await loginUser(fields);
-      setAuth(user, token);
+      await login({ email: fields.email, password: fields.password });
       toast.success("Welcome back! 🚀");
       navigate("/dashboard");
     } catch (err) {
@@ -51,7 +49,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#050818] font-sans">
+    <div className="min-h-screen flex bg-[#050811] font-sans">
       <LeftPanel />
 
       {/* ── Right Panel ── */}
