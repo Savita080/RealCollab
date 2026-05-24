@@ -117,7 +117,7 @@ export const notifications = {
 
 export const ai = {
   summarise: (wid, pid)      => api.post(`/ai/summarize-project`, { projectId: pid }),
-  blockers:  (wid, pid)      => api.post(`/ai/generate-tasks`, { projectId: pid }),
+  blockers:  (wid, pid)      => api.post(`/ai/bottleneck`, { projectId: pid }),
   standup:   (wid, pid)      => api.post(`/ai/standup`, { projectId: pid }),
   plan:      (wid, pid, d)   => api.post(`/ai/generate-tasks`, { projectId: pid, ...d }),
   review:    d               => api.post('/ai/review-code', d),
