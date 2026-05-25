@@ -9,6 +9,7 @@ import socket from '../../lib/socket';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
+import MentionInput from '../ui/MentionInput';
 import { PriorityChip, Avatar } from '../ui/Badge';
 import { fmtDate, fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/TaskDetail.module.css';
@@ -225,9 +226,10 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
             <div ref={commentsEndRef} />
           </div>
           <form onSubmit={submitComment} className={s.commentForm}>
-            <Input
-              placeholder="Add a comment… @name to notify someone"
+            <MentionInput
+              placeholder="Add a comment… use @ to mention someone"
               value={comment}
+              members={wsMembers}
               onChange={e => setComment(e.target.value)}
             />
             <Button type="submit" variant="ghost" size="sm">Post</Button>

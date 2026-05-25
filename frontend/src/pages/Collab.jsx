@@ -9,7 +9,8 @@ import {
   emitDraw, emitSaveWb, emitTyping
 } from '../lib/socket';
 import socket from '../lib/socket';
-import { chat as chatApi, whiteboards as wbApi } from '../lib/api';
+import { chat as chatApi, whiteboards as wbApi, workspaces as wsApi } from '../lib/api';
+import MentionInput from '../components/ui/MentionInput';
 import { useUI } from '../store/ui';
 import { Avatar } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -34,6 +35,7 @@ export default function Collab() {
   const online = usePresence(currentProject?._id);
 
   const [tab, setTab] = useState('project');
+  const [wsMembers, setWsMembers] = useState([]);
   const [projectMessages, setProjectMessages] = useState([]);
   const [wsMessages, setWsMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -85,6 +87,14 @@ export default function Collab() {
     chatApi.workspaceMessages(ws._id)
       .then(({ data }) => setWsMessages(data.messages ?? data))
       .catch(() => {});
+  }, [ws?._id]);
+
+  // ── Load workspace members for @mention autocomplete ─────────────────────
+  useEffect(() => {
+    if (!ws) return;
+    wsApi.members(ws._id)
+      .then(({ data }) => setWsMembers(data.members ?? []))
+      .catch(() => setWsMembers([]));
   }, [ws?._id]);
 
   // ── Load whiteboards for current project ───────────────────────────────────
@@ -387,10 +397,13 @@ export default function Collab() {
             </div>
 
             <form className={s.inputRow} onSubmit={tab === 'project' ? sendProject : sendWorkspace}>
-              <input
-                className={s.chatInput}
-                placeholder={`Message ${tab === 'project' ? currentProject.name : ws?.name}…`}
+              <MentionInput
+                className={s.mentionWrap}
+                inputClassName={s.chatInput}
+                placeholder={`Message ${tab === 'project' ? currentProject.name : ws?.name}… (use @ to mention)`}
                 value={input}
+                members={wsMembers}
+                autoFocus
                 onChange={e => {
                   setInput(e.target.value);
                   if (tab === 'project' && currentProject?._id && user?.name && !typingEmitRef.current) {
@@ -398,7 +411,6 @@ export default function Collab() {
                     typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
                   }
                 }}
-                autoFocus
               />
               <button type="submit" className={s.sendBtn} disabled={!input.trim()}>
                 ↑

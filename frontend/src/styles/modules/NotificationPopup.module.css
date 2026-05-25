@@ -1,0 +1,134 @@
+/* components/ui/NotificationPopup.module.css */
+.stack {
+  position: fixed;
+  top: 72px;          /* below TopBar */
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9998;
+  pointer-events: none;  /* let stack pass through; child popups re-enable */
+  max-width: 380px;
+}
+
+.popup {
+  pointer-events: auto;
+  display: flex;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-radius: var(--r-md, 12px);
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(20,22,34,0.95));
+  border: 1px solid rgba(99,102,241,0.35);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+  backdrop-filter: blur(16px);
+  animation: slideInPop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.4);
+  min-width: 320px;
+  position: relative;
+  overflow: hidden;
+}
+.popup::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, var(--cyan, #63b3ed), var(--purple, #a78bfa));
+}
+
+.clickable { cursor: pointer; transition: transform 0.15s, border-color 0.15s; }
+.clickable:hover { transform: translateX(-2px); border-color: rgba(99,102,241,0.6); }
+
+.iconWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.fallbackIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(99,102,241,0.18);
+  font-size: 18px;
+}
+.typeBadge {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-card, #181c2a);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cyan, #63b3ed);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.x {
+  background: none;
+  border: none;
+  color: var(--text-3, #6b7280);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.x:hover { color: var(--text-1, #e8eaf0); }
+
+.content {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-1, #e8eaf0);
+  line-height: 1.45;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--cyan, #63b3ed);
+  font-weight: 500;
+}
+
+@keyframes slideInPop {
+  from {
+    transform: translateX(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 600px) {
+  .stack { right: 12px; left: 12px; max-width: none; top: 64px; }
+  .popup { min-width: 0; }
+}

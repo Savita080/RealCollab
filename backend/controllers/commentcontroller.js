@@ -1,7 +1,5 @@
 import TaskComment from '../models/taskComment.js';
-import User from '../models/user.js';
-import Notification from '../models/notification.js';
-import redis from '../config/redis.js';
+import { notifyMentions } from '../utils/notify.js';
 
 export const createComment = async (req, res) => {
     try {
@@ -25,34 +23,16 @@ export const createComment = async (req, res) => {
             req.io.to(req.body.projectId).emit('task_comment_added', populatedComment);
         }
 
-        // Parse @mentions and notify each mentioned user
-        const mentionedNames = [...content.matchAll(/@(\w+)/g)].map(m => m[1]);
-        if (mentionedNames.length > 0) {
-            const mentionedUsers = await User.find({
-                name: { $in: mentionedNames.map(n => new RegExp(`^${n}$`, 'i')) }
-            }).select('_id name');
-
-            for (const mentionedUser of mentionedUsers) {
-                if (mentionedUser._id.toString() === req.userId) continue;
-
-                const notification = await Notification.create({
-                    recipient: mentionedUser._id,
-                    sender: req.userId,
-                    type: 'MENTION',
-                    content: `mentioned you in a comment: "${content.slice(0, 80)}${content.length > 80 ? '…' : ''}"`,
-                    link: `/tasks/${taskId}`
-                });
-
-                if (redis) {
-                    const socketId = await redis.get(`user:online:${mentionedUser._id}`);
-                    if (socketId) {
-                        req.io.to(socketId).emit('new_notification', notification);
-                        notification.notified = true;
-                        await notification.save();
-                    }
-                }
-            }
-        }
+        // Notify @mentioned users
+        const senderName = populatedComment.author?.name || 'Someone';
+        const snippet = content.slice(0, 80) + (content.length > 80 ? '…' : '');
+        notifyMentions(req.io, {
+            content,
+            sender: req.userId,
+            type: 'MENTION',
+            link: `/tasks/${taskId}`,
+            contentBuilder: () => `${senderName} mentioned you in a comment: "${snippet}"`,
+        }).catch(err => console.error('[comment mentions] failed:', err.message));
 
         res.status(201).json({ message: "Comment added", comment: populatedComment });
     } catch (error) {

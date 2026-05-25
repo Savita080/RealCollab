@@ -219,6 +219,8 @@
   background: var(--bg-surface);
 }
 
+.mentionWrap { flex: 1; min-width: 0; }
+
 .chatInput {
   flex: 1;
   background: var(--bg-card);

@@ -10,7 +10,7 @@ import s from '../../styles/modules/NotificationDropdown.module.css';
 const TYPE_ICONS = { MENTION: '💬', PROJECT_ASSIGN: '📋', ROLE_CHANGE: '🔑' };
 
 export default function NotificationDropdown({ onClose }) {
-  const { notifications, setNotifications, clearUnread, bindNotifications, unbindNotifications } = useUI();
+  const { notifications, setNotifications, clearUnread } = useUI();
   const ref = useRef(null);
   const navigate = useNavigate();
   useClickOutside(ref, onClose);
@@ -21,12 +21,10 @@ export default function NotificationDropdown({ onClose }) {
       setNotifications(data.notifications ?? data);
     }).catch(() => {});
 
-    // Mark all as seen when dropdown opens (correct backend endpoint: PATCH /notifications/mark-read)
+    // Mark all as seen when dropdown opens
     notifApi.markAll().catch(() => {});
     clearUnread();
-
-    bindNotifications();
-    return () => unbindNotifications();
+    // Note: socket listener is bound globally in AppShell — do NOT re-bind here.
   }, []);
 
   const handleClick = (n) => {

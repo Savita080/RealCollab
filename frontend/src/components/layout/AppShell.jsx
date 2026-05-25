@@ -4,17 +4,23 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ToastStack from '../ui/Toast';
+import NotificationPopupStack from '../ui/NotificationPopup';
 import { useWorkspace } from '../../store/workspace';
 import { useUI } from '../../store/ui';
+import { notifications as notifApi } from '../../lib/api';
 import s from '../../styles/modules/AppShell.module.css';
 
 export default function AppShell() {
   const { fetchWorkspaces, refreshProjects } = useWorkspace();
-  const { bindNotifications, unbindNotifications, toast } = useUI();
+  const { bindNotifications, unbindNotifications, setNotifications, toast } = useUI();
 
   useEffect(() => {
     fetchWorkspaces();
     bindNotifications();
+    // Load existing unread so the bell badge is correct on page reload
+    notifApi.unread()
+      .then(({ data }) => setNotifications(data.notifications ?? data ?? []))
+      .catch(() => {});
     return () => unbindNotifications();
   }, []);
 
@@ -39,6 +45,7 @@ export default function AppShell() {
         </main>
       </div>
       <ToastStack />
+      <NotificationPopupStack />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import Project from '../models/project.js';
 import Workspace from '../models/workspace.js';
+import User from '../models/user.js';
+import { notifyUser } from '../utils/notify.js';
 
 export const createProject = async (req, res) => {
     try {
@@ -129,6 +131,17 @@ export const addProjectMember = async (req, res) => {
             role: role || 'VIEWER'
         });
         await project.save();
+
+        // Notify the newly added user
+        const sender = await User.findById(req.userId).select('name');
+        const senderName = sender?.name || 'Someone';
+        notifyUser(req.io, {
+            recipient: userId,
+            sender: req.userId,
+            type: 'PROJECT_ASSIGN',
+            content: `${senderName} added you to "${project.name}" as ${role || 'VIEWER'}`,
+            link: `/dashboard`,
+        }).catch(err => console.error('[project-add notify] failed:', err.message));
 
         res.status(200).json({ message: "Member added to project", members: project.members });
     } catch (error) {

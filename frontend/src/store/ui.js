@@ -10,8 +10,12 @@ function attachPaywallListener(openPaywall) {
   window.addEventListener('paywall', (e) => openPaywall(e.detail));
 }
 
+const POPUP_DURATION = 6000;
+const POPUP_MAX = 4;
+
 export const useUI = create((set, get) => ({
   toasts: [],
+  popups: [],          // live notification popups (corner dialogs)
   notifications: [],
   unreadCount: 0,
   sidebarOpen: true,
@@ -25,6 +29,18 @@ export const useUI = create((set, get) => ({
 
   dismissToast: (id) => set(s => ({ toasts: s.toasts.filter(t => t.id !== id) })),
 
+  // Notification popups (separate from toasts — bigger, click-to-navigate)
+  pushPopup: (notif) => {
+    const id = notif._id || `pop-${Date.now()}`;
+    const item = { ...notif, id };
+    set(s => ({ popups: [item, ...s.popups].slice(0, POPUP_MAX) }));
+    setTimeout(() => {
+      set(s => ({ popups: s.popups.filter(p => (p._id || p.id) !== id) }));
+    }, POPUP_DURATION);
+  },
+
+  dismissPopup: (id) => set(s => ({ popups: s.popups.filter(p => (p._id || p.id) !== id) })),
+
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
 
   openPaywall: (data) => set({ paywallModal: data }),
@@ -35,12 +51,14 @@ export const useUI = create((set, get) => ({
     // Attach paywall listener once
     attachPaywallListener(get().openPaywall);
 
+    // Remove any prior listener to avoid duplicates on remounts
+    socket.off('new_notification');
     socket.on('new_notification', (notif) => {
       set(s => ({
         notifications: [notif, ...s.notifications],
         unreadCount: s.unreadCount + 1,
       }));
-      get().toast(notif.content || notif.message || 'New notification', 'info');
+      get().pushPopup(notif);
     });
   },
 

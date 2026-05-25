@@ -1,6 +1,8 @@
 import Workspace from '../models/workspace.js';
+import User from '../models/user.js';
 import crypto from 'crypto';
 import { sendEmail } from '../utils/email.js';
+import { notifyUser } from '../utils/notify.js';
 
 
 export const createWorkspace = async (req, res) => {
@@ -221,10 +223,22 @@ export const updateMemberRole = async (req, res) => {
         const memberIndex = req.workspace.members.findIndex(m => m.user.toString() === userId);
         if (memberIndex === -1) return res.status(404).json({ message: "Member not found" });
 
-        // Ensure OWNER role can't be freely given/removed unless it's the OWNER doing it, etc.
-        // For hackathon, just update it:
+        const prevRole = req.workspace.members[memberIndex].role;
         req.workspace.members[memberIndex].role = role;
         await req.workspace.save();
+
+        // Notify the affected user if role actually changed
+        if (prevRole !== role) {
+            const sender = await User.findById(req.userId).select('name');
+            const senderName = sender?.name || 'An admin';
+            notifyUser(req.io, {
+                recipient: userId,
+                sender: req.userId,
+                type: 'ROLE_CHANGE',
+                content: `${senderName} changed your role in "${req.workspace.name}" from ${prevRole} to ${role}`,
+                link: `/`,
+            }).catch(err => console.error('[role-change notify] failed:', err.message));
+        }
 
         res.status(200).json({ message: "Role updated successfully", members: req.workspace.members });
     } catch (error) {
@@ -280,9 +294,20 @@ export const transferOwnership = async (req, res) => {
 
         await req.workspace.save();
 
-        res.status(200).json({ 
-            message: "Ownership transferred successfully", 
-            members: req.workspace.members 
+        // Notify the new owner
+        const sender = await User.findById(req.userId).select('name');
+        const senderName = sender?.name || 'The previous owner';
+        notifyUser(req.io, {
+            recipient: newOwnerId,
+            sender: req.userId,
+            type: 'ROLE_CHANGE',
+            content: `${senderName} transferred ownership of "${req.workspace.name}" to you`,
+            link: `/`,
+        }).catch(err => console.error('[ownership notify] failed:', err.message));
+
+        res.status(200).json({
+            message: "Ownership transferred successfully",
+            members: req.workspace.members
         });
 
     } catch (error) {

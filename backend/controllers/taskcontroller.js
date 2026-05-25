@@ -1,4 +1,6 @@
 import Task from '../models/task.js';
+import User from '../models/user.js';
+import { notifyUser } from '../utils/notify.js';
 
 export const createTask = async (req, res) => {
     try {
@@ -12,7 +14,7 @@ export const createTask = async (req, res) => {
         const lastTask = await Task.findOne({ project: projectId, status: status || 'TODO' })
             .sort('-position')
             .exec();
-        
+
         const position = lastTask ? lastTask.position + 1024 : 1024;
 
         const newTask = await Task.create({
@@ -25,6 +27,19 @@ export const createTask = async (req, res) => {
             dueDate: dueDate || null,
             position
         });
+
+        // Notify the assignee if one was set
+        if (assignee) {
+            const sender = await User.findById(req.userId).select('name');
+            const senderName = sender?.name || 'Someone';
+            notifyUser(req.io, {
+                recipient: assignee,
+                sender: req.userId,
+                type: 'PROJECT_ASSIGN',
+                content: `${senderName} assigned you to "${title}"`,
+                link: `/kanban?task=${newTask._id}`,
+            }).catch(err => console.error('[task-assign notify] failed:', err.message));
+        }
 
         res.status(201).json({
             message: "Task created successfully",
@@ -52,14 +67,31 @@ export const updateTask = async (req, res) => {
         const { taskId } = req.params;
         const updates = req.body;
 
+        // Capture the previous assignee so we can detect a change
+        const before = await Task.findById(taskId).select('assignee title');
+        if (!before) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
         const updatedTask = await Task.findByIdAndUpdate(
             taskId,
             { $set: updates },
             { new: true }
         );
 
-        if (!updatedTask) {
-            return res.status(404).json({ message: "Task not found" });
+        // Notify new assignee if it changed and is non-null
+        const prevAssignee = before.assignee?.toString() || null;
+        const newAssignee = updatedTask.assignee?.toString() || null;
+        if (newAssignee && newAssignee !== prevAssignee) {
+            const sender = await User.findById(req.userId).select('name');
+            const senderName = sender?.name || 'Someone';
+            notifyUser(req.io, {
+                recipient: newAssignee,
+                sender: req.userId,
+                type: 'PROJECT_ASSIGN',
+                content: `${senderName} assigned you to "${updatedTask.title}"`,
+                link: `/kanban?task=${updatedTask._id}`,
+            }).catch(err => console.error('[task-reassign notify] failed:', err.message));
         }
 
         res.status(200).json({

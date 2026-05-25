@@ -47,7 +47,9 @@ export const getUnreadNotifications = async (req, res) => {
         const notifications = await Notification.find({
             recipient: req.userId,
             seen: false
-        }).sort('-createdAt');
+        })
+            .populate('sender', 'name avatar')
+            .sort('-createdAt');
 
         res.status(200).json({ notifications });
     } catch (error) {
