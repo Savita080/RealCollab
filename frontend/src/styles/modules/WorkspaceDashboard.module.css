@@ -1,0 +1,36 @@
+/* WorkspaceDashboard.module.css */
+.page { animation: fadeIn 0.35s ease; }
+.heading {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 24px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.statCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 20px;
+  text-align: center;
+}
+.statValue {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--cyan), var(--indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.statLabel {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+}

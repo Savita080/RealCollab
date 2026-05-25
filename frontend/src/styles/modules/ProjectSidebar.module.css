@@ -1,0 +1,78 @@
+/* ProjectSidebar.module.css */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-3);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: color 0.2s;
+  width: 100%;
+  text-align: left;
+}
+.backBtn:hover {
+  color: var(--cyan);
+}
+.header {
+  padding: 8px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.projName {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav {
+  flex: 1;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.navLink:hover {
+  background: rgba(99,102,241,0.08);
+  color: var(--text-1);
+}
+.navLinkActive {
+  background: rgba(99,102,241,0.12);
+  color: var(--cyan);
+  font-weight: 600;
+}
+.navIcon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}

@@ -1,0 +1,46 @@
+/* WorkspaceSettings.module.css */
+.page { animation: fadeIn 0.35s ease; max-width: 600px; }
+.heading {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 32px;
+}
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 16px;
+}
+.dangerSection {
+  border-color: rgba(239,68,68,0.3);
+}
+.dangerTitle {
+  color: #ef4444;
+}
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.row > *:first-child { flex: 1; }
+.warning {
+  font-size: 12px;
+  color: #f59e0b;
+  margin-top: 8px;
+}
+.dangerText {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-bottom: 12px;
+}
