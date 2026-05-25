@@ -11,6 +11,7 @@ import { Avatar } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
+import ProjectMembersModal from '../components/ProjectMembersModal';
 import s from './Dashboard.module.css';
 
 const PROJECT_COLORS = ['#6366f1','#00d4ff','#10b981','#f59e0b','#ec4899','#8b5cf6'];
@@ -30,6 +31,7 @@ export default function Dashboard() {
   const [taskModal, setTaskModal] = useState(false);
   const [wsModal, setWsModal] = useState(false);
   const [projModal, setProjModal] = useState(false);
+  const [membersModal, setMembersModal] = useState(false);
   const [wsName, setWsName] = useState('');
   const [projName, setProjName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -229,7 +231,23 @@ export default function Dashboard() {
         <div className={s.card}>
           <div className={s.cardHeader}>
             <span className={s.cardTitle}>PROJECT PROGRESS</span>
-            <span className={s.dayBadge}>All time</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {currentProject && (
+                <button
+                  id="project-members-btn"
+                  onClick={() => setMembersModal(true)}
+                  className={s.membersBtn}
+                  title="Manage project members"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                  </svg>
+                  Members
+                </button>
+              )}
+              <span className={s.dayBadge}>All time</span>
+            </div>
           </div>
           <div className={s.progressSection}>
             {/* Overall */}
@@ -338,6 +356,15 @@ export default function Dashboard() {
           <Button type="submit" variant="primary" size="md" loading={loading}>Create Project</Button>
         </form>
       </Modal>
+
+      {/* Project Members modal */}
+      <ProjectMembersModal
+        open={membersModal}
+        onClose={() => setMembersModal(false)}
+        workspace={ws}
+        project={currentProject}
+        currentUserId={user?.id || user?._id}
+      />
     </div>
   );
 }

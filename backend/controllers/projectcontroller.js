@@ -1,4 +1,5 @@
 import Project from '../models/project.js';
+import Workspace from '../models/workspace.js';
 
 export const createProject = async (req, res) => {
     try {
@@ -32,7 +33,23 @@ export const createProject = async (req, res) => {
 export const getWorkspaceProjects = async (req, res) => {
     try {
         const workspaceId = req.params.workspaceId;
-        const projects = await Project.find({ workspace: workspaceId });
+        const userId = req.userId;
+
+        // OWNER/ADMIN see all projects; MEMBER/VIEWER only see projects they're in
+        const workspace = await Workspace.findById(workspaceId);
+        const wsMember = workspace?.members.find(m => m.user.toString() === userId.toString());
+        const role = wsMember?.role || 'VIEWER';
+
+        let projects;
+        if (role === 'OWNER' || role === 'ADMIN') {
+            projects = await Project.find({ workspace: workspaceId });
+        } else {
+            projects = await Project.find({
+                workspace: workspaceId,
+                'members.user': userId
+            });
+        }
+
         res.status(200).json({ projects });
     } catch (error) {
         console.error("Error fetching projects:", error.message);
