@@ -1,6 +1,6 @@
 // components/kanban/TaskDetail.jsx
 import { useState, useEffect, useRef } from 'react';
-import { useTasks } from '../../store/tasks';
+import { useTasks, TASK_COLUMNS } from '../../store/tasks';
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
@@ -24,7 +24,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
     title: task.title,
     description: task.description || '',
     priority: task.priority || 'P1',
-    status: task.status || 'TODO',
+    status: task.status || 'To Do',
     assignee: task.assignee?._id || task.assignee || '',
     dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
   });
@@ -157,12 +157,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
               options={['P0', 'P1', 'P2']} />
             <Select label="Status" value={form.status}
               onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-              options={[
-                { value: 'TODO',        label: 'To Do' },
-                { value: 'In Progress', label: 'In Progress' },
-                { value: 'In Review',   label: 'In Review' },
-                { value: 'Done',        label: 'Done' },
-              ]} />
+              options={TASK_COLUMNS.map(c => ({ value: c.key, label: c.label }))} />
             <Input label="Due date" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
             {/* Assignee */}

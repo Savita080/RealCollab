@@ -1,7 +1,7 @@
 // pages/Kanban.jsx
 import { useEffect, useState } from 'react';
 import { useWorkspace } from '../store/workspace';
-import { useTasks } from '../store/tasks';
+import { useTasks, TASK_COLUMNS, TASK_STATUS_COLORS } from '../store/tasks';
 import { useUI } from '../store/ui';
 import { useAuth } from '../store/auth';
 import { joinProject, leaveProject } from '../lib/socket';
@@ -16,20 +16,6 @@ import TaskDetail from '../components/kanban/TaskDetail';
 import ProjectMembersModal from '../components/ProjectMembersModal';
 import { workspaces as wsApi } from '../lib/api';
 import s from '../styles/modules/Kanban.module.css';
-
-// ── IMPORTANT: backend status values must match exactly ──────────────────
-const COLUMNS = [
-  { key: 'TODO',        label: 'To Do' },
-  { key: 'In Progress', label: 'In Progress' },
-  { key: 'In Review',   label: 'In Review' },
-  { key: 'Done',        label: 'Done' },
-];
-const COL_COLORS = {
-  'TODO': '#6366f1',
-  'In Progress': '#f59e0b',
-  'In Review': '#00d4ff',
-  'Done': '#10b981',
-};
 
 export default function Kanban() {
   const { current: ws, currentProject } = useWorkspace();
@@ -46,7 +32,7 @@ export default function Kanban() {
   const [wsMembers, setWsMembers] = useState([]);
   const [form, setForm] = useState({
     title: '', description: '', priority: 'P1',
-    dueDate: '', labels: '', assignee: '', status: 'TODO',
+    dueDate: '', labels: '', assignee: '', status: 'To Do',
   });
 
   useEffect(() => {
@@ -61,7 +47,7 @@ export default function Kanban() {
     return () => { leaveProject(currentProject._id); unbindSocket(); };
   }, [currentProject?._id, ws?._id]);
 
-  const columns = COLUMNS.reduce((acc, col) => ({
+  const columns = TASK_COLUMNS.reduce((acc, col) => ({
     ...acc,
     [col.key]: tasks.filter(t => t.status === col.key),
   }), {});
@@ -81,7 +67,7 @@ export default function Kanban() {
       if (!payload.assignee) delete payload.assignee;
       await create(ws._id, currentProject._id, payload);
       setCreateModal(false);
-      setForm({ title: '', description: '', priority: 'P1', dueDate: '', labels: '', assignee: '', status: 'TODO' });
+      setForm({ title: '', description: '', priority: 'P1', dueDate: '', labels: '', assignee: '', status: 'To Do' });
       toast('Task created', 'success');
     } catch (err) {
       toast(err?.response?.data?.message || 'Failed to create task', 'error');
@@ -117,7 +103,7 @@ export default function Kanban() {
 
       {/* Board */}
       <div className={s.board}>
-        {COLUMNS.map(col => (
+        {TASK_COLUMNS.map(col => (
           <div
             key={col.key}
             className={`${s.column} ${dragOver === col.key ? s.dragOver : ''}`}
@@ -125,7 +111,7 @@ export default function Kanban() {
             onDrop={() => handleDrop(col.key)}
             onDragLeave={() => setDragOver(null)}
           >
-            <div className={s.colHeader} style={{ '--c': COL_COLORS[col.key] }}>
+            <div className={s.colHeader} style={{ '--c': TASK_STATUS_COLORS[col.key] }}>
               <div className={s.colDot} />
               <span className={s.colName}>{col.label}</span>
               <span className={s.colCount}>{columns[col.key]?.length ?? 0}</span>
@@ -188,7 +174,7 @@ export default function Kanban() {
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           <Select label="Initial Status" value={form.status}
             onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-            options={COLUMNS.map(c => ({ value: c.key, label: c.label }))} />
+            options={TASK_COLUMNS.map(c => ({ value: c.key, label: c.label }))} />
           <Select label="Priority" value={form.priority}
             onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
             options={['P0', 'P1', 'P2']} />

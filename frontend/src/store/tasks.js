@@ -4,7 +4,21 @@ import { tasks as tasksApi } from '../lib/api';
 import { emitTaskMove } from '../lib/socket';
 import socket from '../lib/socket';
 
-const COLS = ['To Do', 'In Progress', 'In Review', 'Done'];
+export const TASK_COLUMNS = [
+  { key: 'To Do', label: 'To Do' },
+  { key: 'In Progress', label: 'In Progress' },
+  { key: 'In Review', label: 'In Review' },
+  { key: 'Done', label: 'Done' },
+];
+
+export const TASK_STATUS_COLORS = {
+  'To Do': '#6366f1',
+  'In Progress': '#f59e0b',
+  'In Review': '#00d4ff',
+  'Done': '#10b981',
+};
+
+const COLS = TASK_COLUMNS.map(c => c.key);
 
 // Map backend status enums to display labels
 const STATUS_MAP = {
@@ -20,6 +34,9 @@ const STATUS_REVERSE = {
   'In Review': 'IN_REVIEW',
   'Done': 'DONE',
 };
+
+const toDisplayStatus = (status) => STATUS_MAP[status] || status;
+const toBackendStatus = (status) => STATUS_REVERSE[status] || STATUS_REVERSE[toDisplayStatus(status)] || status;
 
 // Normalise task status from backend enum to display label
 const normalise = (task) => ({
@@ -49,9 +66,8 @@ export const useTasks = create((set, get) => ({
   },
 
   create: async (wid, pid, d) => {
-    // Map display status to backend enum if provided
     const payload = { ...d };
-    if (payload.status) payload.status = STATUS_REVERSE[payload.status] || payload.status;
+    if (payload.status) payload.status = toBackendStatus(payload.status);
     const { data } = await tasksApi.create(wid, pid, payload);
     const task = normalise(data.task ?? data);
     set(s => ({ tasks: [task, ...s.tasks] }));
@@ -59,16 +75,16 @@ export const useTasks = create((set, get) => ({
   },
 
   move: async (wid, pid, taskId, status, projectId) => {
-    const backendStatus = STATUS_REVERSE[status] || status;
-    // Optimistic UI update
-    set(s => ({ tasks: s.tasks.map(t => t._id === taskId ? { ...t, status } : t) }));
+    const displayStatus = toDisplayStatus(status);
+    const backendStatus = toBackendStatus(displayStatus);
+    set(s => ({ tasks: s.tasks.map(t => t._id === taskId ? { ...t, status: displayStatus } : t) }));
     emitTaskMove({ taskId, projectId, newStatus: backendStatus });
     await tasksApi.update(wid, pid, taskId, { status: backendStatus });
   },
 
   update: async (wid, pid, taskId, d) => {
     const payload = { ...d };
-    if (payload.status) payload.status = STATUS_REVERSE[payload.status] || payload.status;
+    if (payload.status) payload.status = toBackendStatus(payload.status);
     const { data } = await tasksApi.update(wid, pid, taskId, payload);
     const task = normalise(data.task ?? data);
     set(s => ({ tasks: s.tasks.map(t => t._id === taskId ? task : t) }));
