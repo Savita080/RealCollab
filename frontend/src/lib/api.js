@@ -39,86 +39,108 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    // 403 Plan limit / AI quota — trigger paywall modal via custom event
+    if (err.response?.status === 403) {
+      const data = err.response.data;
+      if (data?.error === 'Plan limit reached' || data?.error === 'AI quota exceeded') {
+        window.dispatchEvent(new CustomEvent('paywall', { detail: data }));
+      }
+    }
+
     return Promise.reject(err);
   }
 );
 
 // ── Auth ──────────────────────────────────────────────
 export const auth = {
-  register:    d  => api.post('/auth/register', d),
-  login:       d  => api.post('/auth/login', d),
-  googleLogin: d  => api.post('/auth/google', d),
-  refresh:     d  => api.post('/auth/refresh', d),
-  logout:      d  => api.post('/auth/logout', d),
-  me:          () => api.get('/auth/me'),
+  register:      d  => api.post('/auth/register', d),
+  login:         d  => api.post('/auth/login', d),
+  googleLogin:   d  => api.post('/auth/google', d),
+  refresh:       d  => api.post('/auth/refresh', d),
+  logout:        d  => api.post('/auth/logout', d),
+  me:            () => api.get('/auth/me'),
+  updateProfile: d  => api.patch('/auth/me', d),
 };
 
 // ── Workspaces ────────────────────────────────────────
 export const workspaces = {
-  list:         ()           => api.get('/workspaces'),
-  create:       d            => api.post('/workspaces', d),
-  get:          id           => api.get(`/workspaces/${id}`),
-  update:       (id, d)      => api.patch(`/workspaces/${id}`, d),
-  delete:       id           => api.delete(`/workspaces/${id}`),
-  invite:       (id, d)      => api.post(`/workspaces/${id}/invite`, d),
-  acceptInvite: token        => api.post(`/workspaces/invite/accept/${token}`),
-  members:      id           => api.get(`/workspaces/${id}/members`),
-  updateRole:   (id, uid, d) => api.patch(`/workspaces/${id}/members/${uid}/role`, d),
-  removeMember: (id, uid)    => api.delete(`/workspaces/${id}/members/${uid}`),
+  list:              ()           => api.get('/workspaces'),
+  create:            d            => api.post('/workspaces', d),
+  get:               id           => api.get(`/workspaces/${id}`),
+  update:            (id, d)      => api.patch(`/workspaces/${id}`, d),
+  delete:            id           => api.delete(`/workspaces/${id}`),
+  invite:            (id, d)      => api.post(`/workspaces/${id}/invite`, d),
+  acceptInvite:      token        => api.post(`/workspaces/invite/accept/${token}`),
+  members:           id           => api.get(`/workspaces/${id}/members`),
+  updateRole:        (id, uid, d) => api.patch(`/workspaces/${id}/members/${uid}/role`, d),
+  removeMember:      (id, uid)    => api.delete(`/workspaces/${id}/members/${uid}`),
+  transferOwnership: (id, d)      => api.patch(`/workspaces/${id}/transfer-ownership`, d),
 };
 
 // ── Projects ──────────────────────────────────────────
 // Mounted at: /api/workspaces/:workspaceId/projects
 export const projects = {
-  list:   wid         => api.get(`/workspaces/${wid}/projects`),
-  create: (wid, d)    => api.post(`/workspaces/${wid}/projects`, d),
-  get:    (wid, id)   => api.get(`/workspaces/${wid}/projects/${id}`),
-  update: (wid, id, d)=> api.patch(`/workspaces/${wid}/projects/${id}`, d),
-  delete: (wid, id)   => api.delete(`/workspaces/${wid}/projects/${id}`),
-  members:    (wid, pid)        => api.get(`/workspaces/${wid}/projects/${pid}/members`),
-  addMember:  (wid, pid, d)     => api.post(`/workspaces/${wid}/projects/${pid}/members`, d),
+  list:        wid          => api.get(`/workspaces/${wid}/projects`),
+  create:      (wid, d)     => api.post(`/workspaces/${wid}/projects`, d),
+  get:         (wid, id)    => api.get(`/workspaces/${wid}/projects/${id}`),
+  update:      (wid, id, d) => api.patch(`/workspaces/${wid}/projects/${id}`, d),
+  delete:      (wid, id)    => api.delete(`/workspaces/${wid}/projects/${id}`),
+  members:     (wid, pid)       => api.get(`/workspaces/${wid}/projects/${pid}/members`),
+  addMember:   (wid, pid, d)    => api.post(`/workspaces/${wid}/projects/${pid}/members`, d),
   removeMember:(wid, pid, uid)  => api.delete(`/workspaces/${wid}/projects/${pid}/members/${uid}`),
 };
 
 // ── Tasks ─────────────────────────────────────────────
 // Mounted at: /api/workspaces/:workspaceId/projects/:projectId/tasks
 export const tasks = {
-  list:   (wid, pid)       => api.get(`/workspaces/${wid}/projects/${pid}/tasks`),
-  create: (wid, pid, d)    => api.post(`/workspaces/${wid}/projects/${pid}/tasks`, d),
-  update: (wid, pid, id, d)=> api.patch(`/workspaces/${wid}/projects/${pid}/tasks/${id}`, d),
-  delete: (wid, pid, id)   => api.delete(`/workspaces/${wid}/projects/${pid}/tasks/${id}`),
+  list:   (wid, pid)        => api.get(`/workspaces/${wid}/projects/${pid}/tasks`),
+  create: (wid, pid, d)     => api.post(`/workspaces/${wid}/projects/${pid}/tasks`, d),
+  update: (wid, pid, id, d) => api.patch(`/workspaces/${wid}/projects/${pid}/tasks/${id}`, d),
+  delete: (wid, pid, id)    => api.delete(`/workspaces/${wid}/projects/${pid}/tasks/${id}`),
   // Comments — mounted at: /api/tasks/:taskId/comments
-  comments:      taskId       => api.get(`/tasks/${taskId}/comments`),
-  comment:       (taskId, d)  => api.post(`/tasks/${taskId}/comments`, d),   // body: { content, projectId }
-  deleteComment: (taskId, cid)=> api.delete(`/tasks/${taskId}/comments/${cid}`),
+  comments:      taskId           => api.get(`/tasks/${taskId}/comments`),
+  comment:       (taskId, d)      => api.post(`/tasks/${taskId}/comments`, d),   // body: { content, projectId }
+  deleteComment: (taskId, cid, d) => api.delete(`/tasks/${taskId}/comments/${cid}`, { data: d }),
 };
 
 // ── Snippets ──────────────────────────────────────────
 // Mounted at: /api/workspaces/:wId/projects/:pId/snippets
 export const snippets = {
-  list:   (wid, pid)           => api.get(`/workspaces/${wid}/projects/${pid}/snippets`),
-  create: (wid, pid, d)        => api.post(`/workspaces/${wid}/projects/${pid}/snippets`, d),
-  get:    (wid, pid, id)       => api.get(`/workspaces/${wid}/projects/${pid}/snippets/${id}`),
-  update: (wid, pid, id, d)    => api.patch(`/workspaces/${wid}/projects/${pid}/snippets/${id}`, d),
-  delete: (wid, pid, id)       => api.delete(`/workspaces/${wid}/projects/${pid}/snippets/${id}`),
+  list:   (wid, pid)        => api.get(`/workspaces/${wid}/projects/${pid}/snippets`),
+  create: (wid, pid, d)     => api.post(`/workspaces/${wid}/projects/${pid}/snippets`, d),
+  get:    (wid, pid, id)    => api.get(`/workspaces/${wid}/projects/${pid}/snippets/${id}`),
+  update: (wid, pid, id, d) => api.patch(`/workspaces/${wid}/projects/${pid}/snippets/${id}`, d),
+  delete: (wid, pid, id)    => api.delete(`/workspaces/${wid}/projects/${pid}/snippets/${id}`),
 };
 
 // ── Wiki ──────────────────────────────────────────────
 // Mounted at: /api/workspaces/:wId/projects/:pId/wiki
 export const wiki = {
-  pages:    (wid, pid)              => api.get(`/workspaces/${wid}/projects/${pid}/wiki`),
-  get:      (wid, pid, pgId)        => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
-  create:   (wid, pid, d)           => api.post(`/workspaces/${wid}/projects/${pid}/wiki`, d),
-  update:   (wid, pid, pgId, d)     => api.patch(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`, d),
-  versions: (wid, pid, pgId)        => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}/versions`),
-  delete:   (wid, pid, pgId)        => api.delete(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
+  pages:    (wid, pid)           => api.get(`/workspaces/${wid}/projects/${pid}/wiki`),
+  get:      (wid, pid, pgId)     => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
+  create:   (wid, pid, d)        => api.post(`/workspaces/${wid}/projects/${pid}/wiki`, d),
+  update:   (wid, pid, pgId, d)  => api.patch(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`, d),
+  versions: (wid, pid, pgId)     => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}/versions`),
+  delete:   (wid, pid, pgId)     => api.delete(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
+};
+
+// ── Whiteboards ───────────────────────────────────────
+// Mounted at: /api/workspaces/:wId/projects/:pId/whiteboards
+export const whiteboards = {
+  list:   (wid, pid)     => api.get(`/workspaces/${wid}/projects/${pid}/whiteboards`),
+  create: (wid, pid, d)  => api.post(`/workspaces/${wid}/projects/${pid}/whiteboards`, d),
+  delete: (wid, pid, id) => api.delete(`/workspaces/${wid}/projects/${pid}/whiteboards/${id}`),
 };
 
 // ── Chat ──────────────────────────────────────────────
 // Project chat mounted at: /api/workspaces/:wId/projects/:pId/chat
+// Workspace chat mounted at: /api/workspaces/:wId/chat
 export const chat = {
-  projectMessages: (wid, pid)    => api.get(`/workspaces/${wid}/projects/${pid}/chat`),
-  sendProject:     (wid, pid, d) => api.post(`/workspaces/${wid}/projects/${pid}/chat`, d),
+  projectMessages:   (wid, pid)    => api.get(`/workspaces/${wid}/projects/${pid}/chat`),
+  sendProject:       (wid, pid, d) => api.post(`/workspaces/${wid}/projects/${pid}/chat`, d),
+  workspaceMessages: (wid)         => api.get(`/workspaces/${wid}/chat`),
+  sendWorkspace:     (wid, d)      => api.post(`/workspaces/${wid}/chat`, d),
 };
 
 // ── Activity ──────────────────────────────────────────
@@ -128,19 +150,28 @@ export const activity = {
 };
 
 // ── Notifications ─────────────────────────────────────
+// Backend supports: GET /notifications/unread, PATCH /notifications/mark-read (marks ALL), POST /notifications
 export const notifications = {
-  create:   d  => api.post('/notifications', d),
-  unread:   () => api.get('/notifications/unread'),
-  markRead: id => api.patch(`/notifications/${id}/read`),
-  markAll:  () => api.patch('/notifications/read-all'),
+  create:  d  => api.post('/notifications', d),
+  unread:  () => api.get('/notifications/unread'),
+  markAll: () => api.patch('/notifications/mark-read'),  // marks ALL as seen:true
 };
 
+// ── AI ────────────────────────────────────────────────
 export const ai = {
-  summarise: (wid, pid)      => api.post(`/ai/summarize-project`, { projectId: pid }),
-  blockers:  (wid, pid)      => api.post(`/ai/bottleneck`, { projectId: pid }),
-  standup:   (wid, pid)      => api.post(`/ai/standup`, { projectId: pid }),
-  plan:      (wid, pid, d)   => api.post(`/ai/generate-tasks`, { projectId: pid, ...d }),
-  review:    d               => api.post('/ai/review-code', d),
+  summarise: (wid, pid)     => api.post(`/ai/summarize-project`, { projectId: pid }),
+  blockers:  (wid, pid)     => api.post(`/ai/bottleneck`,        { projectId: pid }),
+  standup:   (wid, pid)     => api.post(`/ai/standup`,           { projectId: pid }),
+  plan:      (wid, pid, d)  => api.post(`/ai/generate-tasks`,    { projectId: pid, ...d }),
+  review:    d              => api.post('/ai/review-code', d),
+};
+
+// ── Subscriptions (Razorpay) ──────────────────────────
+export const subscriptions = {
+  subscribe: (wid)    => api.post(`/subscriptions/${wid}/subscribe`),
+  verify:    (wid, d) => api.post(`/subscriptions/${wid}/verify`, d),
+  cancel:    (wid)    => api.post(`/subscriptions/${wid}/cancel`),
+  getStatus: (wid)    => api.get(`/subscriptions/${wid}/subscription`),
 };
 
 // ============================================================================
@@ -151,7 +182,7 @@ export const BYPASS_BACKEND = false;
 
 if (BYPASS_BACKEND) {
   console.warn("⚠️ BYPASS_BACKEND is ENABLED! Using mock data instead of real API.");
-  
+
   const mockUser = { _id: 'u1', id: 'u1', name: 'Demo User', email: 'demo@example.com', role: 'Owner' };
   const mockWs = { _id: 'w1', name: 'Demo Workspace', owner: 'u1' };
   const mockProj1 = { _id: 'p1', name: 'Website Redesign', workspace: 'w1' };
@@ -175,7 +206,9 @@ if (BYPASS_BACKEND) {
     if (url.includes('/chat')) return { messages: [] };
     if (url.includes('/wiki')) return [];
     if (url.includes('/snippets')) return { snippets: [] };
-    if (url.includes('/notifications')) return { unread: 0 };
+    if (url.includes('/notifications')) return { notifications: [] };
+    if (url.includes('/subscription')) return { plan: 'FREE', aiRequestsUsed: 0 };
+    if (url.includes('/whiteboards')) return { whiteboards: [] };
     return {};
   };
 

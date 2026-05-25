@@ -104,4 +104,6 @@ export const useTasks = create((set, get) => ({
     socket.off('task_created');
     socket.off('task_deleted');
   },
+
+  reset: () => set({ tasks: [], loading: false }),
 }));

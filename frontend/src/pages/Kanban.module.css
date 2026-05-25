@@ -77,3 +77,22 @@
 
 @media (max-width: 900px) { .board { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 600px) { .board { grid-template-columns: 1fr; } }
+
+/* Assignee */
+.cardAssignee {
+  display: flex; align-items: center; gap: 5px;
+  margin-top: 2px;
+}
+.assigneeName {
+  font-size: 10px; color: var(--text-3); font-family: var(--font-mono);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.assigneeSelect {
+  width: 100%;
+  background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--text-1); font-size: 13px; font-family: var(--font-body);
+  border-radius: var(--r-sm); padding: 8px 12px;
+  outline: none; cursor: pointer; transition: border-color 0.15s;
+}
+.assigneeSelect:focus { border-color: var(--indigo); }
+

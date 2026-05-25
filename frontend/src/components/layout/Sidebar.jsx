@@ -6,7 +6,7 @@ import { useAuth } from '../../store/auth';
 import { Avatar } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import Button from '../ui/Button';
-import { workspaces as wsApi, tasks as tasksApi, projects as projectsApi } from '../../lib/api';
+import { workspaces as wsApi, tasks as tasksApi, projects as projectsApi, subscriptions as subApi } from '../../lib/api';
 import s from './Sidebar.module.css';
 
 const PROJECT_COLORS = [
@@ -23,9 +23,10 @@ const MAIN_NAV = [
 ];
 
 const SETTINGS_NAV = [
-  { to: '/members',  label: 'Members',  icon: <MembersIcon /> },
-  { to: '/activity', label: 'Activity', icon: <ActivityIcon /> },
-  { to: '/collab',   label: 'Live Collab', icon: <CollabIcon /> },
+  { to: '/members',   label: 'Members',      icon: <MembersIcon /> },
+  { to: '/activity',  label: 'Activity',     icon: <ActivityIcon /> },
+  { to: '/collab',    label: 'Live Collab',  icon: <CollabIcon /> },
+  { to: '/subscribe', label: 'Subscription', icon: <StarIcon /> },
 ];
 
 export default function Sidebar() {
@@ -42,6 +43,10 @@ export default function Sidebar() {
   const [wsName, setWsName] = useState('');
   const [projName, setProjName] = useState('');
   const [loading, setLoading] = useState(false);
+  // Project rename
+  const [renameProj, setRenameProj] = useState(null); // { _id, name }
+  const [renameProjName, setRenameProjName] = useState('');
+  const [renameProjLoading, setRenameProjLoading] = useState(false);
 
   const dropRef = useRef(null);
 
@@ -76,6 +81,29 @@ export default function Sidebar() {
     e.preventDefault(); setLoading(true);
     try { await createProject({ name: projName }); setProjName(''); setProjModal(false); }
     finally { setLoading(false); }
+  };
+
+  const handleRenameProj = async (e) => {
+    e.preventDefault();
+    if (!renameProj || !renameProjName.trim()) return;
+    setRenameProjLoading(true);
+    try {
+      await projectsApi.update(ws._id, renameProj._id, { name: renameProjName.trim() });
+      // Update project in store state by reloading
+      window.location.reload();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Failed to rename project');
+    } finally { setRenameProjLoading(false); }
+  };
+
+  const handleDeleteProj = async (p) => {
+    if (!confirm(`Delete project "${p.name}"? This will delete all its tasks, wiki pages, and snippets.`)) return;
+    try {
+      await projectsApi.delete(ws._id, p._id);
+      window.location.reload();
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Failed to delete project');
+    }
   };
 
   const firstName = user?.name?.split(' ')[0] || 'User';
@@ -133,14 +161,27 @@ export default function Sidebar() {
           <div className={s.navSection}>
             <div className={s.sectionLabel}>PROJECTS</div>
             {projects.map((p, i) => (
-              <button
-                key={p._id}
-                className={`${s.projBtn} ${currentProject?._id === p._id ? s.projActive : ''}`}
-                onClick={() => { setProject(p); navigate('/kanban'); }}
-              >
-                <span className={s.projDot} style={{ background: PROJECT_COLORS[i % PROJECT_COLORS.length] }} />
-                <span className={s.projName}>{p.name}</span>
-              </button>
+              <div key={p._id} className={s.projRow}>
+                <button
+                  className={`${s.projBtn} ${currentProject?._id === p._id ? s.projActive : ''}`}
+                  onClick={() => { setProject(p); navigate('/kanban'); }}
+                >
+                  <span className={s.projDot} style={{ background: PROJECT_COLORS[i % PROJECT_COLORS.length] }} />
+                  <span className={s.projName}>{p.name}</span>
+                </button>
+                <div className={s.projActions}>
+                  <button
+                    className={s.projActBtn}
+                    title="Rename project"
+                    onClick={e => { e.stopPropagation(); setRenameProj(p); setRenameProjName(p.name); }}
+                  >✏</button>
+                  <button
+                    className={`${s.projActBtn} ${s.projDelBtn}`}
+                    title="Delete project"
+                    onClick={e => { e.stopPropagation(); handleDeleteProj(p); }}
+                  >🗑</button>
+                </div>
+              </div>
             ))}
             <button className={s.newProjBtn} onClick={() => setProjModal(true)}>
               + New Project
@@ -165,8 +206,14 @@ export default function Sidebar() {
         <div className={s.userFoot}>
           <Avatar name={user?.name || 'U'} size={30} />
           <div className={s.userInfo}>
-            <span className={s.userName}>{firstName}</span>
-            <span className={s.userRole}>{ws?.name || 'No workspace'} • {user?.role || 'Member'}</span>
+            <button
+              className={s.userNameBtn}
+              onClick={() => navigate('/profile')}
+              title="Edit profile"
+            >
+              {firstName}
+            </button>
+            <span className={s.userRole}>{ws?.name || 'No workspace'} · {user?.role || 'Member'}</span>
           </div>
           <button className={s.logoutBtn} onClick={logout} title="Sign out">
             <LogoutIcon />
@@ -214,9 +261,24 @@ export default function Sidebar() {
           </div>
         </div>
       )}
+
+      {/* Rename Project modal */}
+      {renameProj && (
+        <div className={s.modalOverlay} onClick={() => setRenameProj(null)}>
+          <div className={s.miniModal} onClick={e => e.stopPropagation()}>
+            <h3 className={s.miniModalTitle}>Rename Project</h3>
+            <form onSubmit={handleRenameProj} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Input label="New name" value={renameProjName}
+                onChange={e => setRenameProjName(e.target.value)} required />
+              <Button type="submit" variant="cyan" size="md" loading={renameProjLoading}>Rename</Button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }
+
 
 /* ─────────────────────────────────────────────────────
    Workspace Detail Popup
@@ -334,7 +396,9 @@ function WorkspaceDetailPopup({ workspace, projects, user, onClose, onNewProject
   );
 }
 
-/* ── Icons ─────────────────────────────────────────── */
+function StarIcon() {
+  return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+}
 function DashIcon() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
 }

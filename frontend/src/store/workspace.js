@@ -28,6 +28,8 @@ export const useWorkspace = create((set, get) => ({
 
   setProject: (project) => set({ currentProject: project }),
 
+  reset: () => set({ workspaces: [], current: null, projects: [], currentProject: null, loading: false }),
+
   createWorkspace: async (d) => {
     const { data } = await workspaces.create(d);
     const ws = data.workspace ?? data;

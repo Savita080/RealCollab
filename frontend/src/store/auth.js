@@ -2,6 +2,8 @@
 import { create } from 'zustand';
 import { auth as authApi } from '../lib/api';
 import { connectSocket, disconnectSocket, emitUserOnline } from '../lib/socket';
+import { useWorkspace } from './workspace';
+import { useTasks } from './tasks';
 
 export const useAuth = create((set, get) => ({
   user: null,
@@ -13,7 +15,7 @@ export const useAuth = create((set, get) => ({
     if (!token) { set({ loading: false }); return; }
     try {
       const { data } = await authApi.me();
-      // Backend /me returns { message, yourId } — build a minimal user object
+      // Backend /me returns { user } with full profile (avatar, bio, githubUrl, skills)
       const user = data.user || { id: data.yourId, name: data.name, email: data.email };
       set({ user, loading: false });
       connectSocket(token);
@@ -35,6 +37,11 @@ export const useAuth = create((set, get) => ({
       connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
       if (uid) setTimeout(() => emitUserOnline(uid), 500);
+    } catch (_) {}
+    // Fetch full profile after login (avatar, bio, skills, etc.)
+    try {
+      const { data: me } = await authApi.me();
+      if (me.user) set({ user: me.user });
     } catch (_) {}
     return data;
   },
@@ -76,7 +83,17 @@ export const useAuth = create((set, get) => ({
     localStorage.removeItem('rc_token');
     localStorage.removeItem('rc_refresh_token');
     try { disconnectSocket(); } catch (_) {}
+    useWorkspace.getState().reset();
+    useTasks.getState().reset();
     set({ user: null, token: null });
+  },
+
+  // Update profile fields (name, bio, avatar, githubUrl, skills)
+  updateProfile: async (d) => {
+    const { data } = await authApi.updateProfile(d);
+    const updated = data.user ?? data;
+    set({ user: updated });
+    return updated;
   },
 
   isAuthed: () => !!get().token,

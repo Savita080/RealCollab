@@ -1,5 +1,6 @@
 node_modules
+dist
 .env
-PRD_BACKEND (2).md
+PRD_BACKEND (3).md
 testEmail.js
-.vercel
+.vercel/

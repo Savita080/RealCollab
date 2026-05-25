@@ -251,8 +251,8 @@ export default function Dashboard() {
                 />
               </div>
             </div>
-            {sprintProgress.map(p => (
-              <div key={p.name} className={s.progressRow}>
+            {sprintProgress.map((p, i) => (
+              <div key={projects[i]?._id || p.name} className={s.progressRow}>
                 <div className={s.progressMeta}>
                   <span className={s.progressLabel}>{p.name}</span>
                   <span className={s.progressPct}>{p.pct}%</span>

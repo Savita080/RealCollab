@@ -21,6 +21,13 @@ export default function Wiki() {
   const [historyModal, setHistoryModal] = useState(false);
   const [versions, setVersions] = useState([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
+  const [commitModal, setCommitModal] = useState(false); // true when awaiting commit message
+  const [pendingContent, setPendingContent] = useState(null); // content waiting to be saved
+  const [commitMsg, setCommitMsg] = useState('');
+  const [saving, setSaving] = useState(false);
+  // Rename title
+  const [renamingTitle, setRenamingTitle] = useState(false);
+  const [newTitleEdit, setNewTitleEdit] = useState('');
 
   useEffect(() => {
     if (!currentProject || !ws) return;
@@ -57,13 +64,38 @@ export default function Wiki() {
     } catch { toast('Failed to create page', 'error'); }
   };
 
-  const savePage = async (content, commitMessage = 'Content update') => {
+  // Called by WikiEditor when user hits Save — opens commit message prompt
+  const requestSave = (content) => {
+    if (content === activeContent) {
+      toast('No changes to save', 'info');
+      return;
+    }
+    setPendingContent(content);
+    setCommitMsg('');
+    setCommitModal(true);
+  };
+
+  const savePage = async (content, commitMessage) => {
+    if (commitMessage.length < 10) {
+      toast('Commit message must be at least 10 characters', 'error');
+      return;
+    }
+    setSaving(true);
     try {
       await wikiApi.update(ws._id, currentProject._id, activePage._id, { content, commitMessage });
       setActiveContent(content);
       setPages(p => p.map(pg => pg._id === activePage._id ? { ...pg, content } : pg));
+      setCommitModal(false);
+      setPendingContent(null);
       toast('Saved ✓', 'success');
-    } catch { toast('Failed to save', 'error'); }
+    } catch (err) {
+      toast(err?.response?.data?.message || 'Failed to save', 'error');
+    } finally { setSaving(false); }
+  };
+
+  const handleCommitSave = async (e) => {
+    e.preventDefault();
+    if (pendingContent !== null) await savePage(pendingContent, commitMsg);
   };
 
   const deletePage = async (pg) => {
@@ -93,9 +125,23 @@ export default function Wiki() {
 
   const restoreVersion = async (v) => {
     if (!confirm('Restore this version? Current content will be overwritten.')) return;
-    await savePage(v.content, `Restored version from ${fmtRelative(v.createdAt)}`);
+    const msg = `Restored version from ${fmtRelative(v.createdAt)}`;
+    await savePage(v.content, msg);
     setHistoryModal(false);
     toast('Version restored', 'success');
+  };
+
+  const handleRenameTitle = async (e) => {
+    e.preventDefault();
+    if (!newTitleEdit.trim() || !activePage) return;
+    try {
+      await wikiApi.update(ws._id, currentProject._id, activePage._id, { title: newTitleEdit.trim() });
+      const updated = { ...activePage, title: newTitleEdit.trim() };
+      setActivePage(updated);
+      setPages(p => p.map(pg => pg._id === activePage._id ? updated : pg));
+      setRenamingTitle(false);
+      toast('Page renamed', 'success');
+    } catch { toast('Failed to rename page', 'error'); }
   };
 
   if (!currentProject) return <div className={s.empty}>Select a project to view the wiki.</div>;
@@ -129,10 +175,31 @@ export default function Wiki() {
         {activePage ? (
           <>
             <div className={s.editorToolbar}>
-              <h2 className={s.pageTitle}>{activePage.title}</h2>
+              {renamingTitle ? (
+                <form onSubmit={handleRenameTitle} className={s.renameForm}>
+                  <input
+                    className={s.renameTitleInput}
+                    value={newTitleEdit}
+                    onChange={e => setNewTitleEdit(e.target.value)}
+                    autoFocus
+                    required
+                  />
+                  <Button type="submit" variant="primary" size="sm">Save</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setRenamingTitle(false)}>Cancel</Button>
+                </form>
+              ) : (
+                <>
+                  <h2 className={s.pageTitle}>{activePage.title}</h2>
+                  <button
+                    className={s.renameBtn}
+                    onClick={() => { setNewTitleEdit(activePage.title); setRenamingTitle(true); }}
+                    title="Rename page"
+                  >✏</button>
+                </>
+              )}
               <button className={s.historyBtn} onClick={openHistory} title="Version history">⏱ History</button>
             </div>
-            <WikiEditor page={{ ...activePage, content: activeContent }} onSave={savePage} />
+            <WikiEditor page={{ ...activePage, content: activeContent }} onSave={requestSave} />
           </>
         ) : (
           <div className={s.empty}>Select a page or create one to start writing.</div>
@@ -145,6 +212,26 @@ export default function Wiki() {
           <Input label="Page title" placeholder="Getting Started" value={newTitle}
             onChange={e => setNewTitle(e.target.value)} required />
           <Button type="submit" variant="primary" size="md">Create Page</Button>
+        </form>
+      </Modal>
+
+      {/* Commit message modal */}
+      <Modal open={commitModal} onClose={() => setCommitModal(false)} title="Save with Commit Message" size="sm">
+        <form onSubmit={handleCommitSave} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-3)', margin: 0 }}>
+            Describe what changed in this save (min. 10 characters — saved to version history).
+          </p>
+          <Input
+            label="Commit message"
+            placeholder="Fixed typo in setup section"
+            value={commitMsg}
+            onChange={e => setCommitMsg(e.target.value)}
+            required
+          />
+          <Button type="submit" variant="primary" size="md" loading={saving}
+            disabled={commitMsg.length < 10}>
+            Save Page
+          </Button>
         </form>
       </Modal>
 
