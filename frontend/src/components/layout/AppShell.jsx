@@ -10,7 +10,7 @@ import { useAuth } from '../../store/auth';
 import s from './AppShell.module.css';
 
 export default function AppShell() {
-  const { fetchWorkspaces, current: ws } = useWorkspace();
+  const { fetchWorkspaces, refreshProjects } = useWorkspace();
   const { bindNotifications, unbindNotifications, toast } = useUI();
 
   useEffect(() => {
@@ -22,11 +22,11 @@ export default function AppShell() {
   useEffect(() => {
     const handler = () => {
       toast("You don't have access to this project.", 'error');
-      if (ws?._id) fetchWorkspaces();
+      refreshProjects();
     };
     window.addEventListener('project-access-denied', handler);
     return () => window.removeEventListener('project-access-denied', handler);
-  }, [ws?._id]);
+  }, []);
 
   return (
     <div className={s.shell}>
