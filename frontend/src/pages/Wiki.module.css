@@ -59,3 +59,22 @@
 }
 .historyBtn:hover { background: rgba(99,102,241,0.2); }
 .empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-3); font-size: 14px; }
+
+/* Rename title */
+.renameBtn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-3); font-size: 14px; padding: 4px 6px;
+  border-radius: 4px; transition: color 0.15s;
+  flex-shrink: 0;
+}
+.renameBtn:hover { color: var(--indigo); }
+.renameForm {
+  display: flex; align-items: center; gap: 8px; flex: 1;
+}
+.renameTitleInput {
+  flex: 1; background: var(--bg-2); border: 1px solid var(--indigo);
+  color: var(--text-1); font-size: 18px; font-weight: 700;
+  font-family: var(--font-display); border-radius: var(--r-sm);
+  padding: 4px 12px; outline: none;
+}
+

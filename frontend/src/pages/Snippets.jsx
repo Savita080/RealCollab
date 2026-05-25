@@ -10,7 +10,12 @@ import { Input, Textarea, Select } from '../components/ui/Input';
 import SnippetCard from '../components/snippets/SnippetCard';
 import s from './Snippets.module.css';
 
-const LANGS = ['javascript', 'go', 'python', 'c++', 'java'];
+const LANGS = [
+  'javascript', 'typescript', 'python', 'go', 'rust',
+  'java', 'c++', 'c#', 'php', 'ruby',
+  'swift', 'kotlin', 'html', 'css', 'bash',
+];
+
 
 export default function Snippets() {
   const { current: ws, currentProject } = useWorkspace();

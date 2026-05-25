@@ -1,0 +1,80 @@
+/* components/PaywallModal.module.css */
+.overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal {
+  background: var(--bg-card);
+  border: 1px solid rgba(99,102,241,0.3);
+  border-radius: var(--r-xl);
+  padding: 36px 32px;
+  max-width: 440px; width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  box-shadow: 0 0 60px rgba(99,102,241,0.15), 0 20px 60px rgba(0,0,0,0.5);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+.icon { font-size: 44px; }
+
+.title {
+  font-size: 20px; font-weight: 800; color: var(--text-1);
+  margin: 0; text-align: center; font-family: var(--font-display);
+}
+
+.msg {
+  font-size: 14px; color: var(--text-2); text-align: center;
+  line-height: 1.65; margin: 0; max-width: 360px;
+}
+
+.planComparison {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 14px 20px;
+  width: 100%;
+}
+
+.planChip {
+  flex: 1; display: flex; flex-direction: column; gap: 4px; align-items: center;
+  font-size: 12px; color: var(--text-3);
+}
+.planChip.pro { color: var(--cyan); }
+
+.chipLabel {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+  padding: 2px 10px; border-radius: 99px;
+  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+  color: var(--indigo);
+}
+.planChip.pro .chipLabel {
+  background: rgba(0,212,255,0.12); border-color: rgba(0,212,255,0.3); color: var(--cyan);
+}
+
+.arrow { font-size: 18px; color: var(--text-3); }
+
+.actions { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+.upgradeBtn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--indigo), var(--cyan));
+  border: none; border-radius: var(--r-md);
+  color: #fff; font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  font-family: var(--font-body);
+}
+.upgradeBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.dismissBtn {
+  background: none; border: none; color: var(--text-3); font-size: 13px;
+  cursor: pointer; font-family: var(--font-body);
+  padding: 6px; transition: color 0.15s;
+  text-align: center; width: 100%;
+}
+.dismissBtn:hover { color: var(--text-2); }

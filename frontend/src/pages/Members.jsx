@@ -1,5 +1,6 @@
 // pages/Members.jsx
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../store/workspace';
 import { useAuth } from '../store/auth';
 import { useUI } from '../store/ui';
@@ -14,9 +15,10 @@ const ROLES = ['VIEWER', 'MEMBER', 'ADMIN', 'OWNER'];
 const ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };
 
 export default function Members() {
-  const { current: ws } = useWorkspace();
+  const { current: ws, setWorkspaces, workspaces } = useWorkspace();
   const { user } = useAuth();
   const { toast } = useUI();
+  const navigate = useNavigate();
 
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,19 +26,62 @@ export default function Members() {
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'MEMBER' });
   const [inviteLink, setInviteLink] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
+  const [transferLoading, setTransferLoading] = useState(false);
+  const [transferModal, setTransferModal] = useState(false);
+  const [transferTarget, setTransferTarget] = useState(null);
+  // Workspace settings
+  const [wsName, setWsName] = useState('');
+  const [renameLoading, setRenameLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
 
   // Determine current user's role in this workspace
   const myRole = members.find(m => m.user?._id === user?.id || m.user?._id === user?._id)?.role;
   const canManage = myRole === 'OWNER' || myRole === 'ADMIN';
+  const isOwner   = myRole === 'OWNER';
 
   useEffect(() => {
     if (!ws) return;
+    setWsName(ws.name || '');
     setLoading(true);
     wsApi.members(ws._id)
       .then(({ data }) => setMembers(data.members ?? data))
       .catch(() => toast('Failed to load members', 'error'))
       .finally(() => setLoading(false));
   }, [ws?._id]);
+
+  const handleRenameWs = async (e) => {
+    e.preventDefault();
+    if (!wsName.trim()) return;
+    setRenameLoading(true);
+    try {
+      const { data } = await wsApi.update(ws._id, { name: wsName.trim() });
+      // Update workspace name in store
+      if (setWorkspaces && workspaces) {
+        setWorkspaces(workspaces.map(w => w._id === ws._id ? { ...w, name: wsName.trim() } : w));
+      }
+      toast('Workspace renamed ✓', 'success');
+    } catch (err) {
+      toast(err?.response?.data?.message || 'Failed to rename workspace', 'error');
+    } finally { setRenameLoading(false); }
+  };
+
+  const handleDeleteWs = async () => {
+    if (deleteConfirm !== ws.name) {
+      toast('Type the workspace name exactly to confirm deletion', 'error');
+      return;
+    }
+    setDeleteLoading(true);
+    try {
+      await wsApi.delete(ws._id);
+      toast('Workspace deleted', 'info');
+      navigate('/dashboard');
+      window.location.reload(); // Force workspace store refresh
+    } catch (err) {
+      toast(err?.response?.data?.message || 'Failed to delete workspace', 'error');
+      setDeleteLoading(false);
+    }
+  };
 
   const handleRoleChange = async (userId, role) => {
     try {
@@ -75,6 +120,21 @@ export default function Members() {
     toast('Link copied!', 'success');
   };
 
+  const handleTransferOwnership = async () => {
+    if (!transferTarget) return;
+    if (!confirm(`Transfer ownership to ${transferTarget.user?.name}? You will become an ADMIN.`)) return;
+    setTransferLoading(true);
+    try {
+      const { data } = await wsApi.transferOwnership(ws._id, { newOwnerId: transferTarget.user?._id });
+      setMembers(data.members ?? members);
+      setTransferModal(false);
+      setTransferTarget(null);
+      toast(`Ownership transferred to ${transferTarget.user?.name}`, 'success');
+    } catch (err) {
+      toast(err?.response?.data?.message || 'Failed to transfer ownership', 'error');
+    } finally { setTransferLoading(false); }
+  };
+
   if (!ws) return <div className={s.empty}>Select a workspace to manage members.</div>;
 
   return (
@@ -84,11 +144,18 @@ export default function Members() {
           <h1 className={s.title}>Members</h1>
           <p className={s.wsName}>{ws.name}</p>
         </div>
-        {canManage && (
-          <Button variant="cyan" size="sm" onClick={() => { setInviteModal(true); setInviteLink(''); }}>
-            + Invite Member
-          </Button>
-        )}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {isOwner && (
+            <Button variant="ghost" size="sm" onClick={() => setTransferModal(true)}>
+              Transfer Ownership
+            </Button>
+          )}
+          {canManage && (
+            <Button variant="cyan" size="sm" onClick={() => { setInviteModal(true); setInviteLink(''); }}>
+              + Invite Member
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Member list */}
@@ -161,6 +228,101 @@ export default function Members() {
           </div>
         )}
       </Modal>
+
+      {/* Transfer Ownership modal */}
+      <Modal open={transferModal} onClose={() => setTransferModal(false)} title="Transfer Workspace Ownership" size="sm">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5 }}>
+            Select a member to become the new <strong>OWNER</strong>. You will become an <strong>ADMIN</strong>.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {members
+              .filter(m => m.role !== 'OWNER')
+              .map(m => (
+                <button
+                  key={m.user?._id}
+                  onClick={() => setTransferTarget(m)}
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 8,
+                    border: `1px solid ${transferTarget?.user?._id === m.user?._id ? 'var(--indigo)' : 'var(--border)'}`,
+                    background: transferTarget?.user?._id === m.user?._id ? 'rgba(99,102,241,0.12)' : 'var(--bg-2)',
+                    color: 'var(--text-1)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    fontSize: 13,
+                    textAlign: 'left',
+                  }}
+                >
+                  <Avatar name={m.user?.name || '?'} size={28} />
+                  <div>
+                    <strong>{m.user?.name}</strong>
+                    <span style={{ display: 'block', fontSize: 11, color: 'var(--text-3)' }}>{m.role}</span>
+                  </div>
+                </button>
+              ))
+            }
+          </div>
+          <Button
+            variant="danger"
+            size="md"
+            loading={transferLoading}
+            disabled={!transferTarget}
+            onClick={handleTransferOwnership}
+          >
+            Transfer to {transferTarget?.user?.name || '…'}
+          </Button>
+        </div>
+      </Modal>
+
+      {/* ── Workspace Settings (OWNER only) ─────────────────────────── */}
+      {isOwner && (
+        <div className={s.dangerZone}>
+          <h3 className={s.dangerTitle}>⚙ Workspace Settings</h3>
+
+          {/* Rename */}
+          <div className={s.settingBlock}>
+            <h4 className={s.settingLabel}>Rename Workspace</h4>
+            <form onSubmit={handleRenameWs} className={s.settingRow}>
+              <Input
+                value={wsName}
+                onChange={e => setWsName(e.target.value)}
+                placeholder={ws.name}
+                required
+              />
+              <Button type="submit" variant="ghost" size="sm" loading={renameLoading}>
+                Save
+              </Button>
+            </form>
+          </div>
+
+          {/* Delete */}
+          <div className={s.settingBlock}>
+            <h4 className={s.settingLabel} style={{ color: '#ef4444' }}>⚠ Delete Workspace</h4>
+            <p className={s.settingHint}>
+              This permanently deletes <strong>{ws.name}</strong> and all its projects, tasks, wiki pages, and snippets. Type the workspace name to confirm.
+            </p>
+            <div className={s.settingRow}>
+              <Input
+                placeholder={`Type "${ws.name}" to confirm`}
+                value={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.value)}
+              />
+              <Button
+                variant="danger"
+                size="sm"
+                loading={deleteLoading}
+                disabled={deleteConfirm !== ws.name}
+                onClick={handleDeleteWs}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

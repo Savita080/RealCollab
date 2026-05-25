@@ -67,6 +67,9 @@ export default function Navbar() {
               </div>
               <hr className={s.sep} />
               <Link to="/dashboard" className={s.item} onClick={() => setUserOpen(false)}>Dashboard</Link>
+              <Link to="/profile"   className={s.item} onClick={() => setUserOpen(false)}>My Profile</Link>
+              <Link to="/subscribe" className={s.item} onClick={() => setUserOpen(false)}>Subscription</Link>
+              <hr className={s.sep} />
               <button className={s.item} onClick={logout}>Sign out</button>
             </div>
           )}

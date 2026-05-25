@@ -158,6 +158,29 @@
 }
 .newProjBtn:hover { color: var(--indigo); }
 
+/* Project row with hover actions */
+.projRow {
+  display: flex; align-items: center; position: relative;
+}
+.projRow .projBtn { flex: 1; }
+.projActions {
+  display: none; align-items: center; gap: 2px;
+  position: absolute; right: 6px;
+  background: var(--bg-card);
+  border-radius: 4px;
+  padding: 1px;
+}
+.projRow:hover .projActions { display: flex; }
+.projActBtn {
+  background: none; border: none; cursor: pointer;
+  font-size: 11px; color: var(--text-3); padding: 3px 5px;
+  border-radius: 3px; line-height: 1;
+  transition: color 0.12s, background 0.12s;
+}
+.projActBtn:hover { color: var(--text-1); background: var(--bg-hover); }
+.projDelBtn:hover { color: #ef4444 !important; }
+
+
 /* Spacer */
 .spacer { flex: 1; }
 
@@ -172,6 +195,13 @@
   flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0;
 }
 .userName { font-size: 12px; font-weight: 600; color: var(--text-1); }
+.userNameBtn {
+  font-size: 12px; font-weight: 600; color: var(--text-1);
+  background: none; border: none; cursor: pointer; padding: 0;
+  text-align: left; font-family: var(--font-body);
+  transition: color 0.15s;
+}
+.userNameBtn:hover { color: var(--indigo); text-decoration: underline; }
 .userRole {
   font-size: 10px; color: var(--text-3); font-family: var(--font-mono);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

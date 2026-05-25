@@ -4,7 +4,7 @@ import { useTasks } from '../../store/tasks';
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
-import { tasks as tasksApi, notifications as notifApi, workspaces as wsApi } from '../../lib/api';
+import { tasks as tasksApi, workspaces as wsApi } from '../../lib/api';
 import socket from '../../lib/socket';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
@@ -13,7 +13,7 @@ import { PriorityChip, Avatar } from '../ui/Badge';
 import { fmtDate, fmtRelative } from '../../lib/utils';
 import s from './TaskDetail.module.css';
 
-export default function TaskDetail({ task, onClose }) {
+export default function TaskDetail({ task, onClose, wsMembers = [] }) {
   const { update, delete: deleteTask } = useTasks();
   const { current: ws, currentProject } = useWorkspace();
   const { user } = useAuth();
@@ -23,12 +23,13 @@ export default function TaskDetail({ task, onClose }) {
     title: task.title,
     description: task.description || '',
     priority: task.priority || 'P1',
+    status: task.status || 'TODO',
+    assignee: task.assignee?._id || task.assignee || '',
     dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
   });
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(true);
-  const [members, setMembers] = useState([]);
   const commentsEndRef = useRef(null);
 
   // Load existing comments on mount
@@ -38,14 +39,6 @@ export default function TaskDetail({ task, onClose }) {
       .catch(() => setComments([]))
       .finally(() => setLoadingComments(false));
   }, [task._id]);
-
-  // Load workspace members for @mention resolution
-  useEffect(() => {
-    if (!ws) return;
-    wsApi.members(ws._id)
-      .then(({ data }) => setMembers(data.members ?? []))
-      .catch(() => {});
-  }, [ws?._id]);
 
   // Live: listen for comments added/deleted in this project room
   useEffect(() => {
@@ -89,27 +82,9 @@ export default function TaskDetail({ task, onClose }) {
     onClose();
   };
 
-  // Detect @mentions and fire notifications
-  const detectMentions = async (content) => {
-    const mentionPattern = /@(\w+)/g;
-    let match;
-    while ((match = mentionPattern.exec(content)) !== null) {
-      const mentionedName = match[1].toLowerCase();
-      const mentioned = members.find(m =>
-        (m.user?.name || '').toLowerCase().replace(/\s+/g, '') === mentionedName
-      );
-      if (mentioned && mentioned.user?._id !== user?.id) {
-        try {
-          await notifApi.create({
-            recipientId: mentioned.user._id,
-            type: 'MENTION',
-            content: `${user?.name || 'Someone'} mentioned you in a comment on task "${task.title}"`,
-            link: `/kanban`,
-          });
-        } catch (_) {}
-      }
-    }
-  };
+  // Detect @mentions — NOTE: backend handles notifications automatically when comment is created
+  // We keep this as a no-op to avoid double notifications
+  const detectMentions = async (_content) => {};
 
   const submitComment = async (e) => {
     e.preventDefault();
@@ -179,8 +154,30 @@ export default function TaskDetail({ task, onClose }) {
             <Select label="Priority" value={form.priority}
               onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
               options={['P0', 'P1', 'P2']} />
+            <Select label="Status" value={form.status}
+              onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+              options={[
+                { value: 'TODO',        label: 'To Do' },
+                { value: 'In Progress', label: 'In Progress' },
+                { value: 'In Review',   label: 'In Review' },
+                { value: 'Done',        label: 'Done' },
+              ]} />
             <Input label="Due date" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+            {/* Assignee */}
+            <div>
+              <label style={{ fontSize: 12, color: 'var(--text-2)', fontWeight: 600, marginBottom: 6, display: 'block' }}>Assignee</label>
+              <select
+                style={{ width: '100%', background: 'var(--bg-2)', border: '1px solid var(--border)', color: 'var(--text-1)', fontSize: 13, fontFamily: 'var(--font-body)', borderRadius: 'var(--r-sm)', padding: '8px 12px', outline: 'none' }}
+                value={form.assignee}
+                onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))}
+              >
+                <option value="">Unassigned</option>
+                {wsMembers.map(m => (
+                  <option key={m.user?._id} value={m.user?._id}>{m.user?.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 
