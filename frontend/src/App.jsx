@@ -60,6 +60,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <PaywallModal />
       <Routes>
         {/* Public */}
         <Route path="/"         element={<LandingPage />} />

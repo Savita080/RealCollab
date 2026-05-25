@@ -1,0 +1,62 @@
+/* ProjectOverview.module.css */
+.page { animation: fadeIn 0.35s ease; }
+.heading {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-1);
+  margin-bottom: 6px;
+}
+.desc {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 28px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.statCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px;
+  text-align: center;
+}
+.statValue {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+}
+.statLabel {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+.section {
+  margin-bottom: 28px;
+}
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 14px;
+}
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.activityItem:last-child { border-bottom: none; }
+.aiActions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
