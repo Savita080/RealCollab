@@ -12,6 +12,17 @@ function attachPaywallListener(openPaywall) {
 
 const POPUP_DURATION = 6000;
 const POPUP_MAX = 4;
+// Track each popup's auto-dismiss timer + remaining time so hover can pause.
+const popupTimers = new Map(); // id -> { timeoutId, expiresAt, remaining }
+
+function startPopupTimer(id, duration, dismiss) {
+  if (popupTimers.has(id)) clearTimeout(popupTimers.get(id).timeoutId);
+  const timeoutId = setTimeout(() => {
+    popupTimers.delete(id);
+    dismiss(id);
+  }, duration);
+  popupTimers.set(id, { timeoutId, expiresAt: Date.now() + duration, remaining: duration });
+}
 
 export const useUI = create((set, get) => ({
   toasts: [],
@@ -34,12 +45,29 @@ export const useUI = create((set, get) => ({
     const id = notif._id || `pop-${Date.now()}`;
     const item = { ...notif, id };
     set(s => ({ popups: [item, ...s.popups].slice(0, POPUP_MAX) }));
-    setTimeout(() => {
-      set(s => ({ popups: s.popups.filter(p => (p._id || p.id) !== id) }));
-    }, POPUP_DURATION);
+    startPopupTimer(id, POPUP_DURATION, get().dismissPopup);
   },
 
-  dismissPopup: (id) => set(s => ({ popups: s.popups.filter(p => (p._id || p.id) !== id) })),
+  dismissPopup: (id) => {
+    const t = popupTimers.get(id);
+    if (t) { clearTimeout(t.timeoutId); popupTimers.delete(id); }
+    set(s => ({ popups: s.popups.filter(p => (p._id || p.id) !== id) }));
+  },
+
+  // Pause auto-dismiss on hover so the popup doesn't disappear mid-read
+  pausePopup: (id) => {
+    const t = popupTimers.get(id);
+    if (!t) return;
+    clearTimeout(t.timeoutId);
+    t.remaining = Math.max(1500, t.expiresAt - Date.now());
+    t.timeoutId = null;
+  },
+
+  resumePopup: (id) => {
+    const t = popupTimers.get(id);
+    if (!t || t.timeoutId) return;
+    startPopupTimer(id, t.remaining, get().dismissPopup);
+  },
 
   toggleSidebar: () => set(s => ({ sidebarOpen: !s.sidebarOpen })),
 

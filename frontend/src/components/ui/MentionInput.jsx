@@ -1,5 +1,6 @@
 // components/ui/MentionInput.jsx — text input with @mention autocomplete
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import s from '../../styles/modules/MentionInput.module.css';
 
 /**
@@ -28,6 +29,7 @@ export default function MentionInput({
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const [anchor, setAnchor] = useState(null); // index of '@' in value
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 200 });
 
   // Normalize member list: members may be [{user: {...}}] OR [{_id, name, ...}]
   const memberList = (members || []).map(m => m?.user || m).filter(u => u?._id && u?.name);
@@ -67,6 +69,15 @@ export default function MentionInput({
     const caret = e.target.selectionStart ?? text.length;
     const m = detectMention(text, caret);
     if (m) {
+      // Calculate fixed position relative to viewport
+      if (inputRef.current) {
+        const rect = inputRef.current.getBoundingClientRect();
+        setMenuPos({
+          top: rect.bottom + window.scrollY + 4,
+          left: rect.left + window.scrollX,
+          width: Math.max(rect.width, 220),
+        });
+      }
       setOpen(true);
       setAnchor(m.anchor);
       setQuery(m.query);
@@ -132,8 +143,12 @@ export default function MentionInput({
         autoFocus={autoFocus}
         {...rest}
       />
-      {open && filtered.length > 0 && (
-        <ul className={s.menu} role="listbox">
+      {open && filtered.length > 0 && createPortal(
+        <ul
+          className={s.menu}
+          role="listbox"
+          style={{ position: 'fixed', top: menuPos.top, left: menuPos.left, minWidth: menuPos.width }}
+        >
           {filtered.map((u, i) => (
             <li
               key={u._id}
@@ -149,7 +164,8 @@ export default function MentionInput({
               <span className={s.name}>{u.name}</span>
             </li>
           ))}
-        </ul>
+        </ul>,
+        document.body
       )}
     </div>
   );

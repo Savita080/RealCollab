@@ -30,7 +30,7 @@ export const createComment = async (req, res) => {
             content,
             sender: req.userId,
             type: 'MENTION',
-            link: `/tasks/${taskId}`,
+            link: `/kanban?task=${taskId}`,
             contentBuilder: () => `${senderName} mentioned you in a comment: "${snippet}"`,
         }).catch(err => console.error('[comment mentions] failed:', err.message));
 

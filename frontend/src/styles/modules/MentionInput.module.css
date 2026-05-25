@@ -18,9 +18,6 @@
 .input:focus { border-color: var(--accent, #63b3ed); }
 
 .menu {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 0;
   list-style: none;
   margin: 0;
   padding: 4px;
@@ -28,9 +25,8 @@
   border: 1px solid var(--border, rgba(255,255,255,0.1));
   border-radius: 10px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.55);
-  min-width: 220px;
   max-width: 320px;
-  z-index: 50;
+  z-index: 9999;
   backdrop-filter: blur(14px);
   animation: fadeUp 0.14s ease;
 }
