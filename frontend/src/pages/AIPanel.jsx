@@ -79,42 +79,89 @@ function BlockersResult({ data }) {
 }
 
 function SummaryResult({ data }) {
+  // #region agent log
+  fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:SummaryResult',message:'SummaryResult render',data:{dataType:typeof data,keys:data&&typeof data==='object'?Object.keys(data):null,healthScoreType:data?.health_score!=null?typeof data.health_score:null,taskBreakdownType:data?.task_breakdown!=null?typeof data.task_breakdown:null,taskBreakdownValueTypes:data?.task_breakdown&&typeof data.task_breakdown==='object'?Object.fromEntries(Object.entries(data.task_breakdown).map(([k,v])=>[k,typeof v])):null},timestamp:Date.now(),hypothesisId:'A',runId:'post-fix'})}).catch(()=>{});
+  // #endregion
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
-  const { project_name, summary, task_breakdown, health_score, recommendations } = data;
+
+  const project_name = data.project_name;
+  const summaryText = data.summary_text ?? data.summary;
+  const healthScore =
+    typeof data.health_score === 'object' && data.health_score != null
+      ? data.health_score.score
+      : data.health_score;
+  const healthBand =
+    typeof data.health_score === 'object' && data.health_score != null
+      ? data.health_score.band
+      : null;
+  const breakdown = data.task_breakdown;
+  const insights = data.key_insights ?? data.recommendations ?? [];
+
+  const statusChips = breakdown?.by_status
+    ? Object.entries(breakdown.by_status).map(([status, info]) => (
+        <span key={status} className={s.statChip}>
+          {status}: {typeof info === 'object' && info != null ? info.count : info}
+        </span>
+      ))
+    : null;
+
+  const flatChips =
+    breakdown && !breakdown.by_status
+      ? Object.entries(breakdown)
+          .filter(([, v]) => v == null || typeof v !== 'object')
+          .map(([k, v]) => (
+            <span key={k} className={s.statChip}>{k}: {v}</span>
+          ))
+      : null;
+
   return (
     <div className={s.structured}>
       {project_name && <h3 className={s.projName}>{project_name}</h3>}
-      {health_score != null && (
+      {healthScore != null && (
         <div className={s.healthBar}>
-          <span className={s.sLabel}>Health Score</span>
+          <span className={s.sLabel}>Health Score{healthBand ? ` — ${healthBand}` : ''}</span>
           <div className={s.barTrack}>
-            <div className={s.barFill} style={{ width: `${health_score}%`, background: health_score > 70 ? '#10b981' : health_score > 40 ? '#f59e0b' : '#ef4444' }} />
+            <div
+              className={s.barFill}
+              style={{
+                width: `${healthScore}%`,
+                background: healthScore > 70 ? '#10b981' : healthScore > 40 ? '#f59e0b' : '#ef4444',
+              }}
+            />
           </div>
-          <span className={s.barVal}>{health_score}%</span>
+          <span className={s.barVal}>{healthScore}%</span>
         </div>
       )}
-      {summary && (
+      {summaryText && (
         <div className={s.section}>
           <span className={s.sLabel}>Summary</span>
-          <p className={s.sText}>{summary}</p>
+          <p className={s.sText}>{summaryText}</p>
         </div>
       )}
-      {task_breakdown && (
+      {(breakdown?.total != null || statusChips || flatChips?.length > 0) && (
         <div className={s.statRow}>
-          {Object.entries(task_breakdown).map(([k, v]) => (
-            <span key={k} className={s.statChip}>{k}: {v}</span>
-          ))}
+          {breakdown?.total != null && <span className={s.statChip}>total: {breakdown.total}</span>}
+          {statusChips}
+          {flatChips}
         </div>
       )}
-      {recommendations?.length > 0 && (
+      {insights.length > 0 && (
         <div className={s.section}>
-          <span className={s.sLabel}>Recommendations</span>
+          <span className={s.sLabel}>Insights</span>
           <ul className={s.recList}>
-            {recommendations.map((r, i) => <li key={i}>{r}</li>)}
+            {insights.map((item, i) => (
+              <li key={i}>
+                {typeof item === 'string'
+                  ? item
+                  : `${item.icon ? `${item.icon} ` : ''}${item.title || ''}${item.detail ? `: ${item.detail}` : ''}`}
+              </li>
+            ))}
           </ul>
         </div>
       )}
-      {!summary && !project_name && <pre className={s.result}>{JSON.stringify(data, null, 2)}</pre>}
+      {!summaryText && !project_name && healthScore == null && (
+        <pre className={s.result}>{JSON.stringify(data, null, 2)}</pre>
+      )}
     </div>
   );
 }
@@ -195,7 +242,7 @@ const RENDERERS = {
 
 export default function AIPanel() {
   const { currentProject, current: currentWorkspace } = useWorkspace();
-  const { toast } = useUI();
+  const { toast, paywallModal } = useUI();
   const [active, setActive] = useState('summary');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -207,6 +254,9 @@ export default function AIPanel() {
     if (!currentProject) {
       toast('Select a project first', 'error'); return;
     }
+    // #region agent log
+    fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:run:start',message:'Run clicked',data:{active,hasProject:!!currentProject,hasWorkspace:!!currentWorkspace,workspaceId:currentWorkspace?._id??null},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     setLoading(true);
     setResult(null);
     try {
@@ -216,9 +266,15 @@ export default function AIPanel() {
       if (active === 'standup')  ({ data } = await aiApi.standup(currentWorkspace._id, currentProject._id));
       if (active === 'plan')     ({ data } = await aiApi.plan(currentWorkspace._id, currentProject._id, { featureDescription: planInput }));
       if (active === 'review')   ({ data } = await aiApi.review({ code: codeInput, language: codeLang, projectId: currentProject._id }));
+      // #region agent log
+      fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:run:success',message:'API success',data:{active,dataKeys:data&&typeof data==='object'?Object.keys(data):null,healthScoreType:data?.health_score!=null?typeof data.health_score:null,hasSummaryText:!!data?.summary_text,hasSummary:!!data?.summary},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       setResult(data);
     } catch (err) {
       const msg = err.response?.data?.message || err.message;
+      // #region agent log
+      fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:run:error',message:'API error',data:{active,status:err.response?.status,errorField:err.response?.data?.error,msg},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       setResult({ _error: msg });
       toast('AI request failed', 'error');
     } finally { setLoading(false); }
@@ -226,6 +282,12 @@ export default function AIPanel() {
 
   const panel = PANELS.find(p => p.id === active);
   const Renderer = RENDERERS[active] || RawResult;
+
+  // #region agent log
+  if (result && active === 'summary') {
+    fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:render',message:'About to render summary result',data:{loading,hasError:!!result?._error,paywallOpen:!!paywallModal},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
+  }
+  // #endregion
 
   return (
     <div className={s.page}>
