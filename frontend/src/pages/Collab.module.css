@@ -68,6 +68,10 @@
   margin-left: 4px;
 }
 
+.wbPanelHidden {
+  display: none !important;
+}
+
 /* ── Body: chat + whiteboard side-by-side ───────────────────────────────────── */
 .body {
   flex: 1 1 0;            /* takes all remaining height */

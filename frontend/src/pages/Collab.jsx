@@ -47,9 +47,20 @@ export default function Collab() {
   const [excalidrawAPI, setExcalidrawAPI] = useState(null);
   const [initialData, setInitialData] = useState(null);
   const elementsRef = useRef([]);
+  const isRemoteUpdateRef = useRef(false);
+  const drawThrottleRef = useRef(null);
+  const activeWbRef = useRef(null);
   const [wbModal, setWbModal] = useState(false);
   const [newWbName, setNewWbName] = useState('');
   const saveIntervalRef = useRef(null);
+
+  activeWbRef.current = activeWb;
+
+  const saveWhiteboardNow = useCallback((wbId) => {
+    const id = wbId ?? activeWbRef.current?._id;
+    if (!id || !elementsRef.current?.length) return;
+    emitSaveWb({ whiteboardId: id, elements: elementsRef.current });
+  }, []);
 
   // ── Load project chat history ──────────────────────────────────────────────
   useEffect(() => {
@@ -90,12 +101,20 @@ export default function Collab() {
   // ── Join whiteboard room when active whiteboard changes ────────────────────
   useEffect(() => {
     if (!activeWb) return;
+    // #region agent log
+    fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:joinWb',message:'join_whiteboard',data:{wbId:activeWb._id,socketConnected:socket.connected},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     joinWhiteboard(activeWb._id);
     return () => {
+      // #region agent log
+      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:leaveWb',message:'leave_whiteboard',data:{wbId:activeWb._id,elementsCount:elementsRef.current?.length??0,hadInitialData:!!initialData},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
+      // #endregion
+      saveWhiteboardNow(activeWb._id);
       leaveWhiteboard(activeWb._id);
       if (saveIntervalRef.current) clearInterval(saveIntervalRef.current);
+      if (drawThrottleRef.current) clearTimeout(drawThrottleRef.current);
     };
-  }, [activeWb?._id]);
+  }, [activeWb?._id, saveWhiteboardNow]);
 
   // ── Live socket: incoming project chat messages ────────────────────────────
   useEffect(() => {
@@ -125,15 +144,26 @@ export default function Collab() {
 
   // ── Live socket: whiteboard events ─────────────────────────────────────────
   useEffect(() => {
-    const onSync = (elements) => {
+    const applyRemoteElements = (elements) => {
       if (!Array.isArray(elements)) return;
+      isRemoteUpdateRef.current = true;
       elementsRef.current = elements;
       setInitialData({ elements, scrollToContent: true });
+      if (excalidrawAPI) excalidrawAPI.updateScene({ elements });
+      requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
+    };
+    const onSync = (elements) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:onSync',message:'whiteboard_sync',data:{count:elements?.length??0,hasAPI:!!excalidrawAPI},timestamp:Date.now(),hypothesisId:'B,C'})}).catch(()=>{});
+      // #endregion
+      applyRemoteElements(elements);
     };
     const onUpdate = (elements) => {
-      if (!Array.isArray(elements) || !excalidrawAPI) return;
-      excalidrawAPI.updateScene({ elements });
-      elementsRef.current = elements;
+      if (!Array.isArray(elements)) return;
+      // #region agent log
+      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:onUpdate',message:'whiteboard_update',data:{count:elements.length},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      applyRemoteElements(elements);
     };
     socket.on('whiteboard_sync', onSync);
     socket.on('whiteboard_update', onUpdate);
@@ -157,16 +187,32 @@ export default function Collab() {
     if (!activeWb) return;
     saveIntervalRef.current = setInterval(() => {
       if (elementsRef.current?.length) {
+        // #region agent log
+        fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:autoSave',message:'emit save_whiteboard',data:{wbId:activeWb._id,count:elementsRef.current.length},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
+        // #endregion
         emitSaveWb({ whiteboardId: activeWb._id, elements: elementsRef.current });
       }
     }, 10_000);
     return () => clearInterval(saveIntervalRef.current);
   }, [activeWb?._id]);
 
+  // ── Debug: log unmount (navigate away from Collab page) ───────────────────
+  useEffect(() => {
+    return () => {
+      saveWhiteboardNow();
+      // #region agent log
+      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:unmount',message:'Collab page unmount',data:{elementsCount:elementsRef.current?.length??0,activeWbId:activeWbRef.current?._id},timestamp:Date.now(),hypothesisId:'D,C'})}).catch(()=>{});
+      // #endregion
+    };
+  }, [saveWhiteboardNow]);
+
   // ── Select whiteboard ──────────────────────────────────────────────────────
   const selectWhiteboard = (wb) => {
     if (activeWb?._id === wb._id) return;
-    if (activeWb) leaveWhiteboard(activeWb._id);
+    if (activeWb) {
+      saveWhiteboardNow(activeWb._id);
+      leaveWhiteboard(activeWb._id);
+    }
     setActiveWb(wb);
     setInitialData(null);
     elementsRef.current = [];
@@ -235,14 +281,20 @@ export default function Collab() {
   };
 
   // ── Whiteboard change handler ──────────────────────────────────────────────
-  const onWhiteboardChange = useCallback((elements, appState) => {
-    if (appState.draggingElement || appState.editingElement || appState.resizingElement) {
-      if (activeWb) {
-        emitDraw({ whiteboardId: activeWb._id, elements });
-        elementsRef.current = elements;
-      }
-    }
-  }, [activeWb?._id]);
+  const onWhiteboardChange = useCallback((elements) => {
+    elementsRef.current = elements;
+    if (isRemoteUpdateRef.current || !activeWbRef.current) return;
+
+    if (drawThrottleRef.current) clearTimeout(drawThrottleRef.current);
+    drawThrottleRef.current = setTimeout(() => {
+      const wbId = activeWbRef.current?._id;
+      if (!wbId || isRemoteUpdateRef.current) return;
+      // #region agent log
+      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:onChange',message:'emit whiteboard_draw',data:{elementCount:elementsRef.current.length,activeWbId:wbId},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      emitDraw({ whiteboardId: wbId, elements: elementsRef.current });
+    }, 50);
+  }, []);
 
   if (!currentProject) {
     return <div className={s.empty}>Select a project to enter the collab room.</div>;
@@ -330,9 +382,8 @@ export default function Collab() {
             </form>
           </div>
 
-        {/* ── Whiteboard tab ──────────────────────────────────────────────── */}
-        {tab === 'project' && (
-          <div className={s.wbPanel}>
+        {/* ── Whiteboard panel (kept mounted so canvas state survives tab switches) ─ */}
+          <div className={`${s.wbPanel} ${tab !== 'project' ? s.wbPanelHidden : ''}`}>
             {/* Whiteboard list sidebar */}
             <div className={s.wbSidebar}>
               <div className={s.wbSideHeader}>
@@ -373,8 +424,9 @@ export default function Collab() {
                   <div className={s.wbCanvas}>
                     <div>
                       <Excalidraw
+                        key={activeWb._id}
                         excalidrawAPI={(api) => setExcalidrawAPI(api)}
-                        initialData={initialData ?? { elements: [], scrollToContent: false }}
+                        initialData={initialData ?? { elements: elementsRef.current, scrollToContent: false }}
                         onChange={onWhiteboardChange}
                         theme="dark"
                         UIOptions={{
@@ -391,7 +443,6 @@ export default function Collab() {
               )}
             </div>
           </div>
-        )}
       </div>
 
       {/* Create whiteboard modal */}
