@@ -6,17 +6,27 @@ import TopBar from './TopBar';
 import ToastStack from '../ui/Toast';
 import { useWorkspace } from '../../store/workspace';
 import { useUI } from '../../store/ui';
+import { useAuth } from '../../store/auth';
 import s from './AppShell.module.css';
 
 export default function AppShell() {
-  const { fetchWorkspaces } = useWorkspace();
-  const { bindNotifications, unbindNotifications } = useUI();
+  const { fetchWorkspaces, current: ws } = useWorkspace();
+  const { bindNotifications, unbindNotifications, toast } = useUI();
 
   useEffect(() => {
     fetchWorkspaces();
     bindNotifications();
     return () => unbindNotifications();
   }, []);
+
+  useEffect(() => {
+    const handler = () => {
+      toast("You don't have access to this project.", 'error');
+      if (ws?._id) fetchWorkspaces();
+    };
+    window.addEventListener('project-access-denied', handler);
+    return () => window.removeEventListener('project-access-denied', handler);
+  }, [ws?._id]);
 
   return (
     <div className={s.shell}>

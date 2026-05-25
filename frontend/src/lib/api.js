@@ -40,11 +40,14 @@ api.interceptors.response.use(
       }
     }
 
-    // 403 Plan limit / AI quota — trigger paywall modal via custom event
+    // 403 handlers
     if (err.response?.status === 403) {
       const data = err.response.data;
       if (data?.error === 'Plan limit reached' || data?.error === 'AI quota exceeded') {
         window.dispatchEvent(new CustomEvent('paywall', { detail: data }));
+      } else if (data?.message?.includes('not a member of this project')) {
+        // User lost access to this project — refresh project list to drop it from sidebar
+        window.dispatchEvent(new CustomEvent('project-access-denied', { detail: data }));
       }
     }
 
