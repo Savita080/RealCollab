@@ -153,6 +153,15 @@
 }
 .inlineBtn:hover { color: var(--cyan); }
 
+.membersBtn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.25);
+  color: var(--cyan); font-size: 10px; font-family: var(--font-mono); font-weight: 600;
+  padding: 3px 10px; border-radius: 10px; cursor: pointer;
+  transition: all 0.15s; letter-spacing: 0.04em;
+}
+.membersBtn:hover { background: rgba(0,212,255,0.16); border-color: var(--cyan); }
+
 /* ── AI Standup ── */
 .autoBadge {
   font-size: 9px; font-family: var(--font-mono); color: var(--violet);
