@@ -2,6 +2,8 @@
 import { create } from 'zustand';
 import { auth as authApi } from '../lib/api';
 import { connectSocket, disconnectSocket, emitUserOnline } from '../lib/socket';
+import { useWorkspace } from './workspace';
+import { useTasks } from './tasks';
 
 export const useAuth = create((set, get) => ({
   user: null,
@@ -81,6 +83,8 @@ export const useAuth = create((set, get) => ({
     localStorage.removeItem('rc_token');
     localStorage.removeItem('rc_refresh_token');
     try { disconnectSocket(); } catch (_) {}
+    useWorkspace.getState().reset();
+    useTasks.getState().reset();
     set({ user: null, token: null });
   },
 
