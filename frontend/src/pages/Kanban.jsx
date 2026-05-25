@@ -15,7 +15,7 @@ import { fmtDate } from '../lib/utils';
 import TaskDetail from '../components/kanban/TaskDetail';
 import ProjectMembersModal from '../components/ProjectMembersModal';
 import { workspaces as wsApi } from '../lib/api';
-import s from './Kanban.module.css';
+import s from '../styles/modules/Kanban.module.css';
 
 // ── IMPORTANT: backend status values must match exactly ──────────────────
 const COLUMNS = [

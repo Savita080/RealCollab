@@ -1,6 +1,6 @@
 // components/ui/Toast.jsx
 import { useUI } from '../../store/ui';
-import s from './Toast.module.css';
+import s from '../../styles/modules/Toast.module.css';
 
 const icons = { info: 'ℹ', success: '✓', error: '✕', warning: '⚠' };
 

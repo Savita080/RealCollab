@@ -9,7 +9,7 @@ import { Avatar } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { Input, Select } from '../components/ui/Input';
-import s from './Members.module.css';
+import s from '../styles/modules/Members.module.css';
 
 const ROLES = ['VIEWER', 'MEMBER', 'ADMIN', 'OWNER'];
 const ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };

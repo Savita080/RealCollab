@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { workspaces as wsApi } from '../lib/api';
 import { useAuth } from '../store/auth';
-import s from './AcceptInvite.module.css';
+import s from '../styles/modules/AcceptInvite.module.css';
 
 export default function AcceptInvite() {
   const { token } = useParams();

@@ -6,8 +6,7 @@ import TopBar from './TopBar';
 import ToastStack from '../ui/Toast';
 import { useWorkspace } from '../../store/workspace';
 import { useUI } from '../../store/ui';
-import { useAuth } from '../../store/auth';
-import s from './AppShell.module.css';
+import s from '../../styles/modules/AppShell.module.css';
 
 export default function AppShell() {
   const { fetchWorkspaces, refreshProjects } = useWorkspace();

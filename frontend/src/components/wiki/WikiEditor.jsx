@@ -1,7 +1,7 @@
 // components/wiki/WikiEditor.jsx
 import { useState, useRef } from 'react';
 import Button from '../ui/Button';
-import s from './WikiEditor.module.css';
+import s from '../../styles/modules/WikiEditor.module.css';
 
 const TOOLBAR = [
   { cmd: 'bold',          label: 'B',   style: { fontWeight: 700 } },

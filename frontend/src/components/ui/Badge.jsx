@@ -1,6 +1,6 @@
 // components/ui/Badge.jsx
 import { cls } from '../../lib/utils';
-import s from './Badge.module.css';
+import s from '../../styles/modules/Badge.module.css';
 
 export function Badge({ label, color, dot = false, className }) {
   return (

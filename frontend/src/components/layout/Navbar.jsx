@@ -7,7 +7,7 @@ import { useWorkspace } from '../../store/workspace';
 import { Avatar } from '../ui/Badge';
 import { useClickOutside } from '../../lib/hooks';
 import NotificationDropdown from './NotificationDropdown';
-import s from './Navbar.module.css';
+import s from '../../styles/modules/Navbar.module.css';
 
 export default function Navbar() {
   const { user, logout } = useAuth();

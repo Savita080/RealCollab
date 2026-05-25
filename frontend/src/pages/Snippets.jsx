@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { Input, Textarea, Select } from '../components/ui/Input';
 import SnippetCard from '../components/snippets/SnippetCard';
-import s from './Snippets.module.css';
+import s from '../styles/modules/Snippets.module.css';
 
 const LANGS = [
   'javascript', 'typescript', 'python', 'go', 'rust',

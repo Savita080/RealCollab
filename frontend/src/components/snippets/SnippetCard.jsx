@@ -1,6 +1,6 @@
 // components/snippets/SnippetCard.jsx
 import { useState } from 'react';
-import s from './SnippetCard.module.css';
+import s from '../../styles/modules/SnippetCard.module.css';
 
 const LANG_COLORS = {
   javascript: '#f7df1e', typescript: '#3178c6', python: '#3776ab',

@@ -4,7 +4,7 @@ import { useAuth } from '../store/auth';
 import { useUI } from '../store/ui';
 import Button from '../components/ui/Button';
 import { Input, Textarea } from '../components/ui/Input';
-import s from './Profile.module.css';
+import s from '../styles/modules/Profile.module.css';
 
 export default function Profile() {
   const { user, updateProfile } = useAuth();

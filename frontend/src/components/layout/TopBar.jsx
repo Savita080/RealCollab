@@ -6,7 +6,7 @@ import { useUI } from '../../store/ui';
 import { Avatar } from '../ui/Badge';
 import { useClickOutside } from '../../lib/hooks';
 import NotificationDropdown from './NotificationDropdown';
-import s from './TopBar.module.css';
+import s from '../../styles/modules/TopBar.module.css';
 
 const PAGE_LABELS = {
   '/dashboard': 'DASHBOARD',

@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import WikiEditor from '../components/wiki/WikiEditor';
-import s from './Wiki.module.css';
+import s from '../styles/modules/Wiki.module.css';
 
 export default function Wiki() {
   const { current: ws, currentProject } = useWorkspace();

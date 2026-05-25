@@ -11,7 +11,7 @@ import Button from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
 import { PriorityChip, Avatar } from '../ui/Badge';
 import { fmtDate, fmtRelative } from '../../lib/utils';
-import s from './TaskDetail.module.css';
+import s from '../../styles/modules/TaskDetail.module.css';
 
 export default function TaskDetail({ task, onClose, wsMembers = [] }) {
   const { update, delete: deleteTask } = useTasks();

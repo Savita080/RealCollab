@@ -1,7 +1,7 @@
 // components/ui/Button.jsx
 import { forwardRef } from 'react';
 import { cls } from '../../lib/utils';
-import styles from './Button.module.css';
+import styles from '../../styles/modules/Button.module.css';
 
 const Button = forwardRef(({
   variant = 'primary',

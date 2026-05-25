@@ -1,5 +1,5 @@
 // components/ui/Skeleton.jsx
-import s from './Skeleton.module.css';
+import s from '../../styles/modules/Skeleton.module.css';
 import { cls } from '../../lib/utils';
 
 export function Skeleton({ w, h = 16, r = 8, className }) {
