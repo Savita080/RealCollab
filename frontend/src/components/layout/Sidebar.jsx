@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import Button from '../ui/Button';
 import { workspaces as wsApi, tasks as tasksApi, projects as projectsApi, subscriptions as subApi } from '../../lib/api';
+import ProjectMembersModal from '../ProjectMembersModal';
 import s from '../../styles/modules/Sidebar.module.css';
 
 const PROJECT_COLORS = [
