@@ -183,6 +183,10 @@ export default function MentionInput({
         <ul
           className={s.menu}
           role="listbox"
+          // Stop mousedown from bubbling to document — otherwise the parent Modal's
+          // useClickOutside thinks this portal-rendered click is "outside the modal"
+          // and closes it (which made the Kanban modal vanish on mention-pick).
+          onMouseDown={(e) => e.stopPropagation()}
           style={{
             position: 'fixed',
             top: menuPos.top,
