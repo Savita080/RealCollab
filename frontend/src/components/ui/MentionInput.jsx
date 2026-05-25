@@ -29,7 +29,7 @@ export default function MentionInput({
   const [query, setQuery] = useState('');
   const [activeIdx, setActiveIdx] = useState(0);
   const [anchor, setAnchor] = useState(null); // index of '@' in value
-  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 200 });
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0, width: 200, flipUp: false });
 
   // Normalize member list: members may be [{user: {...}}] OR [{_id, name, ...}]
   const memberList = (members || []).map(m => m?.user || m).filter(u => u?._id && u?.name);
@@ -40,6 +40,37 @@ export default function MentionInput({
 
   // Reset index when filter changes
   useEffect(() => { setActiveIdx(0); }, [query, open]);
+
+  // Keep menu glued to the input when the user scrolls / resizes while it's open.
+  // (Capture-phase listener catches scroll on any ancestor, including the modal panel.)
+  useEffect(() => {
+    if (!open) return;
+    const reposition = () => {
+      const el = inputRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // If the input has scrolled out of view, close the menu
+      if (rect.bottom < 0 || rect.top > window.innerHeight) {
+        setOpen(false);
+        return;
+      }
+      const menuHeight = 240;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const flipUp = spaceBelow < menuHeight && rect.top > menuHeight;
+      setMenuPos({
+        top: flipUp ? rect.top - 4 : rect.bottom + 4,
+        left: rect.left,
+        width: Math.max(rect.width, 220),
+        flipUp,
+      });
+    };
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+    return () => {
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
+    };
+  }, [open]);
 
   const closeMenu = () => { setOpen(false); setAnchor(null); setQuery(''); };
 
@@ -69,13 +100,18 @@ export default function MentionInput({
     const caret = e.target.selectionStart ?? text.length;
     const m = detectMention(text, caret);
     if (m) {
-      // Calculate fixed position relative to viewport
+      // position:fixed is viewport-relative, so use getBoundingClientRect directly
+      // (do NOT add scrollY/scrollX — that would push the menu off-screen when scrolled)
       if (inputRef.current) {
         const rect = inputRef.current.getBoundingClientRect();
+        const menuHeight = 240; // estimated max menu height
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const flipUp = spaceBelow < menuHeight && rect.top > menuHeight;
         setMenuPos({
-          top: rect.bottom + window.scrollY + 4,
-          left: rect.left + window.scrollX,
+          top: flipUp ? rect.top - 4 : rect.bottom + 4,
+          left: rect.left,
           width: Math.max(rect.width, 220),
+          flipUp,
         });
       }
       setOpen(true);
@@ -147,7 +183,13 @@ export default function MentionInput({
         <ul
           className={s.menu}
           role="listbox"
-          style={{ position: 'fixed', top: menuPos.top, left: menuPos.left, minWidth: menuPos.width }}
+          style={{
+            position: 'fixed',
+            top: menuPos.top,
+            left: menuPos.left,
+            minWidth: menuPos.width,
+            transform: menuPos.flipUp ? 'translateY(-100%)' : 'none',
+          }}
         >
           {filtered.map((u, i) => (
             <li
