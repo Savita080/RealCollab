@@ -25,9 +25,10 @@ export default function GoogleAuthButton({ label = "Continue with Google", class
   // useGoogleLogin gives us a one-tap popup flow and returns an access_token,
   // but your backend wants an ID token (credential). So we use the implicit id_token flow.
   const login = useGoogleLogin({
+    scope: 'openid email profile',
     onSuccess: async (tokenResponse) => {
       if (!tokenResponse.access_token) {
-        console.error('No access_token in response.');
+        toast.error('Google login failed: no token received.');
         setLoading(false);
         return;
       }
@@ -43,6 +44,7 @@ export default function GoogleAuthButton({ label = "Continue with Google", class
     },
     onError: (err) => {
       console.error('Google popup error:', err);
+      toast.error('Google login failed. Please try again.');
       setLoading(false);
     },
   });
