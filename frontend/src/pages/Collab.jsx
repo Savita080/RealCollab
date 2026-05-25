@@ -17,7 +17,7 @@ import Modal from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { fmtRelative } from '../lib/utils';
 import { Excalidraw } from '@excalidraw/excalidraw';
-import s from './Collab.module.css';
+import s from '../styles/modules/Collab.module.css';
 
 // ─── Import Excalidraw's own CSS (required for correct rendering) ────────────
 import '@excalidraw/excalidraw/index.css';

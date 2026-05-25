@@ -14,7 +14,9 @@ export const useWorkspace = create((set, get) => ({
     const { data } = await workspaces.list();
     const list = data.workspaces ?? data;
     set({ workspaces: list, loading: false });
-    if (list.length && !get().current) get().setWorkspace(list[0]._id);
+    const currentId = get().current?._id;
+    const targetId = currentId && list.find(w => w._id === currentId) ? currentId : list[0]?._id;
+    if (targetId) get().setWorkspace(targetId);
   },
 
   setWorkspace: async (id) => {
@@ -27,6 +29,19 @@ export const useWorkspace = create((set, get) => ({
   },
 
   setProject: (project) => set({ currentProject: project }),
+
+  refreshProjects: async () => {
+    const ws = get().current;
+    if (!ws) return;
+    const { data } = await projects.list(ws._id);
+    const list = data.projects ?? data;
+    set({ projects: list });
+    // If currentProject is no longer in the list, clear it
+    const current = get().currentProject;
+    if (current && !list.find(p => p._id === current._id)) {
+      set({ currentProject: list[0] || null });
+    }
+  },
 
   reset: () => set({ workspaces: [], current: null, projects: [], currentProject: null, loading: false }),
 

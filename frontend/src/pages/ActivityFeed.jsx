@@ -4,7 +4,7 @@ import { useWorkspace } from '../store/workspace';
 import { activity as activityApi } from '../lib/api';
 import { fmtRelative } from '../lib/utils';
 import { Avatar } from '../components/ui/Badge';
-import s from './ActivityFeed.module.css';
+import s from '../styles/modules/ActivityFeed.module.css';
 
 const ACTION_ICONS = {
   CREATED_TASK: '✦', COMPLETED_TASK: '✓', MOVED_TASK: '→', UPDATED_TASK: '✎',

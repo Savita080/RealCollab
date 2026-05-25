@@ -12,7 +12,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import ProjectMembersModal from '../components/ProjectMembersModal';
-import s from './Dashboard.module.css';
+import s from '../styles/modules/Dashboard.module.css';
 
 const PROJECT_COLORS = ['#6366f1','#00d4ff','#10b981','#f59e0b','#ec4899','#8b5cf6'];
 const STATUS_COLORS = { 'To Do': '#6366f1', 'In Progress': '#f59e0b', 'In Review': '#00d4ff', 'Done': '#10b981' };

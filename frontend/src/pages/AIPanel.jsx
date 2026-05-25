@@ -6,7 +6,7 @@ import { useUI } from '../store/ui';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Input';
-import s from './AIPanel.module.css';
+import s from '../styles/modules/AIPanel.module.css';
 
 const PANELS = [
   { id: 'summary',  label: 'Progress Summary', icon: '◎', desc: 'AI reads all task statuses and gives a project health report.' },

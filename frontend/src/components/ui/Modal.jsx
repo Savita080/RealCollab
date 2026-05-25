@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useClickOutside } from '../../lib/hooks';
-import s from './Modal.module.css';
+import s from '../../styles/modules/Modal.module.css';
 
 export default function Modal({ open, onClose, title, children, size = 'md' }) {
   const ref = useRef(null);

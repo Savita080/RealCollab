@@ -2,7 +2,7 @@
 import { useUI } from '../store/ui';
 import { useNavigate } from 'react-router-dom';
 import { useWorkspace } from '../store/workspace';
-import s from './PaywallModal.module.css';
+import s from '../styles/modules/PaywallModal.module.css';
 
 export default function PaywallModal() {
   const { paywallModal, closePaywall } = useUI();

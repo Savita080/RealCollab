@@ -1,6 +1,6 @@
 // components/ui/Input.jsx
 import { cls } from '../../lib/utils';
-import s from './Input.module.css';
+import s from '../../styles/modules/Input.module.css';
 
 export function Input({ label, error, icon, className, ...props }) {
   return (

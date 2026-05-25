@@ -5,7 +5,7 @@ import { useUI } from '../../store/ui';
 import { notifications as notifApi } from '../../lib/api';
 import { fmtRelative } from '../../lib/utils';
 import { useClickOutside } from '../../lib/hooks';
-import s from './NotificationDropdown.module.css';
+import s from '../../styles/modules/NotificationDropdown.module.css';
 
 const TYPE_ICONS = { MENTION: '💬', PROJECT_ASSIGN: '📋', ROLE_CHANGE: '🔑' };
 

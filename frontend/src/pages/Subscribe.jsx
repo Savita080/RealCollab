@@ -5,7 +5,7 @@ import { useAuth } from '../store/auth';
 import { useUI } from '../store/ui';
 import { subscriptions as subApi } from '../lib/api';
 import Button from '../components/ui/Button';
-import s from './Subscribe.module.css';
+import s from '../styles/modules/Subscribe.module.css';
 
 const FREE_LIMIT = 10;
 const PRO_LIMIT = 200;
