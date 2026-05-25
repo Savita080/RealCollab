@@ -1,0 +1,42 @@
+/* pages/workspace/WorkspaceLayout.module.css */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text-1);
+}
+.right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}
+.content {
+  padding: 24px 28px 48px;
+  animation: fadeIn 0.25s ease;
+  max-width: 1500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.sidebarSkeleton {
+  width: 240px;
+  background: linear-gradient(180deg, #07071a 0%, #050510 100%);
+  border-right: 1px solid rgba(99,102,241,0.1);
+}
+.topbarSkeleton {
+  height: 56px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
