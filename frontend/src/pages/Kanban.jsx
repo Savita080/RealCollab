@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useWorkspace } from '../store/workspace';
 import { useTasks } from '../store/tasks';
 import { useUI } from '../store/ui';
+import { useAuth } from '../store/auth';
 import { joinProject, leaveProject } from '../lib/socket';
 import { usePresence } from '../lib/hooks';
 import { PriorityChip, Avatar } from '../components/ui/Badge';
@@ -12,6 +13,7 @@ import { Input, Textarea, Select } from '../components/ui/Input';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import { fmtDate } from '../lib/utils';
 import TaskDetail from '../components/kanban/TaskDetail';
+import ProjectMembersModal from '../components/ProjectMembersModal';
 import { workspaces as wsApi } from '../lib/api';
 import s from './Kanban.module.css';
 
@@ -33,11 +35,13 @@ export default function Kanban() {
   const { current: ws, currentProject } = useWorkspace();
   const { tasks, fetch, create, move, loading, bindSocket, unbindSocket } = useTasks();
   const { toast } = useUI();
+  const { user } = useAuth();
   const online = usePresence(currentProject?._id);
 
   const [dragging, setDragging] = useState(null);
   const [dragOver, setDragOver] = useState(null);
   const [createModal, setCreateModal] = useState(false);
+  const [membersModal, setMembersModal] = useState(false);
   const [detailTask, setDetailTask] = useState(null);
   const [wsMembers, setWsMembers] = useState([]);
   const [form, setForm] = useState({
@@ -102,6 +106,9 @@ export default function Kanban() {
               <span>{online.length} online</span>
             </div>
           )}
+          <Button variant="ghost" size="sm" onClick={() => setMembersModal(true)}>
+            Members
+          </Button>
           <Button variant="primary" size="sm" onClick={() => setCreateModal(true)}>
             + New Task
           </Button>
@@ -217,6 +224,15 @@ export default function Kanban() {
           onClose={() => setDetailTask(null)}
         />
       )}
+
+      {/* Project members */}
+      <ProjectMembersModal
+        open={membersModal}
+        onClose={() => setMembersModal(false)}
+        workspace={ws}
+        project={currentProject}
+        currentUserId={user?.id || user?._id}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import Button from '../ui/Button';
 import { workspaces as wsApi, tasks as tasksApi, projects as projectsApi, subscriptions as subApi } from '../../lib/api';
+import ProjectMembersModal from '../ProjectMembersModal';
 import s from './Sidebar.module.css';
 
 const PROJECT_COLORS = [
@@ -44,9 +45,11 @@ export default function Sidebar() {
   const [projName, setProjName] = useState('');
   const [loading, setLoading] = useState(false);
   // Project rename
-  const [renameProj, setRenameProj] = useState(null); // { _id, name }
+  const [renameProj, setRenameProj] = useState(null);
   const [renameProjName, setRenameProjName] = useState('');
   const [renameProjLoading, setRenameProjLoading] = useState(false);
+  // Project members
+  const [membersProj, setMembersProj] = useState(null);
 
   const dropRef = useRef(null);
 
@@ -172,6 +175,11 @@ export default function Sidebar() {
                 <div className={s.projActions}>
                   <button
                     className={s.projActBtn}
+                    title="Manage members"
+                    onClick={e => { e.stopPropagation(); setMembersProj(p); }}
+                  >👥</button>
+                  <button
+                    className={s.projActBtn}
                     title="Rename project"
                     onClick={e => { e.stopPropagation(); setRenameProj(p); setRenameProjName(p.name); }}
                   >✏</button>
@@ -261,6 +269,15 @@ export default function Sidebar() {
           </div>
         </div>
       )}
+
+      {/* Project Members modal */}
+      <ProjectMembersModal
+        open={!!membersProj}
+        onClose={() => setMembersProj(null)}
+        workspace={ws}
+        project={membersProj}
+        currentUserId={user?.id || user?._id}
+      />
 
       {/* Rename Project modal */}
       {renameProj && (
