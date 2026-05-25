@@ -393,8 +393,7 @@ export default function Collab() {
                 value={input}
                 onChange={e => {
                   setInput(e.target.value);
-                  if (tab === 'project' && currentProject?._id && user?.name) {
-                    if (typingEmitRef.current) clearTimeout(typingEmitRef.current);
+                  if (tab === 'project' && currentProject?._id && user?.name && !typingEmitRef.current) {
                     emitTyping(currentProject._id, user.name);
                     typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
                   }

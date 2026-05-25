@@ -1,7 +1,7 @@
 // store/auth.js
 import { create } from 'zustand';
 import { auth as authApi } from '../lib/api';
-import { connectSocket, disconnectSocket, emitUserOnline } from '../lib/socket';
+import { connectSocket, disconnectSocket, setSocketIdentity } from '../lib/socket';
 import { useWorkspace } from './workspace';
 import { useTasks } from './tasks';
 
@@ -18,9 +18,8 @@ export const useAuth = create((set, get) => ({
       // Backend /me returns { user } with full profile (avatar, bio, githubUrl, skills)
       const user = data.user || { id: data.yourId, name: data.name, email: data.email };
       set({ user, loading: false });
-      connectSocket(token);
       const uid = user.id || user._id;
-      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
+      connectSocket(token, uid, user?.name);
     } catch {
       localStorage.removeItem('rc_token');
       set({ user: null, token: null, loading: false });
@@ -34,14 +33,16 @@ export const useAuth = create((set, get) => ({
     if (data.refreshToken) localStorage.setItem('rc_refresh_token', data.refreshToken);
     set({ user: data.user, token: data.token });
     try {
-      connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
-      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
+      connectSocket(data.token, uid, data.user?.name);
     } catch (_) {}
     // Fetch full profile after login (avatar, bio, skills, etc.)
     try {
       const { data: me } = await authApi.me();
-      if (me.user) set({ user: me.user });
+      if (me.user) {
+        set({ user: me.user });
+        setSocketIdentity(me.user.id || me.user._id, me.user.name);
+      }
     } catch (_) {}
     return data;
   },
@@ -53,9 +54,8 @@ export const useAuth = create((set, get) => ({
     if (data.refreshToken) localStorage.setItem('rc_refresh_token', data.refreshToken);
     set({ user: data.user, token: data.token });
     try {
-      connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
-      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
+      connectSocket(data.token, uid, data.user?.name);
     } catch (_) {}
     return data;
   },
@@ -68,9 +68,8 @@ export const useAuth = create((set, get) => ({
     if (data.refreshToken) localStorage.setItem('rc_refresh_token', data.refreshToken);
     set({ user: data.user, token: data.token });
     try {
-      connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
-      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
+      connectSocket(data.token, uid, data.user?.name);
     } catch (_) {}
     return data;
   },
@@ -82,7 +81,7 @@ export const useAuth = create((set, get) => ({
     }
     localStorage.removeItem('rc_token');
     localStorage.removeItem('rc_refresh_token');
-    try { disconnectSocket(); } catch (_) {}
+    try { setSocketIdentity(null); disconnectSocket(); } catch (_) {}
     useWorkspace.getState().reset();
     useTasks.getState().reset();
     set({ user: null, token: null });

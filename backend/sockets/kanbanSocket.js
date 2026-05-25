@@ -1,6 +1,9 @@
 import Task from '../models/task.js';
 import redis from '../config/redis.js';
 
+// In-memory fallback so presence works even when Redis is not configured
+const memSocketUser = new Map(); // socketId -> { userId, name }
+
 export const setupKanbanSockets = (io) => {
     io.on('connection', (socket) => {
         console.log(`[Socket] User connected: ${socket.id}`);
@@ -10,11 +13,17 @@ export const setupKanbanSockets = (io) => {
             // payload can be userId string or { userId, name }
             const userId = payload?.userId || payload;
             const name = payload?.name || '';
+            if (!userId) return;
+            memSocketUser.set(socket.id, { userId: String(userId), name });
             if (redis) {
                 await redis.set(`user:online:${userId}`, socket.id);
-                await redis.set(`socket:${socket.id}`, userId);
+                await redis.set(`socket:${socket.id}`, String(userId));
                 if (name) await redis.set(`user:name:${userId}`, name);
                 console.log(`[Redis] User ${userId} is now online!`);
+            }
+            // Re-broadcast presence for any room this socket is already in
+            for (const room of socket.rooms) {
+                if (room !== socket.id) await broadcastPresence(io, room, redis);
             }
         });
 
@@ -65,6 +74,8 @@ export const setupKanbanSockets = (io) => {
         // WHEN A USER LOGS OUT / CLOSES TAB
         socket.on('disconnect', async () => {
             console.log(`[Socket] User disconnected: ${socket.id}`);
+            // Snapshot rooms BEFORE we lose the socket reference
+            const rooms = [...socket.rooms].filter(r => r !== socket.id);
             if (redis) {
                 const userId = await redis.get(`socket:${socket.id}`);
                 if (userId) {
@@ -73,9 +84,9 @@ export const setupKanbanSockets = (io) => {
                     console.log(`[Redis] User ${userId} is now offline.`);
                 }
             }
-            // Broadcast updated presence to all rooms this socket was in
-            for (const room of socket.rooms) {
-                if (room !== socket.id) await broadcastPresence(io, room, redis);
+            memSocketUser.delete(socket.id);
+            for (const room of rooms) {
+                await broadcastPresence(io, room, redis);
             }
         });
     });
@@ -84,11 +95,21 @@ export const setupKanbanSockets = (io) => {
 async function broadcastPresence(io, projectId, redis) {
     const room = io.sockets.adapter.rooms.get(projectId);
     if (!room) return;
+    const seen = new Set();
     const online = [];
     for (const socketId of room) {
-        const userId = redis ? await redis.get(`socket:${socketId}`) : null;
-        if (userId) {
-            const name = redis ? await redis.get(`user:name:${userId}`) : null;
+        let userId = null;
+        let name = null;
+        if (redis) {
+            userId = await redis.get(`socket:${socketId}`);
+            if (userId) name = await redis.get(`user:name:${userId}`);
+        }
+        if (!userId) {
+            const mem = memSocketUser.get(socketId);
+            if (mem) { userId = mem.userId; name = mem.name; }
+        }
+        if (userId && !seen.has(userId)) {
+            seen.add(userId);
             online.push({ _id: userId, name: name || 'User' });
         }
     }

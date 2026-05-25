@@ -10,12 +10,27 @@ export const socket = io(URL, {
 
 import { BYPASS_BACKEND } from './api';
 
-export const connectSocket = (token) => {
+// Identity to re-announce on every (re)connect. Set by connectSocket / setSocketIdentity.
+let identity = null;
+
+export const setSocketIdentity = (userId, name) => {
+  identity = userId ? { userId, name: name || '' } : null;
+  if (identity && socket.connected) {
+    socket.emit('user_online', identity);
+  }
+};
+
+socket.on('connect', () => {
+  if (identity) socket.emit('user_online', identity);
+});
+
+export const connectSocket = (token, userId, name) => {
   if (BYPASS_BACKEND) {
     console.log('[Socket] BYPASS_BACKEND is true. Skipping real socket connection.');
     return;
   }
   socket.auth = { token };
+  if (userId) identity = { userId, name: name || '' };
   socket.connect();
 };
 
