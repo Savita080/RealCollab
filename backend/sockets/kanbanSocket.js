@@ -6,27 +6,39 @@ export const setupKanbanSockets = (io) => {
         console.log(`[Socket] User connected: ${socket.id}`);
 
         // WHEN A USER LOGS IN (Tracking Presence)
-        socket.on('user_online', async (userId) => {
+        socket.on('user_online', async (payload) => {
+            // payload can be userId string or { userId, name }
+            const userId = payload?.userId || payload;
+            const name = payload?.name || '';
             if (redis) {
                 await redis.set(`user:online:${userId}`, socket.id);
-                await redis.set(`socket:${socket.id}`, userId); 
+                await redis.set(`socket:${socket.id}`, userId);
+                if (name) await redis.set(`user:name:${userId}`, name);
                 console.log(`[Redis] User ${userId} is now online!`);
             }
         });
 
         // 1. JOIN ROOM: The frontend tells us which project they are looking at
-        socket.on('join_project', (projectId) => {
+        socket.on('join_project', async (projectId) => {
             socket.join(projectId);
             console.log(`[Socket] User ${socket.id} joined project room: ${projectId}`);
+            await broadcastPresence(io, projectId, redis);
         });
 
         // 2. LEAVE ROOM: They clicked away to a different page
-        socket.on('leave_project', (projectId) => {
+        socket.on('leave_project', async (projectId) => {
             socket.leave(projectId);
             console.log(`[Socket] User ${socket.id} left project room: ${projectId}`);
+            await broadcastPresence(io, projectId, redis);
         });
 
-        // 3. MOVE TASK: The user dragged a card!
+        // 3. TYPING INDICATOR: User is typing in chat
+        socket.on('typing', ({ projectId, userName }) => {
+            if (!projectId || !userName) return;
+            socket.to(projectId).emit('user_typing', { userName, projectId });
+        });
+
+        // 4. MOVE TASK: The user dragged a card!
         socket.on('task_move', async (data) => {
             const { taskId, projectId, newStatus, newPosition } = data;
 
@@ -61,6 +73,24 @@ export const setupKanbanSockets = (io) => {
                     console.log(`[Redis] User ${userId} is now offline.`);
                 }
             }
+            // Broadcast updated presence to all rooms this socket was in
+            for (const room of socket.rooms) {
+                if (room !== socket.id) await broadcastPresence(io, room, redis);
+            }
         });
     });
 };
+
+async function broadcastPresence(io, projectId, redis) {
+    const room = io.sockets.adapter.rooms.get(projectId);
+    if (!room) return;
+    const online = [];
+    for (const socketId of room) {
+        const userId = redis ? await redis.get(`socket:${socketId}`) : null;
+        if (userId) {
+            const name = redis ? await redis.get(`user:name:${userId}`) : null;
+            online.push({ _id: userId, name: name || 'User' });
+        }
+    }
+    io.to(projectId).emit('presence:update', online);
+}

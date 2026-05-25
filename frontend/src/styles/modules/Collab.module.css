@@ -255,6 +255,14 @@
 .sendBtn:hover:not(:disabled) { opacity: 0.85; transform: scale(1.08); }
 .sendBtn:disabled { opacity: 0.3; cursor: default; }
 
+.typingIndicator {
+  padding: 4px 18px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-style: italic;
+  min-height: 22px;
+}
+
 /* ── Whiteboard panel ───────────────────────────────────────────────────────── */
 .whiteboard {
   flex: 1 1 0;            /* fill remaining width */

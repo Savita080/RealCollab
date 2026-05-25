@@ -20,7 +20,7 @@ export const useAuth = create((set, get) => ({
       set({ user, loading: false });
       connectSocket(token);
       const uid = user.id || user._id;
-      if (uid) setTimeout(() => emitUserOnline(uid), 500);
+      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
     } catch {
       localStorage.removeItem('rc_token');
       set({ user: null, token: null, loading: false });
@@ -36,7 +36,7 @@ export const useAuth = create((set, get) => ({
     try {
       connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
-      if (uid) setTimeout(() => emitUserOnline(uid), 500);
+      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
     } catch (_) {}
     // Fetch full profile after login (avatar, bio, skills, etc.)
     try {
@@ -55,7 +55,7 @@ export const useAuth = create((set, get) => ({
     try {
       connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
-      if (uid) setTimeout(() => emitUserOnline(uid), 500);
+      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
     } catch (_) {}
     return data;
   },
@@ -70,7 +70,7 @@ export const useAuth = create((set, get) => ({
     try {
       connectSocket(data.token);
       const uid = data.user?.id || data.user?._id;
-      if (uid) setTimeout(() => emitUserOnline(uid), 500);
+      if (uid) setTimeout(() => emitUserOnline(uid, get().user?.name), 500);
     } catch (_) {}
     return data;
   },

@@ -22,13 +22,16 @@ export const connectSocket = (token) => {
 export const disconnectSocket = () => socket.disconnect();
 
 // Presence
-export const emitUserOnline = (userId) => socket.emit('user_online', userId);
+export const emitUserOnline = (userId, name) => socket.emit('user_online', { userId, name: name || '' });
 
 // Room helpers — event names must match backend (underscores, not colons)
 export const joinProject    = (projectId)  => socket.emit('join_project', projectId);
 export const leaveProject   = (projectId)  => socket.emit('leave_project', projectId);
 export const joinWhiteboard = (wbId)       => socket.emit('join_whiteboard', wbId);
 export const leaveWhiteboard= (wbId)       => socket.emit('leave_whiteboard', wbId);
+
+// Typing indicator
+export const emitTyping = (projectId, userName) => socket.emit('typing', { projectId, userName });
 
 // Task events
 export const emitTaskMove   = (data) => socket.emit('task_move', data);

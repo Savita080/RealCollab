@@ -6,7 +6,7 @@ import { usePresence } from '../lib/hooks';
 import {
   joinProject, leaveProject,
   joinWhiteboard, leaveWhiteboard,
-  emitDraw, emitSaveWb
+  emitDraw, emitSaveWb, emitTyping
 } from '../lib/socket';
 import socket from '../lib/socket';
 import { chat as chatApi, whiteboards as wbApi } from '../lib/api';
@@ -38,6 +38,9 @@ export default function Collab() {
   const [wsMessages, setWsMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [typingUser, setTypingUser] = useState(null);
+  const typingTimeoutRef = useRef(null);
+  const typingEmitRef = useRef(null);
   const bottomRef = useRef(null);
   const wsChatBottomRef = useRef(null);
 
@@ -141,6 +144,21 @@ export default function Collab() {
     socket.on('new_group_message', onWsMsg);
     return () => socket.off('new_group_message', onWsMsg);
   }, [ws?._id]);
+
+  // ── Live socket: typing indicator ────────────────────────────────────────
+  useEffect(() => {
+    const onTyping = ({ userName, projectId: pid }) => {
+      if (pid !== currentProject?._id) return;
+      setTypingUser(userName);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
+    };
+    socket.on('user_typing', onTyping);
+    return () => {
+      socket.off('user_typing', onTyping);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [currentProject?._id]);
 
   // ── Live socket: whiteboard events ─────────────────────────────────────────
   useEffect(() => {
@@ -373,13 +391,23 @@ export default function Collab() {
                 className={s.chatInput}
                 placeholder={`Message ${tab === 'project' ? currentProject.name : ws?.name}…`}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={e => {
+                  setInput(e.target.value);
+                  if (tab === 'project' && currentProject?._id && user?.name) {
+                    if (typingEmitRef.current) clearTimeout(typingEmitRef.current);
+                    emitTyping(currentProject._id, user.name);
+                    typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
+                  }
+                }}
                 autoFocus
               />
               <button type="submit" className={s.sendBtn} disabled={!input.trim()}>
                 ↑
               </button>
             </form>
+            {tab === 'project' && typingUser && (
+              <div className={s.typingIndicator}>{typingUser} is typing…</div>
+            )}
           </div>
 
         {/* ── Whiteboard panel (kept mounted so canvas state survives tab switches) ─ */}
