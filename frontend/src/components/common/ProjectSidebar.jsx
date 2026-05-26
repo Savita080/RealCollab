@@ -8,6 +8,7 @@ import {
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
 import { useClickOutside } from '../../lib/hooks';
+import { useUI } from '../../store/ui';
 import { Avatar } from '../ui/Badge';
 import s from '../../styles/modules/ProjectSidebar.module.css';
 import wsStyles from '../../styles/modules/WorkspaceSidebar.module.css';
@@ -22,6 +23,7 @@ export default function ProjectSidebar({ project, canEdit, role }) {
   const navigate = useNavigate();
   const { projects, workspaces: wsList, current } = useWorkspace();
   const { user, logout } = useAuth();
+  const { sidebarOpen } = useUI();
   
   const [projDropOpen, setProjDropOpen] = useState(false);
   const [wsDropOpen, setWsDropOpen] = useState(false);
@@ -74,7 +76,7 @@ export default function ProjectSidebar({ project, canEdit, role }) {
   const projColor = PROJECT_COLORS[projIdx % PROJECT_COLORS.length] || PROJECT_COLORS[0];
 
   return (
-    <aside className={s.sidebar}>
+    <aside className={`${s.sidebar} ${!sidebarOpen ? s.collapsed : ''}`}>
       {/* Brand */}
       <button className={wsStyles.brand} onClick={() => navigate('/workspaces')}>
         <span className={wsStyles.brandName}>

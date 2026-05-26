@@ -1,7 +1,7 @@
 // components/common/WorkspaceTopBar.jsx — top navbar inside WorkspaceLayout
 import { useState, useRef } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Bell, Search, X, ChevronRight, Settings as SettingsIcon, LogOut, User as UserIcon } from 'lucide-react';
+import { Bell, Search, X, ChevronRight, Settings as SettingsIcon, LogOut, User as UserIcon, Menu } from 'lucide-react';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
 import { useWorkspace } from '../../store/workspace';
@@ -30,7 +30,7 @@ const SEGMENT_LABELS = {
 
 export default function WorkspaceTopBar({ workspace, role }) {
   const { user, logout } = useAuth();
-  const { unreadCount } = useUI();
+  const { unreadCount, sidebarOpen, toggleSidebar } = useUI();
   const { currentProject } = useWorkspace();
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,6 +90,10 @@ export default function WorkspaceTopBar({ workspace, role }) {
 
   return (
     <header className={s.bar}>
+      <button className={s.toggleBtn} onClick={toggleSidebar} title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}>
+        <Menu size={16} />
+      </button>
+
       {/* Breadcrumbs */}
       <nav className={s.crumbs}>
         {crumbs.map((c, i) => (

@@ -11,6 +11,7 @@ import { Avatar } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import Button from '../ui/Button';
 import { useClickOutside } from '../../lib/hooks';
+import { useUI } from '../../store/ui';
 import s from '../../styles/modules/WorkspaceSidebar.module.css';
 
 export default function WorkspaceSidebar({ role }) {
@@ -18,6 +19,7 @@ export default function WorkspaceSidebar({ role }) {
   const navigate = useNavigate();
   const { workspaces: wsList, current, createWorkspace } = useWorkspace();
   const { user, logout } = useAuth();
+  const { sidebarOpen } = useUI();
 
   const [wsDropOpen, setWsDropOpen] = useState(false);
   const [wsModal, setWsModal] = useState(false);
@@ -60,7 +62,7 @@ export default function WorkspaceSidebar({ role }) {
 
   return (
     <>
-      <aside className={s.sidebar}>
+      <aside className={`${s.sidebar} ${!sidebarOpen ? s.collapsed : ''}`}>
         {/* Brand */}
         <button className={s.brand} onClick={() => navigate('/workspaces')}>
           <span className={s.brandName}>
