@@ -56,7 +56,7 @@ export const THEMES = [
 ];
 
 const THEME_STORAGE_KEY = 'rc:theme';
-const DEFAULT_THEME = 'midnight';
+const DEFAULT_THEME = 'caramel';
 
 function readStoredTheme() {
   if (typeof window === 'undefined') return DEFAULT_THEME;
