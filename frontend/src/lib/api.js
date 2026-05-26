@@ -105,6 +105,8 @@ export const tasks = {
   comments:      taskId           => api.get(`/tasks/${taskId}/comments`),
   comment:       (taskId, d)      => api.post(`/tasks/${taskId}/comments`, d),   // body: { content, projectId }
   deleteComment: (taskId, cid, d) => api.delete(`/tasks/${taskId}/comments/${cid}`, { data: d }),
+  reactComment:  (taskId, cid, emoji, projectId) =>
+    api.post(`/tasks/${taskId}/comments/${cid}/react`, { emoji, projectId }),
 };
 
 // ── Snippets ──────────────────────────────────────────
@@ -142,8 +144,12 @@ export const whiteboards = {
 export const chat = {
   projectMessages:   (wid, pid)    => api.get(`/workspaces/${wid}/projects/${pid}/chat`),
   sendProject:       (wid, pid, d) => api.post(`/workspaces/${wid}/projects/${pid}/chat`, d),
+  reactProject:      (wid, pid, mid, emoji) =>
+    api.post(`/workspaces/${wid}/projects/${pid}/chat/${mid}/react`, { emoji }),
   workspaceMessages: (wid)         => api.get(`/workspaces/${wid}/chat`),
   sendWorkspace:     (wid, d)      => api.post(`/workspaces/${wid}/chat`, d),
+  reactWorkspace:    (wid, mid, emoji) =>
+    api.post(`/workspaces/${wid}/chat/${mid}/react`, { emoji }),
 };
 
 // ── Activity ──────────────────────────────────────────

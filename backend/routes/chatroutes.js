@@ -1,5 +1,5 @@
 import express from 'express';
-import { sendMessage, getProjectMessages } from '../controllers/chatcontroller.js';
+import { sendMessage, getProjectMessages, reactToProjectMessage } from '../controllers/chatcontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireProjectRole } from '../middleware/rbac.js';
 
@@ -7,5 +7,6 @@ const router = express.Router({ mergeParams: true });
 
 router.post('/', protectRoute, requireProjectRole('VIEWER'), sendMessage);
 router.get('/', protectRoute, requireProjectRole('VIEWER'), getProjectMessages);
+router.post('/:messageId/react', protectRoute, requireProjectRole('VIEWER'), reactToProjectMessage);
 
 export default router;

@@ -10,6 +10,8 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import { Input, Textarea, Select } from '../ui/Input';
 import MentionInput from '../ui/MentionInput';
+import EmojiPickerButton from '../ui/EmojiPickerButton';
+import ReactionBar from '../ui/ReactionBar';
 import { PriorityChip, Avatar } from '../ui/Badge';
 import { fmtDate, fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/TaskDetail.module.css';
@@ -56,11 +58,16 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
         setComments(prev => prev.filter(c => c._id !== commentId));
       }
     };
+    const onReaction = ({ commentId, reactions }) => {
+      setComments(prev => prev.map(c => c._id === commentId ? { ...c, reactions } : c));
+    };
     socket.on('task_comment_added', onAdded);
     socket.on('task_comment_deleted', onDeleted);
+    socket.on('comment_reaction_updated', onReaction);
     return () => {
       socket.off('task_comment_added', onAdded);
       socket.off('task_comment_deleted', onDeleted);
+      socket.off('comment_reaction_updated', onReaction);
     };
   }, [task._id]);
 
@@ -118,6 +125,27 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
     } catch {
       toast('Failed to delete comment', 'error');
     }
+  };
+
+  const myId = user?.id || user?._id;
+  const handleReactComment = async (commentId, emoji) => {
+    setComments(prev => prev.map(c => {
+      if (c._id !== commentId) return c;
+      const reactions = [...(c.reactions || [])];
+      const idx = reactions.findIndex(r => r.emoji === emoji);
+      if (idx === -1) {
+        reactions.push({ emoji, users: [myId] });
+      } else {
+        const users = reactions[idx].users || [];
+        const has = users.some(u => (u?._id || u)?.toString() === myId?.toString());
+        const next = has ? users.filter(u => (u?._id || u)?.toString() !== myId?.toString()) : [...users, myId];
+        if (next.length === 0) reactions.splice(idx, 1);
+        else reactions[idx] = { ...reactions[idx], users: next };
+      }
+      return { ...c, reactions };
+    }));
+    try { await tasksApi.reactComment(task._id, commentId, emoji, currentProject?._id); }
+    catch { toast('Failed to react', 'error'); }
   };
 
   return (
@@ -220,6 +248,12 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
                     )}
                   </div>
                   <p className={s.commentText}>{c.content}</p>
+                  <ReactionBar
+                    reactions={c.reactions}
+                    currentUserId={myId}
+                    members={mentionPool}
+                    onToggle={(emoji) => handleReactComment(c._id, emoji)}
+                  />
                 </div>
               </div>
             ))}
@@ -232,6 +266,13 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
               members={mentionPool}
               onChange={e => setComment(e.target.value)}
             />
+            <EmojiPickerButton
+              title="Insert emoji"
+              onSelect={(emoji) => setComment(prev => prev + emoji)}
+              style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: 18, padding: '0 6px' }}
+            >
+              😊
+            </EmojiPickerButton>
             <Button type="submit" variant="ghost" size="sm">Post</Button>
           </form>
         </div>

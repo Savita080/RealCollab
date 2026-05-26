@@ -57,43 +57,66 @@ export async function notifyUser(io, { recipient, sender, type, content, link })
  */
 export async function notifyMentions(io, { content, sender, type, link, contentBuilder, allowedUserIds }) {
     if (!content) return [];
-    const names = [...content.matchAll(/@([\w.-]+)/g)].map(m => m[1]);
-    if (names.length === 0) return [];
+    const tokens = [...content.matchAll(/@([\w.-]+)/g)].map(m => m[1]);
+    if (tokens.length === 0) return [];
 
-    const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const orClauses = [];
-    for (const n of names) {
-        const e = escape(n);
-        // Full-name match OR first-word match ("Suhani" matches "Suhani Sharma")
-        orClauses.push({ name: new RegExp(`^${e}$`, 'i') });
-        orClauses.push({ name: new RegExp(`^${e}\\s`, 'i') });
-    }
-    const users = await User.find({ $or: orClauses }).select('_id name');
-
-    // Optional access scope: only notify users present in the allowedUserIds set.
-    // Used for project-scoped chats so a project-viewer mention doesn't ping users
-    // who can't see the channel.
-    const allowSet = allowedUserIds
-        ? new Set(allowedUserIds.map(id => id.toString()))
-        : null;
-
+    const senderStr = sender?.toString();
     const notified = [];
     const seen = new Set();
-    for (const u of users) {
-        const idStr = u._id.toString();
-        if (seen.has(idStr)) continue;
-        seen.add(idStr);
-        const senderStr = sender?.toString();
-        if (senderStr && idStr === senderStr) continue;
-        if (allowSet && !allowSet.has(idStr)) continue;
-        await notifyUser(io, {
-            recipient: u._id,
-            sender,
-            type: type || 'MENTION',
-            content: typeof contentBuilder === 'function' ? contentBuilder(u) : content,
-            link,
-        });
-        notified.push(u._id);
+    if (senderStr) seen.add(senderStr);
+
+    // ── @all / @everyone — broadcast to every user in the allowed scope ────
+    const hasBroadcast = tokens.some(t => /^(all|everyone|channel|here)$/i.test(t));
+    if (hasBroadcast && allowedUserIds && allowedUserIds.length > 0) {
+        for (const rawId of allowedUserIds) {
+            const idStr = rawId.toString();
+            if (seen.has(idStr)) continue;
+            seen.add(idStr);
+            await notifyUser(io, {
+                recipient: idStr,
+                sender,
+                type: type || 'MENTION',
+                content: typeof contentBuilder === 'function' ? contentBuilder({ _id: idStr, name: 'everyone' }) : content,
+                link,
+            });
+            notified.push(idStr);
+        }
+    }
+
+    // ── Named @-mentions (still resolve so "@Aditya @all" notifies Aditya only once) ────
+    const nameTokens = tokens.filter(t => !/^(all|everyone|channel|here)$/i.test(t));
+    if (nameTokens.length > 0) {
+        const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const orClauses = [];
+        for (const n of nameTokens) {
+            const e = escape(n);
+            // Full-name match OR first-word match ("Suhani" matches "Suhani Sharma")
+            orClauses.push({ name: new RegExp(`^${e}$`, 'i') });
+            orClauses.push({ name: new RegExp(`^${e}\\s`, 'i') });
+        }
+        const users = await User.find({ $or: orClauses }).select('_id name');
+
+        // Optional access scope: only notify users present in the allowedUserIds set.
+        // Used for project-scoped chats so a project-viewer mention doesn't ping users
+        // who can't see the channel.
+        const allowSet = allowedUserIds
+            ? new Set(allowedUserIds.map(id => id.toString()))
+            : null;
+
+        for (const u of users) {
+            const idStr = u._id.toString();
+            if (seen.has(idStr)) continue;
+            seen.add(idStr);
+            if (allowSet && !allowSet.has(idStr)) continue;
+            await notifyUser(io, {
+                recipient: u._id,
+                sender,
+                type: type || 'MENTION',
+                content: typeof contentBuilder === 'function' ? contentBuilder(u) : content,
+                link,
+            });
+            notified.push(u._id);
+        }
     }
     return notified;
 }

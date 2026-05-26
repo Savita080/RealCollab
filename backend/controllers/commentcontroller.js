@@ -3,6 +3,7 @@ import Task from '../models/task.js';
 import Project from '../models/project.js';
 import Workspace from '../models/workspace.js';
 import { notifyMentions } from '../utils/notify.js';
+import { toggleReaction } from '../utils/reactions.js';
 
 export const createComment = async (req, res) => {
     try {
@@ -73,6 +74,26 @@ export const getTaskComments = async (req, res) => {
     } catch (error) {
         console.error("Error fetching comments:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const reactToComment = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { emoji } = req.body;
+        const reactions = await toggleReaction(TaskComment, commentId, emoji, req.userId);
+        // Broadcast over the project room if the caller passed projectId (same pattern as create/delete)
+        const projectId = req.body.projectId;
+        if (projectId && req.io) {
+            req.io.to(projectId).emit('comment_reaction_updated', {
+                commentId,
+                reactions,
+            });
+        }
+        res.status(200).json({ reactions });
+    } catch (err) {
+        console.error('Error toggling comment reaction:', err.message);
+        res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
     }
 };
 

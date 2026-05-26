@@ -1,6 +1,7 @@
 import WorkspaceMessage from '../models/workspaceMessage.js';
 import Workspace from '../models/workspace.js';
 import { notifyMentions } from '../utils/notify.js';
+import { toggleReaction } from '../utils/reactions.js';
 
 export const sendWorkspaceMessage = async (req, res) => {
     try {
@@ -43,6 +44,25 @@ export const sendWorkspaceMessage = async (req, res) => {
     } catch (error) {
         console.error("Error sending workspace message:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const reactToWorkspaceMessage = async (req, res) => {
+    try {
+        const { workspaceId, messageId } = req.params;
+        const { emoji } = req.body;
+        const reactions = await toggleReaction(WorkspaceMessage, messageId, emoji, req.userId);
+        if (req.io) {
+            req.io.to(`workspace_${workspaceId}`).emit('message_reaction_updated', {
+                scope: 'workspace',
+                messageId,
+                reactions,
+            });
+        }
+        res.status(200).json({ reactions });
+    } catch (err) {
+        console.error('Error toggling workspace message reaction:', err.message);
+        res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
     }
 };
 

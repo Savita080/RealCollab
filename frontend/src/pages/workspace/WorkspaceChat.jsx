@@ -7,6 +7,8 @@ import { useUI } from '../../store/ui';
 import { chat as chatApi, workspaces as wsApi } from '../../lib/api';
 import { Avatar } from '../../components/ui/Badge';
 import MentionInput from '../../components/ui/MentionInput';
+import EmojiPickerButton from '../../components/ui/EmojiPickerButton';
+import ReactionBar from '../../components/ui/ReactionBar';
 import { fmtRelative } from '../../lib/utils';
 import socket from '../../lib/socket';
 import { joinWorkspace, leaveWorkspace } from '../../lib/socket';
@@ -49,6 +51,10 @@ export default function WorkspaceChat() {
     const onNew = (msg) => {
       setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
     };
+    const onReaction = ({ scope, messageId, reactions }) => {
+      if (scope !== 'workspace') return;
+      setMessages(prev => prev.map(m => m._id === messageId ? { ...m, reactions } : m));
+    };
     const onTyping = ({ workspaceId: wsId, userName }) => {
       if (wsId === workspaceId && userName !== user?.name) {
         setTypingUser(userName);
@@ -57,9 +63,11 @@ export default function WorkspaceChat() {
       }
     };
     socket.on('new_workspace_message', onNew);
+    socket.on('message_reaction_updated', onReaction);
     socket.on('workspace_user_typing', onTyping);
     return () => {
       socket.off('new_workspace_message', onNew);
+      socket.off('message_reaction_updated', onReaction);
       socket.off('workspace_user_typing', onTyping);
       clearTimeout(typingTimeoutRef.current);
     };
@@ -87,6 +95,27 @@ export default function WorkspaceChat() {
   const isMe = (m) => {
     const id = m.sender?._id ?? m.sender;
     return id === user?.id || id === user?._id;
+  };
+
+  const myId = user?.id || user?._id;
+  const handleReact = async (msgId, emoji) => {
+    setMessages(prev => prev.map(m => {
+      if (m._id !== msgId) return m;
+      const reactions = [...(m.reactions || [])];
+      const idx = reactions.findIndex(r => r.emoji === emoji);
+      if (idx === -1) {
+        reactions.push({ emoji, users: [myId] });
+      } else {
+        const users = reactions[idx].users || [];
+        const has = users.some(u => (u?._id || u)?.toString() === myId?.toString());
+        const next = has ? users.filter(u => (u?._id || u)?.toString() !== myId?.toString()) : [...users, myId];
+        if (next.length === 0) reactions.splice(idx, 1);
+        else reactions[idx] = { ...reactions[idx], users: next };
+      }
+      return { ...m, reactions };
+    }));
+    try { await chatApi.reactWorkspace(workspaceId, msgId, emoji); }
+    catch { toast('Failed to react', 'error'); }
   };
 
   return (
@@ -122,6 +151,12 @@ export default function WorkspaceChat() {
                 <span className={s.msgText}>{m.content}</span>
                 <span className={s.msgTime}>{fmtRelative(m.createdAt)}</span>
               </div>
+              <ReactionBar
+                reactions={m.reactions}
+                currentUserId={myId}
+                members={members}
+                onToggle={(emoji) => handleReact(m._id, emoji)}
+              />
             </div>
           );
         })}
@@ -149,6 +184,13 @@ export default function WorkspaceChat() {
             }
           }}
         />
+        <EmojiPickerButton
+          className={s.sendBtn}
+          title="Insert emoji"
+          onSelect={(emoji) => setInput(prev => prev + emoji)}
+        >
+          😊
+        </EmojiPickerButton>
         <button type="submit" className={s.sendBtn} disabled={!input.trim()} title="Send">
           <Send size={14} />
         </button>

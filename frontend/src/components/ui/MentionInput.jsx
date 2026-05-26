@@ -34,9 +34,20 @@ export default function MentionInput({
   // Normalize member list: members may be [{user: {...}}] OR [{_id, name, ...}]
   const memberList = (members || []).map(m => m?.user || m).filter(u => u?._id && u?.name);
 
-  const filtered = memberList
-    .filter(u => !query || u.name.toLowerCase().includes(query.toLowerCase()))
-    .slice(0, 6);
+  // Synthetic broadcast entry — backend recognises @all and notifies every member in scope.
+  const ALL_ENTRY = { _id: '__all__', name: 'all', isBroadcast: true, label: 'Notify everyone in this channel' };
+
+  const filtered = (() => {
+    const q = (query || '').toLowerCase();
+    const out = [];
+    if (!q || 'all'.startsWith(q) || 'everyone'.startsWith(q)) {
+      out.push(ALL_ENTRY);
+    }
+    for (const u of memberList) {
+      if (!q || u.name.toLowerCase().includes(q)) out.push(u);
+    }
+    return out.slice(0, 7);
+  })();
 
   // Reset index when filter changes
   useEffect(() => { setActiveIdx(0); }, [query, open]);
@@ -130,9 +141,9 @@ export default function MentionInput({
     // Replace the range [anchor, caret) with `@FullName `
     const before = text.slice(0, anchor);
     const after = text.slice(caret);
-    // Mention token (no spaces — backend regex captures \w/.- only). Replace spaces with non-breaking? No — backend supports [\w.-], so collapse to underscore-free single token by replacing spaces with no separator? Better: keep first word (matches existing comment behavior).
-    const firstWord = user.name.split(/\s+/)[0];
-    const insertion = `@${firstWord} `;
+    // Broadcast entry inserts @all literally; user mentions insert first name (matches existing behavior).
+    const token = user.isBroadcast ? 'all' : user.name.split(/\s+/)[0];
+    const insertion = `@${token} `;
     const next = before + insertion + after;
     // Build a synthetic event so parent's onChange handler updates state
     const newCaret = (before + insertion).length;
@@ -205,9 +216,11 @@ export default function MentionInput({
               onMouseDown={(e) => { e.preventDefault(); insertMention(u); }}
             >
               <span className={s.avatar} aria-hidden>
-                {u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                {u.isBroadcast ? '📣' : u.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
               </span>
-              <span className={s.name}>{u.name}</span>
+              <span className={s.name}>
+                {u.isBroadcast ? <><strong>@all</strong> <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 11 }}>{u.label}</span></> : u.name}
+              </span>
             </li>
           ))}
         </ul>,

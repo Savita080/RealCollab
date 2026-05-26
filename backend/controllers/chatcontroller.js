@@ -2,6 +2,7 @@ import ProjectMessage from '../models/projectMessage.js';
 import Project from '../models/project.js';
 import Workspace from '../models/workspace.js';
 import { notifyMentions } from '../utils/notify.js';
+import { toggleReaction } from '../utils/reactions.js';
 
 export const sendMessage = async (req, res) => {
     try {
@@ -48,6 +49,23 @@ export const sendMessage = async (req, res) => {
     } catch (error) {
         console.error("Error sending message:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const reactToProjectMessage = async (req, res) => {
+    try {
+        const { projectId, messageId } = req.params;
+        const { emoji } = req.body;
+        const reactions = await toggleReaction(ProjectMessage, messageId, emoji, req.userId);
+        req.io.to(projectId).emit('message_reaction_updated', {
+            scope: 'project',
+            messageId,
+            reactions,
+        });
+        res.status(200).json({ reactions });
+    } catch (err) {
+        console.error('Error toggling project message reaction:', err.message);
+        res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
     }
 };
 

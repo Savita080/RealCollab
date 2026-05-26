@@ -7,7 +7,7 @@ import {
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole } from '../middleware/rbac.js';
 import { checkWorkspaceLimit } from '../middleware/planLimits.js';
-import { sendWorkspaceMessage, getWorkspaceMessages } from '../controllers/workspacechatcontroller.js';
+import { sendWorkspaceMessage, getWorkspaceMessages, reactToWorkspaceMessage } from '../controllers/workspacechatcontroller.js';
 
 
 const router = express.Router();
@@ -29,5 +29,6 @@ router.delete('/:workspaceId/members/:userId', protectRoute, requireRole('ADMIN'
 // Workspace Global Chat
 router.post('/:workspaceId/chat', protectRoute, requireRole('VIEWER'), sendWorkspaceMessage);
 router.get('/:workspaceId/chat', protectRoute, requireRole('VIEWER'), getWorkspaceMessages);
+router.post('/:workspaceId/chat/:messageId/react', protectRoute, requireRole('VIEWER'), reactToWorkspaceMessage);
 
 export default router;

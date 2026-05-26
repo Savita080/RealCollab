@@ -7,6 +7,8 @@ import { emitTyping, joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb } fro
 import socket from '../../../lib/socket';
 import { chat as chatApi, whiteboards as wbApi } from '../../../lib/api';
 import MentionInput from '../../../components/ui/MentionInput';
+import EmojiPickerButton from '../../../components/ui/EmojiPickerButton';
+import ReactionBar from '../../../components/ui/ReactionBar';
 import { Avatar } from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
@@ -85,8 +87,16 @@ export default function ProjectChat() {
       if (pid !== projectId) return;
       setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
     };
+    const onReaction = ({ scope, messageId, reactions }) => {
+      if (scope !== 'project') return;
+      setMessages(prev => prev.map(m => m._id === messageId ? { ...m, reactions } : m));
+    };
     socket.on('new_group_message', onMsg);
-    return () => socket.off('new_group_message', onMsg);
+    socket.on('message_reaction_updated', onReaction);
+    return () => {
+      socket.off('new_group_message', onMsg);
+      socket.off('message_reaction_updated', onReaction);
+    };
   }, [projectId]);
 
   // Socket: typing indicator
@@ -183,6 +193,27 @@ export default function ProjectChat() {
     return id === user?.id || id === user?._id;
   };
 
+  const myId = user?.id || user?._id;
+  const handleReact = async (msgId, emoji) => {
+    setMessages(prev => prev.map(m => {
+      if (m._id !== msgId) return m;
+      const reactions = [...(m.reactions || [])];
+      const idx = reactions.findIndex(r => r.emoji === emoji);
+      if (idx === -1) {
+        reactions.push({ emoji, users: [myId] });
+      } else {
+        const users = reactions[idx].users || [];
+        const has = users.some(u => (u?._id || u)?.toString() === myId?.toString());
+        const next = has ? users.filter(u => (u?._id || u)?.toString() !== myId?.toString()) : [...users, myId];
+        if (next.length === 0) reactions.splice(idx, 1);
+        else reactions[idx] = { ...reactions[idx], users: next };
+      }
+      return { ...m, reactions };
+    }));
+    try { await chatApi.reactProject(workspaceId, projectId, msgId, emoji); }
+    catch { toast('Failed to react', 'error'); }
+  };
+
   const onWhiteboardChange = useCallback((elements) => {
     elementsRef.current = elements;
     if (isRemoteUpdateRef.current || !activeWbRef.current) return;
@@ -235,6 +266,12 @@ export default function ProjectChat() {
                     <span className={s.msgText}>{m.content}</span>
                     <span className={s.msgTime}>{fmtRelative(m.createdAt)}</span>
                   </div>
+                  <ReactionBar
+                    reactions={m.reactions}
+                    currentUserId={myId}
+                    members={projectMembers || []}
+                    onToggle={(emoji) => handleReact(m._id, emoji)}
+                  />
                 </div>
               );
             })}
@@ -256,6 +293,13 @@ export default function ProjectChat() {
                 }
               }}
             />
+            <EmojiPickerButton
+              className={s.sendBtn}
+              title="Insert emoji"
+              onSelect={(emoji) => setInput(prev => prev + emoji)}
+            >
+              😊
+            </EmojiPickerButton>
             <button type="submit" className={s.sendBtn} disabled={!input.trim()}>↑</button>
           </form>
           {typingUser && <div className={s.typingIndicator}>{typingUser} is typing…</div>}
