@@ -104,7 +104,7 @@ export default function Dashboard() {
           </p>
         </div>
         <div className={s.headerBtns}>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/kanban')}>
+          <Button variant="ghost" size="sm" onClick={() => ws && currentProject && navigate(`/workspaces/${ws._id}/projects/${currentProject._id}/kanban`)}>
             + New Task
           </Button>
           <Button variant="cyan" size="sm" onClick={fetchStandup}>
@@ -155,7 +155,7 @@ export default function Dashboard() {
         <div className={s.card}>
           <div className={s.cardHeader}>
             <span className={s.cardTitle}>ACTIVITY FEED</span>
-            <Link to="/activity" className={s.viewAll}>View All</Link>
+            <Link to={ws ? `/workspaces/${ws._id}/activity` : '#'} className={s.viewAll}>View All</Link>
           </div>
           <div className={s.feedList}>
             {feed.length === 0 && (
@@ -211,7 +211,7 @@ export default function Dashboard() {
         <div className={s.card}>
           <div className={s.cardHeader}>
             <span className={s.cardTitle}>MY TASKS</span>
-            <Link to="/kanban" className={s.viewAll}>Open Board</Link>
+            <Link to={ws && currentProject ? `/workspaces/${ws._id}/projects/${currentProject._id}/kanban` : '#'} className={s.viewAll}>Open Board</Link>
           </div>
           <div className={s.taskList}>
             {myTasks.length === 0 && <p className={s.emptyFeed}>No tasks assigned yet.</p>}
@@ -333,7 +333,7 @@ export default function Dashboard() {
                   <p className={s.standupText}>{standup.summary}</p>
                 </div>
               )}
-              <Link to="/ai" className={s.fullAI}>Full AI Panel →</Link>
+              <Link to={ws && currentProject ? `/workspaces/${ws._id}/projects/${currentProject._id}/ai` : '#'} className={s.fullAI}>Full AI Panel →</Link>
             </div>
           )}
         </div>

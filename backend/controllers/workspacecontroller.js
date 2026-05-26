@@ -236,7 +236,7 @@ export const updateMemberRole = async (req, res) => {
                 sender: req.userId,
                 type: 'ROLE_CHANGE',
                 content: `${senderName} changed your role in "${req.workspace.name}" from ${prevRole} to ${role}`,
-                link: `/dashboard`,
+                link: `/workspaces/${req.workspace._id}`,
             }).catch(err => console.error('[role-change notify] failed:', err.message));
         }
 
@@ -302,7 +302,7 @@ export const transferOwnership = async (req, res) => {
             sender: req.userId,
             type: 'ROLE_CHANGE',
             content: `${senderName} transferred ownership of "${req.workspace.name}" to you`,
-            link: `/dashboard`,
+            link: `/workspaces/${req.workspace._id}`,
         }).catch(err => console.error('[ownership notify] failed:', err.message));
 
         res.status(200).json({

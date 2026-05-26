@@ -9,7 +9,7 @@ const TYPE_LABEL = { MENTION: 'New mention', PROJECT_ASSIGN: 'New assignment', R
 
 // Routes that actually exist in App.jsx — prevents "throw to login" when an old
 // notification has a stale link like /tasks/:id (which falls through to /).
-const VALID_PREFIXES = ['/dashboard', '/kanban', '/snippets', '/wiki', '/activity', '/collab', '/ai', '/members', '/profile', '/subscribe'];
+const VALID_PREFIXES = ['/workspaces', '/profile'];
 const isSafeLink = (l) => typeof l === 'string' && VALID_PREFIXES.some(p => l === p || l.startsWith(p + '?') || l.startsWith(p + '/'));
 
 export default function NotificationPopupStack() {

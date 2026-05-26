@@ -30,7 +30,7 @@ export const sendWorkspaceMessage = async (req, res) => {
             content,
             sender: req.userId,
             type: 'MENTION',
-            link: `/collab`,
+            link: `/workspaces/${req.params.workspaceId}/chat`,
             contentBuilder: () => `${senderName} mentioned you in workspace chat: "${snippet}"`,
         }).catch(err => console.error('[ws-chat mentions] failed:', err.message));
 

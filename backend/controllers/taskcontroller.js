@@ -37,7 +37,7 @@ export const createTask = async (req, res) => {
                 sender: req.userId,
                 type: 'PROJECT_ASSIGN',
                 content: `${senderName} assigned you to "${title}"`,
-                link: `/kanban?task=${newTask._id}`,
+                link: `/workspaces/${req.params.workspaceId}/projects/${projectId}/kanban`,
             }).catch(err => console.error('[task-assign notify] failed:', err.message));
         }
 
@@ -90,7 +90,7 @@ export const updateTask = async (req, res) => {
                 sender: req.userId,
                 type: 'PROJECT_ASSIGN',
                 content: `${senderName} assigned you to "${updatedTask.title}"`,
-                link: `/kanban?task=${updatedTask._id}`,
+                link: `/workspaces/${req.params.workspaceId}/projects/${req.params.projectId}/kanban`,
             }).catch(err => console.error('[task-reassign notify] failed:', err.message));
         }
 

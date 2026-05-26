@@ -140,7 +140,7 @@ export const addProjectMember = async (req, res) => {
             sender: req.userId,
             type: 'PROJECT_ASSIGN',
             content: `${senderName} added you to "${project.name}" as ${role || 'VIEWER'}`,
-            link: `/dashboard`,
+            link: `/workspaces/${req.params.workspaceId}/projects/${req.params.projectId}`,
         }).catch(err => console.error('[project-add notify] failed:', err.message));
 
         res.status(200).json({ message: "Member added to project", members: project.members });

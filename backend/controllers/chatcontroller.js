@@ -27,7 +27,7 @@ export const sendMessage = async (req, res) => {
             content,
             sender: req.userId,
             type: 'MENTION',
-            link: `/collab?project=${projectId}`,
+            link: `/workspaces/${req.params.workspaceId}/projects/${projectId}/chat`,
             contentBuilder: () => `${senderName} mentioned you in chat: "${snippet}"`,
         }).catch(err => console.error('[chat mentions] failed:', err.message));
 

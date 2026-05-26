@@ -1,4 +1,6 @@
 import TaskComment from '../models/taskComment.js';
+import Task from '../models/task.js';
+import Project from '../models/project.js';
 import { notifyMentions } from '../utils/notify.js';
 
 export const createComment = async (req, res) => {
@@ -23,14 +25,19 @@ export const createComment = async (req, res) => {
             req.io.to(req.body.projectId).emit('task_comment_added', populatedComment);
         }
 
-        // Notify @mentioned users
+        // Notify @mentioned users — build proper workspace link
         const senderName = populatedComment.author?.name || 'Someone';
         const snippet = content.slice(0, 80) + (content.length > 80 ? '…' : '');
+        const task = await Task.findById(taskId).select('project').lean();
+        const proj = task ? await Project.findById(task.project).select('workspace').lean() : null;
+        const notifLink = proj
+            ? `/workspaces/${proj.workspace}/projects/${task.project}/kanban`
+            : `/workspaces`;
         notifyMentions(req.io, {
             content,
             sender: req.userId,
             type: 'MENTION',
-            link: `/kanban?task=${taskId}`,
+            link: notifLink,
             contentBuilder: () => `${senderName} mentioned you in a comment: "${snippet}"`,
         }).catch(err => console.error('[comment mentions] failed:', err.message));
 
