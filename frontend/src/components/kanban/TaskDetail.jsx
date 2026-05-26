@@ -12,6 +12,8 @@ import { Input, Textarea, Select } from '../ui/Input';
 import MentionInput from '../ui/MentionInput';
 import EmojiPickerButton from '../ui/EmojiPickerButton';
 import ReactionBar from '../ui/ReactionBar';
+import { ReplyButton, QuoteChip, ReplyPreview } from '../ui/ReplyControls';
+import rs from '../../styles/modules/ReplyControls.module.css';
 import { PriorityChip, Avatar } from '../ui/Badge';
 import { fmtDate, fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/TaskDetail.module.css';
@@ -39,7 +41,9 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(true);
+  const [replyingTo, setReplyingTo] = useState(null);
   const commentsEndRef = useRef(null);
+  const commentRefs = useRef({});
 
   // Sync form state when the current task updates in store (e.g. edited elsewhere or saved)
   useEffect(() => {
@@ -115,10 +119,12 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
   const submitComment = async (e) => {
     e.preventDefault();
     if (!comment.trim()) return;
+    const replyToId = replyingTo?._id;
     try {
       const { data } = await tasksApi.comment(currentTask._id, {
         content: comment,
         projectId: currentProject._id,
+        ...(replyToId ? { replyTo: replyToId } : {}),
       });
       const newComment = data.comment ?? data;
       // Optimistically add if socket doesn't fire for self
@@ -128,10 +134,27 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
       });
       await detectMentions(comment);
       setComment('');
+      setReplyingTo(null);
     } catch {
       toast('Failed to post comment', 'error');
     }
   };
+
+  const jumpToComment = (commentId) => {
+    const el = commentRefs.current[commentId];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add(rs.highlight);
+    setTimeout(() => el.classList.remove(rs.highlight), 1500);
+  };
+
+  // Esc cancels active reply
+  useEffect(() => {
+    if (!replyingTo) return;
+    const onKey = (e) => { if (e.key === 'Escape') setReplyingTo(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [replyingTo]);
 
   const handleDeleteComment = async (commentId) => {
     try {
@@ -252,7 +275,11 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
               <p className={s.noComments}>No comments yet. Be the first!</p>
             )}
             {comments.map((c) => (
-              <div key={c._id} className={s.comment}>
+              <div
+                key={c._id}
+                ref={el => { if (c._id) commentRefs.current[c._id] = el; }}
+                className={s.comment}
+              >
                 <Avatar name={c.author?.name || 'U'} size={26} />
                 <div className={s.commentBody}>
                   <div className={s.commentHeader}>
@@ -262,21 +289,26 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
                       <button className={s.deleteCommentBtn} onClick={() => handleDeleteComment(c._id)} title="Delete">✕</button>
                     )}
                   </div>
+                  <QuoteChip replyTo={c.replyTo} mine={false} onJump={jumpToComment} />
                   <p className={s.commentText}>{c.content}</p>
-                  <ReactionBar
-                    reactions={c.reactions}
-                    currentUserId={myId}
-                    members={mentionPool}
-                    onToggle={(emoji) => handleReactComment(c._id, emoji)}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <ReactionBar
+                      reactions={c.reactions}
+                      currentUserId={myId}
+                      members={mentionPool}
+                      onToggle={(emoji) => handleReactComment(c._id, emoji)}
+                    />
+                    <ReplyButton onClick={() => setReplyingTo(c)} />
+                  </div>
                 </div>
               </div>
             ))}
             <div ref={commentsEndRef} />
           </div>
+          <ReplyPreview replyingTo={replyingTo} onCancel={() => setReplyingTo(null)} />
           <form onSubmit={submitComment} className={s.commentForm}>
             <MentionInput
-              placeholder="Add a comment… use @ to mention someone"
+              placeholder={replyingTo ? `Reply to ${replyingTo.author?.name || 'comment'}…` : 'Add a comment… use @ to mention someone'}
               value={comment}
               members={mentionPool}
               onChange={e => setComment(e.target.value)}

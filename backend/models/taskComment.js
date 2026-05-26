@@ -15,6 +15,11 @@ const taskCommentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    replyTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TaskComment',
+        default: null,
+    },
     reactions: [{
         emoji: { type: String, required: true },
         users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

@@ -1,24 +1,36 @@
 import WorkspaceMessage from '../models/workspaceMessage.js';
 import Workspace from '../models/workspace.js';
-import { notifyMentions } from '../utils/notify.js';
+import { notifyMentions, notifyUser } from '../utils/notify.js';
 import { toggleReaction } from '../utils/reactions.js';
+
+const REPLY_POPULATE = { path: 'replyTo', select: 'content sender', populate: { path: 'sender', select: 'name' } };
 
 export const sendWorkspaceMessage = async (req, res) => {
     try {
         const { workspaceId } = req.params;
-        const { content } = req.body;
+        const { content, replyTo } = req.body;
 
         if (!content) {
             return res.status(400).json({ message: "Message content is required" });
         }
 
+        // Validate replyTo belongs to the same workspace
+        let validReplyTo = null;
+        if (replyTo) {
+            const parent = await WorkspaceMessage.findById(replyTo).select('workspace').lean();
+            if (parent && parent.workspace.toString() === workspaceId) validReplyTo = replyTo;
+        }
+
         const newMessage = await WorkspaceMessage.create({
             workspace: workspaceId,
             sender: req.userId,
-            content
+            content,
+            replyTo: validReplyTo,
         });
 
-        const populatedMessage = await newMessage.populate('sender', 'name avatar');
+        const populatedMessage = await WorkspaceMessage.findById(newMessage._id)
+            .populate('sender', 'name avatar')
+            .populate(REPLY_POPULATE);
 
         // Broadcast to the entire workspace room
         if (req.io) {
@@ -31,14 +43,28 @@ export const sendWorkspaceMessage = async (req, res) => {
         const snippet = content.slice(0, 80) + (content.length > 80 ? '…' : '');
         const ws = await Workspace.findById(workspaceId).select('members').lean();
         const allowedUserIds = (ws?.members || []).map(m => m.user.toString());
+        const chatLink = `/workspaces/${req.params.workspaceId}/chat`;
         notifyMentions(req.io, {
             content,
             sender: req.userId,
             type: 'MENTION',
-            link: `/workspaces/${req.params.workspaceId}/chat`,
+            link: chatLink,
             contentBuilder: () => `${senderName} mentioned you in workspace chat: "${snippet}"`,
             allowedUserIds,
         }).catch(err => console.error('[ws-chat mentions] failed:', err.message));
+
+        if (validReplyTo) {
+            const parentSender = populatedMessage.replyTo?.sender?._id;
+            if (parentSender) {
+                notifyUser(req.io, {
+                    recipient: parentSender,
+                    sender: req.userId,
+                    type: 'MENTION',
+                    content: `${senderName} replied to you in workspace chat: "${snippet}"`,
+                    link: chatLink,
+                }).catch(err => console.error('[ws-chat reply notify] failed:', err.message));
+            }
+        }
 
         res.status(201).json({ message: "Workspace message sent", data: populatedMessage });
     } catch (error) {
@@ -73,6 +99,7 @@ export const getWorkspaceMessages = async (req, res) => {
         // Fetch last 50 messages for the workspace chat
         const messages = await WorkspaceMessage.find({ workspace: workspaceId })
             .populate('sender', 'name avatar')
+            .populate(REPLY_POPULATE)
             .sort('createdAt')
             .limit(50);
 

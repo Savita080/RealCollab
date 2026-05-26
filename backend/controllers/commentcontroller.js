@@ -2,26 +2,38 @@ import TaskComment from '../models/taskComment.js';
 import Task from '../models/task.js';
 import Project from '../models/project.js';
 import Workspace from '../models/workspace.js';
-import { notifyMentions } from '../utils/notify.js';
+import { notifyMentions, notifyUser } from '../utils/notify.js';
 import { toggleReaction } from '../utils/reactions.js';
+
+const REPLY_POPULATE = { path: 'replyTo', select: 'content author', populate: { path: 'author', select: 'name' } };
 
 export const createComment = async (req, res) => {
     try {
         const { taskId } = req.params;
-        const { content } = req.body;
+        const { content, replyTo } = req.body;
 
         if (!content) {
             return res.status(400).json({ message: "Content is required" });
         }
 
+        // Validate replyTo belongs to the same task
+        let validReplyTo = null;
+        if (replyTo) {
+            const parent = await TaskComment.findById(replyTo).select('task').lean();
+            if (parent && parent.task.toString() === taskId) validReplyTo = replyTo;
+        }
+
         const newComment = await TaskComment.create({
             task: taskId,
             author: req.userId,
-            content
+            content,
+            replyTo: validReplyTo,
         });
 
-        // Fetch the created comment and populate author so the live event has the name/avatar
-        const populatedComment = await TaskComment.findById(newComment._id).populate('author', 'name avatar');
+        // Fetch the created comment and populate author + replyTo for the live event
+        const populatedComment = await TaskComment.findById(newComment._id)
+            .populate('author', 'name avatar')
+            .populate(REPLY_POPULATE);
 
         if (req.body.projectId) {
             req.io.to(req.body.projectId).emit('task_comment_added', populatedComment);
@@ -55,6 +67,19 @@ export const createComment = async (req, res) => {
             allowedUserIds,
         }).catch(err => console.error('[comment mentions] failed:', err.message));
 
+        if (validReplyTo) {
+            const parentAuthor = populatedComment.replyTo?.author?._id;
+            if (parentAuthor) {
+                notifyUser(req.io, {
+                    recipient: parentAuthor,
+                    sender: req.userId,
+                    type: 'MENTION',
+                    content: `${senderName} replied to your comment: "${snippet}"`,
+                    link: notifLink,
+                }).catch(err => console.error('[comment reply notify] failed:', err.message));
+            }
+        }
+
         res.status(201).json({ message: "Comment added", comment: populatedComment });
     } catch (error) {
         console.error("Error adding comment:", error.message);
@@ -65,9 +90,10 @@ export const createComment = async (req, res) => {
 export const getTaskComments = async (req, res) => {
     try {
         const { taskId } = req.params;
-        // Populate the author so the frontend gets their name and avatar
+        // Populate the author + replyTo so the frontend gets their name, avatar, and quote preview
         const comments = await TaskComment.find({ task: taskId })
             .populate('author', 'name avatar')
+            .populate(REPLY_POPULATE)
             .sort('createdAt');
             
         res.status(200).json({ comments });

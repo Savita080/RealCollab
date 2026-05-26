@@ -10,6 +10,8 @@ import { Avatar } from '../../components/ui/Badge';
 import MentionInput from '../../components/ui/MentionInput';
 import EmojiPickerButton from '../../components/ui/EmojiPickerButton';
 import ReactionBar from '../../components/ui/ReactionBar';
+import { ReplyButton, QuoteChip, ReplyPreview } from '../../components/ui/ReplyControls';
+import rs from '../../styles/modules/ReplyControls.module.css';
 import { fmtRelative } from '../../lib/utils';
 import { emitTyping } from '../../lib/socket';
 import socket from '../../lib/socket';
@@ -26,9 +28,11 @@ export default function ProjectChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [typingUser, setTypingUser] = useState(null);
+  const [replyingTo, setReplyingTo] = useState(null); // { _id, content, sender }
   const typingTimeoutRef = useRef(null);
   const typingEmitRef = useRef(null);
   const bottomRef = useRef(null);
+  const messageRefs = useRef({}); // msgId → DOM node, for jump-to-original
 
   useEffect(() => {
     if (!workspaceId || !projectId) return;
@@ -83,16 +87,39 @@ export default function ProjectChat() {
     e.preventDefault();
     if (!input.trim()) return;
     const text = input.trim();
+    const replyToId = replyingTo?._id;
     setInput('');
+    setReplyingTo(null);
     try {
-      const { data } = await chatApi.sendProject(workspaceId, projectId, { content: text });
+      const { data } = await chatApi.sendProject(workspaceId, projectId, {
+        content: text,
+        ...(replyToId ? { replyTo: replyToId } : {}),
+      });
       const msg = data.chatMessage ?? data;
       setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
     } catch {
       setInput(text);
+      if (replyToId) setReplyingTo(replyingTo);
       toast('Failed to send', 'error');
     }
   };
+
+  // Jump to + flash-highlight an original message when its quote chip is clicked.
+  const jumpToMessage = (msgId) => {
+    const el = messageRefs.current[msgId];
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add(rs.highlight);
+    setTimeout(() => el.classList.remove(rs.highlight), 1500);
+  };
+
+  // Esc cancels the active reply
+  useEffect(() => {
+    if (!replyingTo) return;
+    const onKey = (e) => { if (e.key === 'Escape') setReplyingTo(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [replyingTo]);
 
   const isMe = (m) => {
     const id = m.sender?._id ?? m.sender;
@@ -148,7 +175,11 @@ export default function ProjectChat() {
           const thisSenderId = m.sender?._id ?? m.sender;
           const showName = !mine && (i === 0 || prevSenderId !== thisSenderId);
           return (
-            <div key={m._id ?? i} className={`${s.msgGroup} ${mine ? s.mine : ''}`}>
+            <div
+              key={m._id ?? i}
+              ref={el => { if (m._id) messageRefs.current[m._id] = el; }}
+              className={`${s.msgGroup} ${mine ? s.mine : ''}`}
+            >
               {showName && (
                 <div className={s.senderMeta}>
                   <Avatar name={senderName} size={20} />
@@ -156,15 +187,19 @@ export default function ProjectChat() {
                 </div>
               )}
               <div className={s.bubble}>
+                <QuoteChip replyTo={m.replyTo} mine={mine} onJump={jumpToMessage} />
                 <span className={s.msgText}>{m.content}</span>
                 <span className={s.msgTime}>{fmtRelative(m.createdAt)}</span>
               </div>
-              <ReactionBar
-                reactions={m.reactions}
-                currentUserId={myId}
-                members={members}
-                onToggle={(emoji) => handleReact(m._id, emoji)}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <ReactionBar
+                  reactions={m.reactions}
+                  currentUserId={myId}
+                  members={members}
+                  onToggle={(emoji) => handleReact(m._id, emoji)}
+                />
+                <ReplyButton onClick={() => setReplyingTo(m)} />
+              </div>
             </div>
           );
         })}
@@ -177,11 +212,12 @@ export default function ProjectChat() {
         </div>
       )}
 
+      <ReplyPreview replyingTo={replyingTo} onCancel={() => setReplyingTo(null)} />
       <form className={s.inputRow} onSubmit={send}>
         <MentionInput
           className={s.mentionWrap}
           inputClassName={s.input}
-          placeholder={`Message ${project?.name || 'project'}… (use @ to mention)`}
+          placeholder={replyingTo ? `Reply to ${replyingTo.sender?.name || 'message'}…` : `Message ${project?.name || 'project'}… (use @ to mention)`}
           value={input}
           members={members}
           onChange={e => {
