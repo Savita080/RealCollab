@@ -6,6 +6,7 @@ import { useUI } from '../../store/ui';
 import { Avatar } from '../ui/Badge';
 import { useClickOutside } from '../../lib/hooks';
 import NotificationDropdown from './NotificationDropdown';
+import ProfileCardBadge from './ProfileCardBadge';
 import s from '../../styles/modules/TopBar.module.css';
 
 const PAGE_LABELS = {
@@ -88,19 +89,15 @@ export default function TopBar() {
         {/* Avatar */}
         <div className={s.userWrap} ref={userRef}>
           <button className={s.userBtn} onClick={toggleUser}>
-            <Avatar name={user?.name || 'U'} size={28} />
+            <Avatar name={user?.name || 'U'} src={user?.avatar} size={28} />
           </button>
           {userOpen && (
-            <div className={s.dropdown}>
-              <div className={s.userInfo}>
-                <strong>{user?.name}</strong>
-                <span>{user?.email}</span>
-              </div>
-              <hr className={s.sep} />
-              <Link to="/dashboard" className={s.item} onClick={() => setUserOpen(false)}>Dashboard</Link>
-              <Link to="/members"   className={s.item} onClick={() => setUserOpen(false)}>Members</Link>
-              <button className={s.item} onClick={logout}>Sign out</button>
-            </div>
+            <ProfileCardBadge
+              user={user}
+              onClose={() => setUserOpen(false)}
+              onLogout={logout}
+              style={{ top: 'calc(100% + 10px)', right: '0' }}
+            />
           )}
         </div>
       </div>

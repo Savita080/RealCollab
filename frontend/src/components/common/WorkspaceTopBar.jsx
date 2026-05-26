@@ -8,6 +8,7 @@ import { useWorkspace } from '../../store/workspace';
 import { Avatar } from '../ui/Badge';
 import { useClickOutside } from '../../lib/hooks';
 import NotificationDropdown from '../layout/NotificationDropdown';
+import ProfileCardBadge from '../layout/ProfileCardBadge';
 import s from '../../styles/modules/WorkspaceTopBar.module.css';
 
 const SEGMENT_LABELS = {
@@ -137,26 +138,15 @@ export default function WorkspaceTopBar({ workspace, role }) {
 
         <div className={s.userWrap} ref={userRef}>
           <button className={s.userBtn} onClick={toggleUser}>
-            <Avatar name={user?.name || 'U'} size={28} />
+            <Avatar name={user?.name || 'U'} src={user?.avatar} size={28} />
           </button>
           {userOpen && (
-            <div className={s.dropdown}>
-              <div className={s.userInfo}>
-                <strong>{user?.name}</strong>
-                <span>{user?.email}</span>
-              </div>
-              <hr className={s.sep} />
-              <Link to="/profile" className={s.item} onClick={() => setUserOpen(false)}>
-                <UserIcon size={14} /> Profile
-              </Link>
-              <Link to="/workspaces" className={s.item} onClick={() => setUserOpen(false)}>
-                <SettingsIcon size={14} /> Switch Workspace
-              </Link>
-              <hr className={s.sep} />
-              <button className={`${s.item} ${s.danger}`} onClick={logout}>
-                <LogOut size={14} /> Sign out
-              </button>
-            </div>
+            <ProfileCardBadge
+              user={user}
+              onClose={() => setUserOpen(false)}
+              onLogout={logout}
+              style={{ top: 'calc(100% + 10px)', right: '0' }}
+            />
           )}
         </div>
       </div>

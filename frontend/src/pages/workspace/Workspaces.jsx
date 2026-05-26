@@ -1,5 +1,5 @@
 // pages/workspace/Workspaces.jsx — landing/master after login: list all workspaces
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, FolderKanban, Sparkles, ArrowRight, LogOut, MoreHorizontal } from 'lucide-react';
 import { useWorkspace } from '../../store/workspace';
@@ -9,6 +9,8 @@ import { workspaces as wsApi, projects as projApi, notifications as notifApi } f
 import { Avatar } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/Input';
+import { useClickOutside } from '../../lib/hooks';
+import ProfileCardBadge from '../../components/layout/ProfileCardBadge';
 import Button from '../../components/ui/Button';
 import s from '../../styles/modules/Workspaces.module.css';
 
@@ -21,6 +23,8 @@ const WS_GRADIENTS = [
   ['#8b5cf6', '#ec4899'],
 ];
 
+const ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };
+
 export default function Workspaces() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -32,6 +36,10 @@ export default function Workspaces() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
+
+  const userRef = useRef(null);
+  useClickOutside(userRef, () => setUserOpen(false));
 
   useEffect(() => {
     fetchWorkspaces().finally(() => setLoading(false));
@@ -54,10 +62,10 @@ export default function Workspaces() {
         const projects = p.data.projects ?? p.data ?? [];
         setStats(prev => ({
           ...prev,
-          [w._id]: { members: members.length, projects: projects.length },
+          [w._id]: { members: members.length, projects: projects.length, membersList: members },
         }));
       } catch {
-        setStats(prev => ({ ...prev, [w._id]: { members: 0, projects: 0 } }));
+        setStats(prev => ({ ...prev, [w._id]: { members: 0, projects: 0, membersList: [] } }));
       }
     });
   }, [wsList.length]);
@@ -85,15 +93,25 @@ export default function Workspaces() {
             <span className={s.brandReal}>Real</span>Collab
           </span>
         </div>
-        <div className={s.userBox}>
-          <Avatar name={user?.name || 'U'} size={32} />
-          <div className={s.userText}>
-            <div className={s.userName}>{user?.name}</div>
-            <div className={s.userEmail}>{user?.email}</div>
-          </div>
+        <div className={s.userBox} ref={userRef} style={{ position: 'relative' }}>
+          <button className={s.userClickArea} onClick={() => setUserOpen(o => !o)}>
+            <Avatar name={user?.name || 'U'} src={user?.avatar} size={32} />
+            <div className={s.userText}>
+              <div className={s.userName}>{user?.name}</div>
+              <div className={s.userEmail}>{user?.email}</div>
+            </div>
+          </button>
           <button className={s.iconBtn} onClick={logout} title="Sign out">
             <LogOut size={14} />
           </button>
+          {userOpen && (
+            <ProfileCardBadge
+              user={user}
+              onClose={() => setUserOpen(false)}
+              onLogout={logout}
+              style={{ top: 'calc(100% + 14px)', right: '0' }}
+            />
+          )}
         </div>
       </header>
 
@@ -136,6 +154,10 @@ export default function Workspaces() {
         {wsList.map((w, i) => {
           const grad = WS_GRADIENTS[i % WS_GRADIENTS.length];
           const st = stats[w._id];
+          const uid = user?.id || user?._id;
+          const myMember = st?.membersList?.find(mem => (mem.user?._id || mem.user) === uid);
+          const role = myMember?.role || 'MEMBER';
+
           return (
             <button
               key={w._id}
@@ -181,14 +203,21 @@ export default function Workspaces() {
                   </div>
                   
                   <div className={s.folderFooter}>
-                    <div className={s.folderStat}>
-                      <Users size={12} className={s.folderStatIcon} />
-                      <span>{st ? `${st.members} Member${st.members === 1 ? '' : 's'}` : '…'}</span>
+                    <div className={s.folderStatsGroup}>
+                      <div className={s.folderStat}>
+                        <Users size={12} className={s.folderStatIcon} />
+                        <span>{st ? `${st.members} Member${st.members === 1 ? '' : 's'}` : '…'}</span>
+                      </div>
+                      <div className={s.folderStat}>
+                        <FolderKanban size={12} className={s.folderStatIcon} />
+                        <span>{st ? `${st.projects} Project${st.projects === 1 ? '' : 's'}` : '…'}</span>
+                      </div>
                     </div>
-                    <div className={s.folderStat}>
-                      <FolderKanban size={12} className={s.folderStatIcon} />
-                      <span>{st ? `${st.projects} Project${st.projects === 1 ? '' : 's'}` : '…'}</span>
-                    </div>
+                    {st && (
+                      <span className={s.cardRoleBadge} style={{ backgroundColor: ROLE_COLORS[role] }}>
+                        {role}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
