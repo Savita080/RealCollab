@@ -56,10 +56,10 @@ export default function ProjectChat() {
         typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 2500);
       }
     };
-    socket.on('new_message', onNew);
+    socket.on('new_group_message', onNew);
     socket.on('typing', onTyping);
     return () => {
-      socket.off('new_message', onNew);
+      socket.off('new_group_message', onNew);
       socket.off('typing', onTyping);
       clearTimeout(typingTimeoutRef.current);
     };

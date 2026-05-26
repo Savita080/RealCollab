@@ -41,6 +41,17 @@ export const setupKanbanSockets = (io) => {
             await broadcastPresence(io, projectId, redis);
         });
 
+        // WORKSPACE ROOMS: for workspace-level chat broadcasts
+        socket.on('join_workspace', (workspaceId) => {
+            socket.join(`workspace_${workspaceId}`);
+            console.log(`[Socket] User ${socket.id} joined workspace room: workspace_${workspaceId}`);
+        });
+
+        socket.on('leave_workspace', (workspaceId) => {
+            socket.leave(`workspace_${workspaceId}`);
+            console.log(`[Socket] User ${socket.id} left workspace room: workspace_${workspaceId}`);
+        });
+
         // 3. TYPING INDICATOR: User is typing in chat
         socket.on('typing', ({ projectId, userName }) => {
             if (!projectId || !userName) return;

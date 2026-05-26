@@ -8,6 +8,8 @@ import { chat as chatApi, workspaces as wsApi } from '../../lib/api';
 import { Avatar } from '../../components/ui/Badge';
 import MentionInput from '../../components/ui/MentionInput';
 import { fmtRelative } from '../../lib/utils';
+import socket from '../../lib/socket';
+import { joinWorkspace, leaveWorkspace } from '../../lib/socket';
 import s from '../../styles/modules/Chat.module.css';
 
 export default function WorkspaceChat() {
@@ -21,9 +23,10 @@ export default function WorkspaceChat() {
   const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
 
-  // Load history
+  // Join workspace socket room + load history
   useEffect(() => {
     if (!workspaceId) return;
+    joinWorkspace(workspaceId);
     setLoading(true);
     chatApi.workspaceMessages(workspaceId)
       .then(({ data }) => setMessages(data.messages ?? data ?? []))
@@ -33,6 +36,18 @@ export default function WorkspaceChat() {
     wsApi.members(workspaceId)
       .then(({ data }) => setMembers(data.members ?? []))
       .catch(() => setMembers([]));
+
+    return () => leaveWorkspace(workspaceId);
+  }, [workspaceId]);
+
+  // Realtime new messages
+  useEffect(() => {
+    if (!workspaceId) return;
+    const onNew = (msg) => {
+      setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
+    };
+    socket.on('new_workspace_message', onNew);
+    return () => socket.off('new_workspace_message', onNew);
   }, [workspaceId]);
 
   useEffect(() => {
