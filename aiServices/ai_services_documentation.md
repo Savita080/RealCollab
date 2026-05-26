@@ -379,18 +379,57 @@ CORS_ORIGINS=*
 ---
 
 ## 5. Task Breaker (`taskBreaker`)
-**Note:** This microservice is currently a placeholder directory. The Python implementation does not exist yet. However, the Node.js backend currently passes the following payload down to it:
+**Port**: `8004`  
+**Endpoint**: `POST /api/breakdown`
 
-### Expected Input (From Node.js)
+Breaks down a high-level feature description into actionable subtasks using an LLM. Accepts optional project context (name, description, existing tasks) to generate context-aware subtasks with titles, descriptions, priorities, and labels.
+
+### Expected Input
 ```json
 {
-  "projectId": "proj_123",
-  "featureDescription": "We need to add a secure payment gateway integration."
+  "projectId": "proj_998xak20",
+  "featureDescription": "make a settings page",
+  "context": {
+    "project_name": "RealCollab Project Management",
+    "project_description": "A collaborative project management tool built with Next.js on the frontend and Supabase PostgreSQL on the backend.",
+    "existing_tasks": []
+  }
 }
 ```
 
+*Note: `context` is optional. `context.existing_tasks` is used to avoid generating duplicate subtasks.*
+
 ### Expected Output
-*(To be determined once the python schemas are implemented).*
+```json
+{
+  "project_id": "proj_998xak20",
+  "feature_title": "Settings Page",
+  "subtasks": [
+    {
+      "title": "Design Settings Page UI",
+      "description": "Create a new React component for the settings page...",
+      "priority": "P1",
+      "labels": ["frontend", "UI"]
+    },
+    {
+      "title": "Implement Settings API Endpoint",
+      "description": "Create a new API endpoint using Supabase PostgreSQL...",
+      "priority": "P0",
+      "labels": ["backend", "api", "database"]
+    }
+  ],
+  "duration_ms": 1876
+}
+```
 
 ### `.env.example`
-*(To be determined).*
+```env
+LLM_PROVIDER=groq
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+
+HOST=0.0.0.0
+PORT=8004
+RELOAD=true
+CORS_ORIGINS=*
+```
