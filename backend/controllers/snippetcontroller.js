@@ -1,4 +1,6 @@
 import CodeSnippet from '../models/codeSnippet.js';
+import { logProjectActivity } from '../utils/activityLogger.js';
+import { PROJ_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
 
 export const createSnippet = async (req, res) => {
     try {
@@ -12,6 +14,16 @@ export const createSnippet = async (req, res) => {
             code,
             description,
             tags
+        });
+
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.SNIPPET_CREATED,
+            objectType: OBJECT_TYPES.SNIPPET,
+            targetId: newSnippet._id,
+            targetName: title || 'Untitled snippet',
         });
 
         res.status(201).json({ message: "Snippet created", snippet: newSnippet });
@@ -48,13 +60,37 @@ export const getSnippetById = async (req, res) => {
 
 export const updateSnippet = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id, projectId, workspaceId } = req.params;
         const updates = req.body;
-        
+
+        const before = await CodeSnippet.findById(id);
+        if (!before) return res.status(404).json({ message: "Snippet not found" });
+
         const updatedSnippet = await CodeSnippet.findByIdAndUpdate(id, updates, { new: true });
-        
+
         if (!updatedSnippet) return res.status(404).json({ message: "Snippet not found" });
-        
+
+        const codeChanged = updates.code !== undefined && updates.code !== before.code;
+        const metaChanged = ['title', 'language', 'description', 'tags'].some(
+            k => updates[k] !== undefined && updates[k] !== before[k],
+        );
+
+        const base = {
+            workspace: workspaceId,
+            project: projectId,
+            user: req.userId,
+            objectType: OBJECT_TYPES.SNIPPET,
+            targetId: updatedSnippet._id,
+            targetName: updatedSnippet.title || 'Untitled snippet',
+        };
+
+        if (codeChanged) {
+            await logProjectActivity({ ...base, action: PROJ_ACTIONS.SNIPPET_UPDATED });
+        }
+        if (metaChanged) {
+            await logProjectActivity({ ...base, action: PROJ_ACTIONS.SNIPPET_METADATA_UPDATED });
+        }
+
         res.status(200).json({ message: "Snippet updated", snippet: updatedSnippet });
     } catch (error) {
         console.error("Error updating snippet:", error.message);
@@ -66,9 +102,19 @@ export const deleteSnippet = async (req, res) => {
     try {
         const { id } = req.params;
         const deleted = await CodeSnippet.findByIdAndDelete(id);
-        
+
         if (!deleted) return res.status(404).json({ message: "Snippet not found" });
-        
+
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: req.params.projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.SNIPPET_DELETED,
+            objectType: OBJECT_TYPES.SNIPPET,
+            targetId: deleted._id,
+            targetName: deleted.title || 'Untitled snippet',
+        });
+
         res.status(200).json({ message: "Snippet deleted" });
     } catch (error) {
         console.error("Error deleting snippet:", error.message);

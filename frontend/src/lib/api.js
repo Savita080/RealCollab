@@ -91,6 +91,7 @@ export const projects = {
   delete:      (wid, id)    => api.delete(`/workspaces/${wid}/projects/${id}`),
   members:     (wid, pid)       => api.get(`/workspaces/${wid}/projects/${pid}/members`),
   addMember:   (wid, pid, d)    => api.post(`/workspaces/${wid}/projects/${pid}/members`, d),
+  updateMemberRole: (wid, pid, uid, d) => api.patch(`/workspaces/${wid}/projects/${pid}/members/${uid}/role`, d),
   removeMember:(wid, pid, uid)  => api.delete(`/workspaces/${wid}/projects/${pid}/members/${uid}`),
 };
 
@@ -135,6 +136,7 @@ export const wiki = {
 export const whiteboards = {
   list:   (wid, pid)     => api.get(`/workspaces/${wid}/projects/${pid}/whiteboards`),
   create: (wid, pid, d)  => api.post(`/workspaces/${wid}/projects/${pid}/whiteboards`, d),
+  update: (wid, pid, id, d) => api.patch(`/workspaces/${wid}/projects/${pid}/whiteboards/${id}`, d),
   delete: (wid, pid, id) => api.delete(`/workspaces/${wid}/projects/${pid}/whiteboards/${id}`),
 };
 
@@ -153,8 +155,10 @@ export const chat = {
 };
 
 // ── Activity ──────────────────────────────────────────
-// Mounted at: /api/workspaces/:wId/projects/:pId/activity
 export const activity = {
+  listWorkspace: (wid, params) => api.get(`/workspaces/${wid}/activity`, { params }),
+  listProject:   (wid, pid, params) => api.get(`/workspaces/${wid}/projects/${pid}/activity`, { params }),
+  /** @deprecated use listProject */
   list: (wid, pid, params) => api.get(`/workspaces/${wid}/projects/${pid}/activity`, { params }),
 };
 
@@ -211,7 +215,9 @@ if (BYPASS_BACKEND) {
       { _id: 't2', title: 'Setup DB', status: 'In Progress', priority: 'P0', assignee: mockUser },
       { _id: 't3', title: 'Deploy Frontend', status: 'Done', priority: 'P2', assignee: mockUser }
     ] };
-    if (url.includes('/activity')) return { activities: [] };
+    if (url.includes('/activity')) return { activities: [
+      { _id: 'a1', action: 'PROJECT_CREATED', user: mockUser, targetName: 'Website Redesign', createdAt: new Date().toISOString() },
+    ] };
     if (url.includes('/standup')) return { done: 'Finished mock setup', today: 'Testing Vercel frontend', blockers: 'None', summary: 'Everything looks good!' };
     if (url.includes('/chat')) return { messages: [] };
     if (url.includes('/wiki')) return [];

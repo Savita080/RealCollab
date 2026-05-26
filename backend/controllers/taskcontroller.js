@@ -1,6 +1,8 @@
 import Task from '../models/task.js';
 import User from '../models/user.js';
 import { notifyUser } from '../utils/notify.js';
+import { logProjectActivity } from '../utils/activityLogger.js';
+import { PROJ_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
 
 export const createTask = async (req, res) => {
     try {
@@ -42,6 +44,16 @@ export const createTask = async (req, res) => {
         }
 
         req.io.to(projectId).emit('task_created', newTask);
+
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.TASK_CREATED,
+            objectType: OBJECT_TYPES.KANBAN,
+            targetId: newTask._id,
+            targetName: title,
+        });
 
         res.status(201).json({
             message: "Task created successfully",
@@ -98,6 +110,17 @@ export const updateTask = async (req, res) => {
 
         req.io.to(req.params.projectId).emit('task_updated', updatedTask);
 
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: req.params.projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.TASK_UPDATED,
+            objectType: OBJECT_TYPES.KANBAN,
+            targetId: updatedTask._id,
+            targetName: updatedTask.title,
+            metadata: { fields: Object.keys(updates) },
+        });
+
         res.status(200).json({
             message: "Task updated successfully",
             task: updatedTask
@@ -118,6 +141,16 @@ export const deleteTask = async (req, res) => {
         }
 
         req.io.to(req.params.projectId).emit('task_deleted', taskId);
+
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: req.params.projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.TASK_DELETED,
+            objectType: OBJECT_TYPES.KANBAN,
+            targetId: deletedTask._id,
+            targetName: deletedTask.title,
+        });
 
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {

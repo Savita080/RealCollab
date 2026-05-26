@@ -4,6 +4,27 @@ import TaskComment from '../models/taskComment.js';
 import Workspace from '../models/workspace.js';
 import User from '../models/user.js';
 import ActivityLog from '../models/activityLog.js';
+import { logProjectActivity } from '../utils/activityLogger.js';
+import { PROJ_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
+
+async function logAiServiceUse(userId, projectId, action, label) {
+    try {
+        const project = await Project.findById(projectId).select('workspace name');
+        if (!project) return;
+        await logProjectActivity({
+            workspace: project.workspace,
+            project: projectId,
+            user: userId,
+            action,
+            objectType: OBJECT_TYPES.AI,
+            targetId: projectId,
+            targetName: label || project.name,
+            metadata: { aiService: action },
+        });
+    } catch (e) {
+        console.error('[activity] AI log failed:', e.message);
+    }
+}
 import ProjectMessage from '../models/projectMessage.js';
 import WikiPage from '../models/wikiPage.js';
 import WikiPageVersion from '../models/wikiPageVersion.js';
@@ -24,6 +45,9 @@ export const reviewCode = async (req, res) => {
         if (!response.ok) throw new Error(`AI Service responded with status: ${response.status}`);
 
         const data = await response.json();
+        if (req.body.projectId) {
+            await logAiServiceUse(req.userId, req.body.projectId, PROJ_ACTIONS.AI_CODE_REVIEWER, 'AI Code Reviewer');
+        }
         res.status(200).json(data);
     } catch (error) {
         console.error("Error connecting to AI service:", error.message);
@@ -179,6 +203,7 @@ export const generateStandup = async (req, res) => {
         }
 
         const data = await response.json();
+        await logAiServiceUse(userId, projectId, PROJ_ACTIONS.AI_STANDUP, 'AI Standup Report');
         res.status(200).json(data);
     } catch (error) {
         console.error("Error connecting to AI service:", error.message);
@@ -235,6 +260,7 @@ export const summarizeProject = async (req, res) => {
         }
 
         const data = await response.json();
+        await logAiServiceUse(req.userId, projectId, PROJ_ACTIONS.AI_SUMMARIZE, 'AI Project Summary');
         res.status(200).json(data);
     } catch (error) {
         console.error("Error connecting to AI service:", error.message);
@@ -256,6 +282,9 @@ export const generateTasks = async (req, res) => {
         if (!response.ok) throw new Error(`AI Service responded with status: ${response.status}`);
 
         const data = await response.json();
+        if (projectId) {
+            await logAiServiceUse(req.userId, projectId, PROJ_ACTIONS.AI_GENERATE_TASKS, 'AI Task Generator');
+        }
         res.status(200).json(data);
     } catch (error) {
         console.error("Error connecting to AI service:", error.message);
@@ -345,6 +374,7 @@ export const findBottlenecks = async (req, res) => {
         }
 
         const data = await response.json();
+        await logAiServiceUse(req.userId, projectId, PROJ_ACTIONS.AI_BOTTLENECK, 'AI Bottleneck Analysis');
         res.status(200).json(data);
     } catch (error) {
         console.error("Error connecting to AI service:", error.message);

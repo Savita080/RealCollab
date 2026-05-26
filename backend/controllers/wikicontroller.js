@@ -1,5 +1,7 @@
 import WikiPage from '../models/wikiPage.js';
 import WikiPageVersion from '../models/wikiPageVersion.js';
+import { logProjectActivity } from '../utils/activityLogger.js';
+import { PROJ_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
 
 export const createWikiPage = async (req, res) => {
     try {
@@ -18,6 +20,16 @@ export const createWikiPage = async (req, res) => {
             content: newPage.content || "",
             savedBy: req.userId,
             commitMessage: "Initial page creation"
+        });
+
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.WIKI_CREATED,
+            objectType: OBJECT_TYPES.WIKI,
+            targetId: newPage._id,
+            targetName: title || 'Untitled page',
         });
 
         res.status(201).json({ message: "Wiki page created", page: newPage });
@@ -57,8 +69,11 @@ export const getWikiPageById = async (req, res) => {
 
 export const updateWikiPage = async (req, res) => {
     try {
-        const { pageId } = req.params;
+        const { pageId, projectId, workspaceId } = req.params;
         const { title, content, commitMessage } = req.body;
+
+        const before = await WikiPage.findById(pageId);
+        if (!before) return res.status(404).json({ message: "Page not found" });
 
         // strict rule: You cannot change content without a valid commit message!
         if (content !== undefined) {
@@ -72,6 +87,23 @@ export const updateWikiPage = async (req, res) => {
         const updatedPage = await WikiPage.findByIdAndUpdate(pageId, { title, content }, { new: true });
         if (!updatedPage) return res.status(404).json({ message: "Page not found" });
 
+        const base = {
+            workspace: workspaceId,
+            project: projectId,
+            user: req.userId,
+            objectType: OBJECT_TYPES.WIKI,
+            targetId: pageId,
+            targetName: updatedPage.title || 'Untitled page',
+        };
+
+        if (title !== undefined && title !== before.title) {
+            await logProjectActivity({
+                ...base,
+                action: PROJ_ACTIONS.WIKI_METADATA_UPDATED,
+                metadata: { previousTitle: before.title },
+            });
+        }
+
         // If content was updated, save a snapshot version to the history log!
         if (content !== undefined) {
             await WikiPageVersion.create({
@@ -79,6 +111,11 @@ export const updateWikiPage = async (req, res) => {
                 content: content,
                 savedBy: req.userId,
                 commitMessage: commitMessage
+            });
+            await logProjectActivity({
+                ...base,
+                action: PROJ_ACTIONS.WIKI_UPDATED,
+                metadata: { commitMessage },
             });
         }
 
@@ -112,6 +149,16 @@ export const deleteWikiPage = async (req, res) => {
 
         // Clean up: Delete all history versions associated with this page
         await WikiPageVersion.deleteMany({ wikiPage: pageId });
+
+        await logProjectActivity({
+            workspace: req.params.workspaceId,
+            project: req.params.projectId,
+            user: req.userId,
+            action: PROJ_ACTIONS.WIKI_DELETED,
+            objectType: OBJECT_TYPES.WIKI,
+            targetId: deleted._id,
+            targetName: deleted.title || 'Untitled page',
+        });
 
         res.status(200).json({ message: "Page deleted" });
     } catch (error) {

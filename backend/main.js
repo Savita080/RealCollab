@@ -17,6 +17,7 @@ import wikiroutes from './routes/wikiroutes.js';
 import chatroutes from './routes/chatroutes.js';
 import whiteboardroutes from './routes/whiteboardroutes.js';
 import activityroutes from './routes/activityroutes.js';
+import workspaceactivityroutes from './routes/workspaceactivityroutes.js';
 import subscriptionroutes from './routes/subscriptionroutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -54,6 +55,7 @@ app.use((req, res, next) => {
 //routes
 app.use("/api/auth",authroutes);
 app.use("/api/workspaces", workspaceroutes);
+app.use("/api/workspaces/:workspaceId/activity", workspaceactivityroutes);
 app.use("/api/workspaces/:workspaceId/projects", projectroutes);
 app.use("/api/workspaces/:workspaceId/projects/:projectId/tasks", taskroutes);
 app.use("/api/workspaces/:workspaceId/projects/:projectId/snippets", snippetroutes);

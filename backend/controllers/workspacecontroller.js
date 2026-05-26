@@ -3,6 +3,8 @@ import User from '../models/user.js';
 import crypto from 'crypto';
 import { sendEmail } from '../utils/email.js';
 import { notifyUser } from '../utils/notify.js';
+import { logWorkspaceActivity } from '../utils/activityLogger.js';
+import { WS_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
 
 
 export const createWorkspace = async (req, res) => {
@@ -24,6 +26,17 @@ export const createWorkspace = async (req, res) => {
                 user: req.userId, // We get this from our protectRoute middleware!
                 role: 'OWNER'
             }]
+        });
+
+        const owner = await User.findById(req.userId).select('name');
+        await logWorkspaceActivity({
+            workspace: newWorkspace._id,
+            user: req.userId,
+            action: WS_ACTIONS.WORKSPACE_CREATED,
+            objectType: OBJECT_TYPES.WORKSPACE,
+            targetId: newWorkspace._id,
+            targetName: newWorkspace.name,
+            metadata: { ownerName: owner?.name || 'Owner' },
         });
 
         res.status(201).json({
@@ -193,6 +206,17 @@ export const acceptInvite = async (req, res) => {
         workspace.invites.splice(inviteIndex, 1);
         await workspace.save();
 
+        const joiner = await User.findById(req.userId).select('name');
+        await logWorkspaceActivity({
+            workspace: workspace._id,
+            user: req.userId,
+            action: WS_ACTIONS.MEMBER_JOINED,
+            objectType: OBJECT_TYPES.MEMBER,
+            targetId: req.userId,
+            targetName: joiner?.name || 'Member',
+            metadata: { role: invite.role, affectedUserId: req.userId.toString() },
+        });
+
         res.status(200).json({
             message: "Successfully joined the workspace!",
             workspaceId: workspace._id
@@ -229,6 +253,21 @@ export const updateMemberRole = async (req, res) => {
 
         // Notify the affected user if role actually changed
         if (prevRole !== role) {
+            const affected = await User.findById(userId).select('name');
+            await logWorkspaceActivity({
+                workspace: req.workspace._id,
+                user: req.userId,
+                action: WS_ACTIONS.MEMBER_ROLE_CHANGED,
+                objectType: OBJECT_TYPES.MEMBER,
+                targetId: userId,
+                targetName: affected?.name || 'Member',
+                metadata: {
+                    previousRole: prevRole,
+                    newRole: role,
+                    affectedUserId: userId,
+                },
+            });
+
             const sender = await User.findById(req.userId).select('name');
             const senderName = sender?.name || 'An admin';
             notifyUser(req.io, {
@@ -256,8 +295,21 @@ export const removeMember = async (req, res) => {
         if (!member) return res.status(404).json({ message: "Member not found" });
         if (member.role === 'OWNER') return res.status(400).json({ message: "Cannot remove the workspace owner" });
 
+        const affected = await User.findById(userId).select('name');
+        const isSelf = userId === req.userId;
+
         req.workspace.members = req.workspace.members.filter(m => m.user.toString() !== userId);
         await req.workspace.save();
+
+        await logWorkspaceActivity({
+            workspace: req.workspace._id,
+            user: req.userId,
+            action: isSelf ? WS_ACTIONS.MEMBER_LEFT : WS_ACTIONS.MEMBER_REMOVED,
+            objectType: OBJECT_TYPES.MEMBER,
+            targetId: userId,
+            targetName: affected?.name || 'Member',
+            metadata: { affectedUserId: userId, role: member.role },
+        });
 
         res.status(200).json({ message: "Member removed successfully" });
     } catch (error) {
@@ -293,6 +345,21 @@ export const transferOwnership = async (req, res) => {
         req.workspace.members[newOwnerIndex].role = 'OWNER'; // Promote new user to OWNER
 
         await req.workspace.save();
+
+        const newOwner = await User.findById(newOwnerId).select('name');
+        await logWorkspaceActivity({
+            workspace: req.workspace._id,
+            user: req.userId,
+            action: WS_ACTIONS.OWNERSHIP_TRANSFERRED,
+            objectType: OBJECT_TYPES.WORKSPACE,
+            targetId: req.workspace._id,
+            targetName: req.workspace.name,
+            metadata: {
+                previousOwnerId: req.userId.toString(),
+                newOwnerId: newOwnerId.toString(),
+                newOwnerName: newOwner?.name || 'Member',
+            },
+        });
 
         // Notify the new owner
         const sender = await User.findById(req.userId).select('name');

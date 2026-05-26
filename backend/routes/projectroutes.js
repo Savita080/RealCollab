@@ -1,7 +1,7 @@
 import express from 'express';
 import {
     createProject, getProject, getWorkspaceProjects, updateProject, deleteProject,
-    getProjectMembers, addProjectMember, removeProjectMember
+    getProjectMembers, addProjectMember, updateProjectMemberRole, removeProjectMember
 } from '../controllers/projectcontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole, requireProjectRole, requireProjectCreator } from '../middleware/rbac.js';
@@ -17,6 +17,7 @@ router.delete('/:projectId', protectRoute, requireRole('VIEWER'), requireProject
 
 router.get('/:projectId/members', protectRoute, requireProjectRole('VIEWER'), getProjectMembers);
 router.post('/:projectId/members', protectRoute, requireProjectRole('CONTRIBUTOR'), addProjectMember);
+router.patch('/:projectId/members/:userId/role', protectRoute, requireProjectRole('CONTRIBUTOR'), updateProjectMemberRole);
 // Removal is locked to the project creator (or workspace OWNER/ADMIN) — contributors
 // can ADD teammates but NOT kick them. Prevents "rogue contributor" abuse.
 // Self-removal is always allowed (anyone can leave a project they're in).
