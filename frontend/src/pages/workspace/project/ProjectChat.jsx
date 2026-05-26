@@ -19,7 +19,9 @@ import s from '../../../styles/modules/Collab.module.css';
 
 export default function ProjectChat() {
   const ctx = useOutletContext();
-  const { workspaceId, projectId, project, wsMembers, canEdit } = ctx;
+  // Mentions are scoped to project members only — workspace members who aren't
+  // in the project shouldn't be tag-able from project chat.
+  const { workspaceId, projectId, project, projectMembers, canEdit } = ctx;
   const { user } = useAuth();
   const { toast } = useUI();
   const online = usePresence(projectId);
@@ -244,7 +246,7 @@ export default function ProjectChat() {
               inputClassName={s.chatInput}
               placeholder={`Message ${project?.name}… (use @ to mention)`}
               value={input}
-              members={wsMembers || []}
+              members={projectMembers || []}
               autoFocus
               onChange={e => {
                 setInput(e.target.value);

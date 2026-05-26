@@ -1,7 +1,7 @@
 // pages/workspace/WorkspaceProjects.jsx — list of projects in workspace
 import { useEffect, useState } from 'react';
 import { useNavigate, useOutletContext, useSearchParams } from 'react-router-dom';
-import { Plus, Search, MoreHorizontal, Trash2, Edit3, Users as UsersIcon } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Trash2, Edit3, Users as UsersIcon, Lock } from 'lucide-react';
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
@@ -15,7 +15,7 @@ import s from '../../styles/modules/WorkspaceProjects.module.css';
 const PROJECT_COLORS = ['#6366f1', '#00d4ff', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#ef4444', '#06b6d4'];
 
 export default function WorkspaceProjects() {
-  const { workspaceId, workspace, isAdmin, canCreate, members } = useOutletContext();
+  const { workspaceId, workspace, role: workspaceRole, isAdmin, canCreate, members } = useOutletContext();
   const { projects, refreshProjects, createProject } = useWorkspace();
   const { user } = useAuth();
   const { toast } = useUI();
@@ -34,9 +34,13 @@ export default function WorkspaceProjects() {
 
   useEffect(() => { refreshProjects(); }, [workspaceId]);
 
-  // Per-project task counts
+  // Per-project task counts — skip projects this user has no access to (would 403).
   useEffect(() => {
     projects.forEach(async (p) => {
+      if (p.hasAccess === false) {
+        setStats(prev => ({ ...prev, [p._id]: { total: 0, done: 0, pct: 0 } }));
+        return;
+      }
       try {
         const { data } = await tasksApi.list(workspaceId, p._id);
         const list = data.tasks ?? data ?? [];
@@ -139,16 +143,25 @@ export default function WorkspaceProjects() {
             const totalTasks = st?.total ?? '…';
             const pct = st?.pct ?? 0;
             const done = st?.done ?? 0;
+            const locked = p.hasAccess === false;
+            // Show actions menu to WS admins and to the project creator (so they
+            // can delete a project they created even if they're not a WS admin).
+            const myId = user?.id || user?._id;
+            const creatorId = p.createdBy?._id || p.createdBy;
+            const iAmCreator = !!(myId && creatorId && creatorId.toString() === myId.toString());
+            const showMenu = isAdmin || iAmCreator;
 
             return (
-              <div key={p._id} className={s.card} style={{ '--c': color }}>
+              <div key={p._id} className={s.card} style={{ '--c': color, opacity: locked ? 0.7 : 1 }}>
                 <button
                   className={s.cardBody}
                   onClick={() => navigate(`/workspaces/${workspaceId}/projects/${p._id}`)}
+                  title={locked ? 'You don\'t have access to this project. Ask a contributor to add you.' : undefined}
                 >
                   <div className={s.cardHead}>
                     <span className={s.dot} style={{ background: color }} />
                     <span className={s.name}>{p.name}</span>
+                    {locked && <Lock size={12} style={{ marginLeft: 'auto', color: 'var(--text-3)' }} />}
                   </div>
                   <div className={s.metaRow}>
                     <span className={s.meta}>{totalTasks} task{totalTasks === 1 ? '' : 's'}</span>
@@ -161,7 +174,7 @@ export default function WorkspaceProjects() {
                   <div className={s.pct}>{pct}% complete</div>
                 </button>
 
-                {isAdmin && (
+                {showMenu && (
                   <div className={s.menuWrap}>
                     <button
                       className={s.menuBtn}
@@ -178,9 +191,11 @@ export default function WorkspaceProjects() {
                         <button onClick={() => { setMenuOpen(null); setRenameProj(p); setRenameName(p.name); }}>
                           <Edit3 size={13} /> Rename
                         </button>
-                        <button className={s.danger} onClick={() => { setMenuOpen(null); handleDelete(p); }}>
-                          <Trash2 size={13} /> Delete
-                        </button>
+                        {(isAdmin || iAmCreator) && (
+                          <button className={s.danger} onClick={() => { setMenuOpen(null); handleDelete(p); }}>
+                            <Trash2 size={13} /> Delete
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -237,6 +252,7 @@ export default function WorkspaceProjects() {
         workspace={workspace}
         project={membersProj}
         currentUserId={user?.id || user?._id}
+        workspaceRole={workspaceRole}
       />
     </div>
   );

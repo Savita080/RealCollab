@@ -1,4 +1,5 @@
 import WorkspaceMessage from '../models/workspaceMessage.js';
+import Workspace from '../models/workspace.js';
 import { notifyMentions } from '../utils/notify.js';
 
 export const sendWorkspaceMessage = async (req, res) => {
@@ -23,15 +24,19 @@ export const sendWorkspaceMessage = async (req, res) => {
             req.io.to(`workspace_${workspaceId}`).emit('new_workspace_message', populatedMessage);
         }
 
-        // Notify @mentioned users
+        // Notify @mentioned users — scope to workspace members only so cross-workspace
+        // name collisions don't ping the wrong person.
         const senderName = populatedMessage.sender?.name || 'Someone';
         const snippet = content.slice(0, 80) + (content.length > 80 ? '…' : '');
+        const ws = await Workspace.findById(workspaceId).select('members').lean();
+        const allowedUserIds = (ws?.members || []).map(m => m.user.toString());
         notifyMentions(req.io, {
             content,
             sender: req.userId,
             type: 'MENTION',
             link: `/workspaces/${req.params.workspaceId}/chat`,
             contentBuilder: () => `${senderName} mentioned you in workspace chat: "${snippet}"`,
+            allowedUserIds,
         }).catch(err => console.error('[ws-chat mentions] failed:', err.message));
 
         res.status(201).json({ message: "Workspace message sent", data: populatedMessage });

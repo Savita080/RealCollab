@@ -1,8 +1,32 @@
 import Task from '../models/task.js';
+import Project from '../models/project.js';
+import Workspace from '../models/workspace.js';
 import redis from '../config/redis.js';
 
 // In-memory fallback so presence works even when Redis is not configured
 const memSocketUser = new Map(); // socketId -> { userId, name }
+
+async function resolveUserId(socketId) {
+    if (redis) {
+        const id = await redis.get(`socket:${socketId}`);
+        if (id) return String(id);
+    }
+    const mem = memSocketUser.get(socketId);
+    return mem?.userId || null;
+}
+
+// Returns true if userId is allowed to mutate tasks in the given project.
+// Project CONTRIBUTOR or workspace OWNER/ADMIN qualify.
+async function canEditProject(userId, projectId) {
+    if (!userId || !projectId) return false;
+    const project = await Project.findById(projectId).select('members workspace').lean();
+    if (!project) return false;
+    const member = project.members?.find(m => m.user.toString() === userId);
+    if (member?.role === 'CONTRIBUTOR') return true;
+    const workspace = await Workspace.findById(project.workspace).select('members').lean();
+    const wsm = workspace?.members?.find(m => m.user.toString() === userId);
+    return wsm?.role === 'OWNER' || wsm?.role === 'ADMIN';
+}
 
 export const setupKanbanSockets = (io) => {
     io.on('connection', (socket) => {
@@ -66,6 +90,14 @@ export const setupKanbanSockets = (io) => {
         // 4. MOVE TASK: The user dragged a card!
         socket.on('task_move', async (data) => {
             const { taskId, projectId, newStatus, newPosition } = data;
+
+            // Authorization: only project CONTRIBUTORs (or ws OWNER/ADMIN) may move tasks.
+            const userId = await resolveUserId(socket.id);
+            const allowed = await canEditProject(userId, projectId);
+            if (!allowed) {
+                socket.emit('task_move_error', { taskId, reason: 'forbidden' });
+                return;
+            }
 
             // Broadcast the movement to everyone ELSE in the room immediately!
             socket.to(projectId).emit('task_moved', {

@@ -17,7 +17,7 @@ import s from '../../../styles/modules/Kanban.module.css';
 
 export default function ProjectKanban() {
   const ctx = useOutletContext();
-  const { workspaceId, projectId, project, canEdit, wsMembers } = ctx;
+  const { workspaceId, projectId, project, canEdit, wsMembers, projectMembers } = ctx;
   const { tasks, fetch, create, move, loading } = useTasks();
   const { toast } = useUI();
   const { user } = useAuth();
@@ -173,6 +173,7 @@ export default function ProjectKanban() {
           workspaceId={workspaceId}
           projectId={projectId}
           wsMembers={wsMembers || []}
+          mentionMembers={projectMembers || []}
           canEdit={canEdit}
           onClose={() => setDetailTask(null)}
           onUpdate={(updated) => {

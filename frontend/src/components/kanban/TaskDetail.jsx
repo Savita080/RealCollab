@@ -14,7 +14,10 @@ import { PriorityChip, Avatar } from '../ui/Badge';
 import { fmtDate, fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/TaskDetail.module.css';
 
-export default function TaskDetail({ task, onClose, wsMembers = [] }) {
+export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembers, canEdit = true }) {
+  // Mentions in task comments are scoped to project members only — fall back to
+  // wsMembers if a project-scoped list wasn't provided (legacy callers).
+  const mentionPool = mentionMembers ?? wsMembers;
   const { update, delete: deleteTask } = useTasks();
   const { current: ws, currentProject } = useWorkspace();
   const { user } = useAuth();
@@ -121,7 +124,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
     <Modal open onClose={onClose} title="Task Detail" size="lg">
       <div className={s.body}>
         {/* Title */}
-        {editing ? (
+        {editing && canEdit ? (
           <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
         ) : (
           <h2 className={s.title}>{task.title}</h2>
@@ -142,7 +145,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
         {/* Description */}
         <div className={s.section}>
           <span className={s.sLabel}>Description</span>
-          {editing ? (
+          {editing && canEdit ? (
             <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           ) : (
             <p className={s.desc}>{task.description || <em>No description</em>}</p>
@@ -150,7 +153,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
         </div>
 
         {/* Edit fields */}
-        {editing && (
+        {editing && canEdit && (
           <div className={s.editFields}>
             <Select label="Priority" value={form.priority}
               onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
@@ -177,20 +180,22 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
           </div>
         )}
 
-        {/* Actions */}
-        <div className={s.actions}>
-          {editing ? (
-            <>
-              <Button variant="primary" size="sm" onClick={handleSave}>Save</Button>
-              <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>Edit</Button>
-              <Button variant="danger" size="sm" onClick={handleDelete}>Delete</Button>
-            </>
-          )}
-        </div>
+        {/* Actions — viewers can read but not edit/delete */}
+        {canEdit && (
+          <div className={s.actions}>
+            {editing ? (
+              <>
+                <Button variant="primary" size="sm" onClick={handleSave}>Save</Button>
+                <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>Edit</Button>
+                <Button variant="danger" size="sm" onClick={handleDelete}>Delete</Button>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Comments */}
         <div className={s.section}>
@@ -224,7 +229,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [] }) {
             <MentionInput
               placeholder="Add a comment… use @ to mention someone"
               value={comment}
-              members={wsMembers}
+              members={mentionPool}
               onChange={e => setComment(e.target.value)}
             />
             <Button type="submit" variant="ghost" size="sm">Post</Button>

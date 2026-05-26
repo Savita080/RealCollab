@@ -11,9 +11,13 @@ const projectSchema = new mongoose.Schema({
         required: [true, 'Project name is required'],
         trim: true
     },
-    description: { 
-        type: String, 
-        default: '' 
+    description: {
+        type: String,
+        default: ''
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
     members: [{
         user: { 

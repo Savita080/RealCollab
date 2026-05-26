@@ -26,7 +26,16 @@ export default function ProjectMembers() {
   const [pendingRole, setPendingRole] = useState({});
 
   const isAdmin = workspaceRole === 'OWNER' || workspaceRole === 'ADMIN';
+  // Contributors can ADD members but not remove them. Removal is restricted to
+  // the project creator and workspace OWNER/ADMIN. Anyone can remove themselves.
   const canManage = isAdmin || isContributor;
+  const creatorId = project?.createdBy?._id || project?.createdBy;
+  const myId = user?.id || user?._id;
+  const iAmCreator = creatorId && myId && creatorId.toString() === myId.toString();
+  const canRemove = (uid) => {
+    if (uid && myId && uid.toString() === myId.toString()) return true; // leave self
+    return isAdmin || iAmCreator;
+  };
 
   const loadAll = async () => {
     setLoading(true);
@@ -128,7 +137,7 @@ export default function ProjectMembers() {
                   >
                     {m.role}
                   </span>
-                  {canManage && !isMe && (
+                  {canManage && !isMe && canRemove(uid) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -137,6 +146,9 @@ export default function ProjectMembers() {
                     >
                       <Trash2 size={12} /> Remove
                     </Button>
+                  )}
+                  {creatorId && uid?.toString() === creatorId.toString() && (
+                    <span className={s.youBadge} title="Project creator">Creator</span>
                   )}
                 </div>
               );

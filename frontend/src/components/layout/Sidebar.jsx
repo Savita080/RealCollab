@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import Button from '../ui/Button';
 import { workspaces as wsApi, tasks as tasksApi, projects as projectsApi, subscriptions as subApi } from '../../lib/api';
+import { useWorkspaceRole } from '../../lib/useWorkspaceRole';
 import ProjectMembersModal from '../ProjectMembersModal';
 import s from '../../styles/modules/Sidebar.module.css';
 
@@ -32,6 +33,7 @@ const SETTINGS_NAV = [
 
 export default function Sidebar() {
   const { workspaces: wsList, current: ws, setWorkspace, projects, currentProject, setProject, createWorkspace, createProject } = useWorkspace();
+  const { role: workspaceRole } = useWorkspaceRole(ws?._id);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -279,6 +281,7 @@ export default function Sidebar() {
         workspace={ws}
         project={membersProj}
         currentUserId={user?.id || user?._id}
+        workspaceRole={workspaceRole}
       />
 
       {/* Rename Project modal */}

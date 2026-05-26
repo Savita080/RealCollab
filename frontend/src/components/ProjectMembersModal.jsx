@@ -19,8 +19,17 @@ const PROJ_ROLE_COLORS = {
   VIEWER:      '#8b5cf6',
 };
 
-export default function ProjectMembersModal({ open, onClose, workspace, project, currentUserId }) {
+export default function ProjectMembersModal({ open, onClose, workspace, project, currentUserId, workspaceRole }) {
   const { toast } = useUI();
+  const creatorId = project?.createdBy?._id || project?.createdBy;
+  const isWsAdmin = workspaceRole === 'OWNER' || workspaceRole === 'ADMIN';
+  const iAmCreator = !!(creatorId && currentUserId && creatorId.toString() === currentUserId.toString());
+  // Removal is restricted to the project creator and workspace OWNER/ADMIN.
+  // Contributors can add members but not kick them. Anyone may remove themselves.
+  const canRemove = (uid) => {
+    if (uid && currentUserId && uid.toString() === currentUserId.toString()) return true;
+    return isWsAdmin || iAmCreator;
+  };
 
   const [projMembers, setProjMembers] = useState([]);   // current project members (populated)
   const [wsMembers,   setWsMembers]   = useState([]);   // all workspace members (populated)
@@ -125,7 +134,7 @@ export default function ProjectMembersModal({ open, onClose, workspace, project,
           {!loading && projMembers.map(pm => {
             const uid      = pm.user?._id;
             const isMe     = uid === currentUserId;
-            const isCreator = pm.role === 'CONTRIBUTOR' && isMe;
+            const isCreator = !!(creatorId && uid && uid.toString() === creatorId.toString());
             return (
               <div key={uid} className={s.row}>
                 <Avatar name={pm.user?.name || '?'} size={34} />
@@ -142,7 +151,10 @@ export default function ProjectMembersModal({ open, onClose, workspace, project,
                 >
                   {pm.role}
                 </span>
-                {!isMe && (
+                {isCreator && (
+                  <span className={s.youBadge} title="Project creator">Creator</span>
+                )}
+                {!isMe && canRemove(uid) && (
                   <button
                     className={s.removeBtn}
                     onClick={() => handleRemove(pm)}

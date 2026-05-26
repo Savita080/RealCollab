@@ -55,7 +55,7 @@ export async function notifyUser(io, { recipient, sender, type, content, link })
  * OR whose name starts with "Suhani " (i.e. first word match). This way the
  * autocomplete can insert just the first name without breaking match.
  */
-export async function notifyMentions(io, { content, sender, type, link, contentBuilder }) {
+export async function notifyMentions(io, { content, sender, type, link, contentBuilder, allowedUserIds }) {
     if (!content) return [];
     const names = [...content.matchAll(/@([\w.-]+)/g)].map(m => m[1]);
     if (names.length === 0) return [];
@@ -70,6 +70,13 @@ export async function notifyMentions(io, { content, sender, type, link, contentB
     }
     const users = await User.find({ $or: orClauses }).select('_id name');
 
+    // Optional access scope: only notify users present in the allowedUserIds set.
+    // Used for project-scoped chats so a project-viewer mention doesn't ping users
+    // who can't see the channel.
+    const allowSet = allowedUserIds
+        ? new Set(allowedUserIds.map(id => id.toString()))
+        : null;
+
     const notified = [];
     const seen = new Set();
     for (const u of users) {
@@ -78,6 +85,7 @@ export async function notifyMentions(io, { content, sender, type, link, contentB
         seen.add(idStr);
         const senderStr = sender?.toString();
         if (senderStr && idStr === senderStr) continue;
+        if (allowSet && !allowSet.has(idStr)) continue;
         await notifyUser(io, {
             recipient: u._id,
             sender,

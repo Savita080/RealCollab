@@ -1,7 +1,47 @@
 import Whiteboard from '../models/whiteboard.js';
+import Project from '../models/project.js';
+import Workspace from '../models/workspace.js';
 import redis from '../config/redis.js';
 import fs from 'fs';
 import path from 'path';
+
+// Mirror of kanbanSocket's resolveUserId — keep in-memory map fallback when Redis is missing.
+const memSocketUser = new Map();
+async function resolveUserId(socketId) {
+    if (redis) {
+        const id = await redis.get(`socket:${socketId}`);
+        if (id) return String(id);
+    }
+    const mem = memSocketUser.get(socketId);
+    return mem?.userId || null;
+}
+
+// Boards inherit project RBAC: project CONTRIBUTOR or workspace OWNER/ADMIN may draw/save.
+// Cached briefly so a flurry of draw events doesn't hammer Mongo.
+const projectAuthCache = new Map(); // `${userId}:${projectId}` -> { allowed, until }
+async function canEditWhiteboard(userId, whiteboardId) {
+    if (!userId || !whiteboardId) return false;
+    const board = await Whiteboard.findById(whiteboardId).select('project').lean();
+    if (!board?.project) return false;
+    const projectId = board.project.toString();
+    const cacheKey = `${userId}:${projectId}`;
+    const cached = projectAuthCache.get(cacheKey);
+    if (cached && cached.until > Date.now()) return cached.allowed;
+    const project = await Project.findById(projectId).select('members workspace').lean();
+    if (!project) {
+        projectAuthCache.set(cacheKey, { allowed: false, until: Date.now() + 5000 });
+        return false;
+    }
+    const member = project.members?.find(m => m.user.toString() === userId);
+    let allowed = member?.role === 'CONTRIBUTOR';
+    if (!allowed) {
+        const workspace = await Workspace.findById(project.workspace).select('members').lean();
+        const wsm = workspace?.members?.find(m => m.user.toString() === userId);
+        allowed = wsm?.role === 'OWNER' || wsm?.role === 'ADMIN';
+    }
+    projectAuthCache.set(cacheKey, { allowed, until: Date.now() + 15_000 });
+    return allowed;
+}
 
 const _dbgLog = (payload) => {
     try {
@@ -54,9 +94,18 @@ export const setupWhiteboardSockets = (io) => {
         socket.on('whiteboard_draw', async (data) => {
             const { whiteboardId, elements } = data; // elements is just the diff/changed shapes
 
+            // Authz: only project CONTRIBUTORs (or ws OWNER/ADMIN) may draw — viewers
+            // joining the room can still receive whiteboard_update broadcasts (read-only).
+            const userId = await resolveUserId(socket.id);
+            const allowed = await canEditWhiteboard(userId, whiteboardId);
+            if (!allowed) {
+                socket.emit('whiteboard_error', { reason: 'forbidden', whiteboardId });
+                return;
+            }
+
             // Broadcast to everyone else immediately! 0-latency
             socket.to(`whiteboard:${whiteboardId}`).emit('whiteboard_update', elements);
-            
+
             // Note: We DO NOT save to Redis here anymore, because `elements` is only a diff.
             // If we saved it here, we would accidentally overwrite the whole canvas with just the diff!
         });
@@ -64,6 +113,14 @@ export const setupWhiteboardSockets = (io) => {
         // 3. Save to MongoDB & Redis (Frontend should emit this every 10 seconds with the FULL array)
         socket.on('save_whiteboard', async (data) => {
             const { whiteboardId, elements } = data;
+
+            const userId = await resolveUserId(socket.id);
+            const allowed = await canEditWhiteboard(userId, whiteboardId);
+            if (!allowed) {
+                socket.emit('whiteboard_error', { reason: 'forbidden', whiteboardId });
+                return;
+            }
+
             try {
                 const stringifiedElements = JSON.stringify(elements);
                 

@@ -112,13 +112,24 @@ export const useTasks = create((set, get) => ({
     socket.on('task_deleted', (taskId) =>
       set(s => ({ tasks: s.tasks.filter(t => t._id !== taskId) }))
     );
+    // Server rejected an optimistic move (e.g. viewer trying to drag). Reload truth from API
+    // so the card snaps back instead of staying in the wrong column.
+    socket.on('task_move_error', () => {
+      const onReject = get()._onMoveReject;
+      if (typeof onReject === 'function') onReject();
+    });
   },
+
+  // Caller (Kanban.jsx) registers this so the store can ask it to re-fetch and toast on reject.
+  setMoveRejectHandler: (fn) => set({ _onMoveReject: fn }),
 
   unbindSocket: () => {
     socket.off('task_moved');
     socket.off('task_updated');
     socket.off('task_created');
     socket.off('task_deleted');
+    socket.off('task_move_error');
+    set({ _onMoveReject: null });
   },
 
   reset: () => set({ tasks: [], loading: false }),

@@ -5,7 +5,7 @@ import { Send } from 'lucide-react';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
 import { usePresence } from '../../lib/hooks';
-import { chat as chatApi, workspaces as wsApi } from '../../lib/api';
+import { chat as chatApi, projects as projectsApi } from '../../lib/api';
 import { Avatar } from '../../components/ui/Badge';
 import MentionInput from '../../components/ui/MentionInput';
 import { fmtRelative } from '../../lib/utils';
@@ -36,7 +36,9 @@ export default function ProjectChat() {
       .catch(() => toast('Failed to load chat', 'error'))
       .finally(() => setLoading(false));
 
-    wsApi.members(workspaceId)
+    // Project chat @mentions are scoped to project members only — workspace
+    // members who don't belong to the project shouldn't be tag-able from here.
+    projectsApi.members(workspaceId, projectId)
       .then(({ data }) => setMembers(data.members ?? []))
       .catch(() => setMembers([]));
   }, [workspaceId, projectId]);

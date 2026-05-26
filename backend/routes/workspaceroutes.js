@@ -27,7 +27,7 @@ router.patch('/:workspaceId/members/:userId/role', protectRoute, requireRole('AD
 router.delete('/:workspaceId/members/:userId', protectRoute, requireRole('ADMIN'), removeMember);
 
 // Workspace Global Chat
-router.post('/:workspaceId/chat', protectRoute, requireRole('MEMBER'), sendWorkspaceMessage);
+router.post('/:workspaceId/chat', protectRoute, requireRole('VIEWER'), sendWorkspaceMessage);
 router.get('/:workspaceId/chat', protectRoute, requireRole('VIEWER'), getWorkspaceMessages);
 
 export default router;

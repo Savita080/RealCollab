@@ -16,6 +16,7 @@ export const createProject = async (req, res) => {
             workspace: workspaceId,
             name,
             description,
+            createdBy: req.userId,
             members: [{
                 user: req.userId,
                 role: 'CONTRIBUTOR'
@@ -32,27 +33,40 @@ export const createProject = async (req, res) => {
     }
 };
 
+export const getProject = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const project = await Project.findById(projectId)
+            .populate('createdBy', 'name email avatar')
+            .lean();
+        if (!project) return res.status(404).json({ message: "Project not found" });
+        res.status(200).json({ project });
+    } catch (error) {
+        console.error("Error fetching project:", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
 export const getWorkspaceProjects = async (req, res) => {
     try {
         const workspaceId = req.params.workspaceId;
         const userId = req.userId;
 
-        // OWNER/ADMIN see all projects; MEMBER/VIEWER only see projects they're in
-        const workspace = await Workspace.findById(workspaceId);
-        const wsMember = workspace?.members.find(m => m.user.toString() === userId.toString());
-        const role = wsMember?.role || 'VIEWER';
+        // Every workspace member sees every project card; gating happens when they
+        // try to OPEN a project (handled by ProjectLayout/AccessRestricted on the FE
+        // and requireProjectRole on the BE). Each card gets a hasAccess flag so the
+        // frontend can show a lock badge for projects this user can't enter.
+        const projects = await Project.find({ workspace: workspaceId }).lean();
 
-        let projects;
-        if (role === 'OWNER' || role === 'ADMIN') {
-            projects = await Project.find({ workspace: workspaceId });
-        } else {
-            projects = await Project.find({
-                workspace: workspaceId,
-                'members.user': userId
-            });
-        }
+        const projectsWithAccess = projects.map(p => {
+            const isMember = p.members?.some(m => m.user.toString() === userId.toString());
+            return {
+                ...p,
+                hasAccess: !!isMember || req.memberRole === 'OWNER' || req.memberRole === 'ADMIN',
+            };
+        });
 
-        res.status(200).json({ projects });
+        res.status(200).json({ projects: projectsWithAccess });
     } catch (error) {
         console.error("Error fetching projects:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -153,12 +167,21 @@ export const addProjectMember = async (req, res) => {
 export const removeProjectMember = async (req, res) => {
     try {
         const { projectId, userId } = req.params;
-        
+
         const project = await Project.findById(projectId);
         if (!project) return res.status(404).json({ message: "Project not found" });
 
         const memberExists = project.members.some(m => m.user.toString() === userId);
         if (!memberExists) return res.status(404).json({ message: "Member not found in this project" });
+
+        // The project creator can only be removed by themselves or a workspace OWNER/ADMIN.
+        if (project.createdBy && project.createdBy.toString() === userId) {
+            const isWsAdmin = req.memberRole === 'OWNER' || req.memberRole === 'ADMIN';
+            const isSelf = userId === req.userId;
+            if (!isWsAdmin && !isSelf) {
+                return res.status(403).json({ message: "Only the project creator or a workspace admin can remove the creator from this project." });
+            }
+        }
 
         project.members = project.members.filter(m => m.user.toString() !== userId);
         await project.save();

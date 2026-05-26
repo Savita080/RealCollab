@@ -14,12 +14,12 @@ import { SkeletonCard } from '../components/ui/Skeleton';
 import { fmtDate } from '../lib/utils';
 import TaskDetail from '../components/kanban/TaskDetail';
 import ProjectMembersModal from '../components/ProjectMembersModal';
-import { workspaces as wsApi } from '../lib/api';
+import { workspaces as wsApi, projects as projectsApi } from '../lib/api';
 import s from '../styles/modules/Kanban.module.css';
 
-export default function Kanban() {
+export default function Kanban({ canEdit = true, workspaceRole } = {}) {
   const { current: ws, currentProject } = useWorkspace();
-  const { tasks, fetch, create, move, loading, bindSocket, unbindSocket } = useTasks();
+  const { tasks, fetch, create, move, loading, bindSocket, unbindSocket, setMoveRejectHandler } = useTasks();
   const { toast } = useUI();
   const { user } = useAuth();
   const online = usePresence(currentProject?._id);
@@ -30,6 +30,7 @@ export default function Kanban() {
   const [membersModal, setMembersModal] = useState(false);
   const [detailTask, setDetailTask] = useState(null);
   const [wsMembers, setWsMembers] = useState([]);
+  const [projMembers, setProjMembers] = useState([]);
   const [form, setForm] = useState({
     title: '', description: '', priority: 'P1',
     dueDate: '', labels: '', assignee: '', status: 'To Do',
@@ -40,10 +41,21 @@ export default function Kanban() {
     fetch(ws._id, currentProject._id);
     joinProject(currentProject._id);
     bindSocket();
-    // Load workspace members for assignee dropdown
+    // When the server rejects an optimistic move (e.g. viewer dragging), re-fetch truth
+    // and show a friendly toast so the card snaps back instead of staying in the wrong column.
+    setMoveRejectHandler(() => {
+      toast('You don\'t have permission to move tasks in this project.', 'error');
+      fetch(ws._id, currentProject._id);
+    });
+    // Workspace members feed the assignee dropdown (anyone in the workspace
+    // is a valid assignee). Project members feed the @mention dropdown so
+    // viewers don't see workspace folks who can't read the project.
     wsApi.members(ws._id)
       .then(({ data }) => setWsMembers(data.members ?? []))
       .catch(() => {});
+    projectsApi.members(ws._id, currentProject._id)
+      .then(({ data }) => setProjMembers(data.members ?? []))
+      .catch(() => setProjMembers([]));
     return () => { leaveProject(currentProject._id); unbindSocket(); };
   }, [currentProject?._id, ws?._id]);
 
@@ -53,6 +65,7 @@ export default function Kanban() {
   }), {});
 
   const handleDrop = async (status) => {
+    if (!canEdit) return;
     if (!dragging || dragging.status === status) return;
     await move(ws._id, currentProject._id, dragging._id, status, currentProject._id);
     setDragging(null);
@@ -95,9 +108,11 @@ export default function Kanban() {
           <Button variant="ghost" size="sm" onClick={() => setMembersModal(true)}>
             Members
           </Button>
-          <Button variant="primary" size="sm" onClick={() => setCreateModal(true)}>
-            + New Task
-          </Button>
+          {canEdit && (
+            <Button variant="primary" size="sm" onClick={() => setCreateModal(true)}>
+              + New Task
+            </Button>
+          )}
         </div>
       </div>
 
@@ -128,9 +143,9 @@ export default function Kanban() {
                   <div
                     key={task._id}
                     className={`${s.card} ${dragging?._id === task._id ? s.dragging : ''}`}
-                    draggable
-                    onDragStart={() => setDragging(task)}
-                    onDragEnd={() => setDragging(null)}
+                    draggable={canEdit}
+                    onDragStart={canEdit ? () => setDragging(task) : undefined}
+                    onDragEnd={canEdit ? () => setDragging(null) : undefined}
                     onClick={() => setDetailTask(task)}
                   >
                     <p className={s.taskTitle}>{task.title}</p>
@@ -207,6 +222,8 @@ export default function Kanban() {
         <TaskDetail
           task={detailTask}
           wsMembers={wsMembers}
+          mentionMembers={projMembers}
+          canEdit={canEdit}
           onClose={() => setDetailTask(null)}
         />
       )}
@@ -218,6 +235,7 @@ export default function Kanban() {
         workspace={ws}
         project={currentProject}
         currentUserId={user?.id || user?._id}
+        workspaceRole={workspaceRole}
       />
     </div>
   );

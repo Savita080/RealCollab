@@ -6,6 +6,7 @@ import { useWorkspace } from '../store/workspace';
 import { useTasks } from '../store/tasks';
 import { useUI } from '../store/ui';
 import { activity as activityApi, workspaces as wsApi, ai as aiApi } from '../lib/api';
+import { useWorkspaceRole } from '../lib/useWorkspaceRole';
 import { fmtRelative } from '../lib/utils';
 import { Avatar } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -21,6 +22,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useUI();
   const { current: ws, currentProject, projects, createWorkspace, createProject } = useWorkspace();
+  const { role: workspaceRole } = useWorkspaceRole(ws?._id);
   const { tasks, fetch: fetchTasks } = useTasks();
   const navigate = useNavigate();
 
@@ -364,6 +366,7 @@ export default function Dashboard() {
         workspace={ws}
         project={currentProject}
         currentUserId={user?.id || user?._id}
+        workspaceRole={workspaceRole}
       />
     </div>
   );

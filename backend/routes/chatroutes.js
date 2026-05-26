@@ -5,7 +5,7 @@ import { requireProjectRole } from '../middleware/rbac.js';
 
 const router = express.Router({ mergeParams: true });
 
-router.post('/', protectRoute, requireProjectRole('CONTRIBUTOR'), sendMessage);
+router.post('/', protectRoute, requireProjectRole('VIEWER'), sendMessage);
 router.get('/', protectRoute, requireProjectRole('VIEWER'), getProjectMessages);
 
 export default router;

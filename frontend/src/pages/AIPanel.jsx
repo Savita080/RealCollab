@@ -240,9 +240,10 @@ const RENDERERS = {
   plan:     PlanResult,
 };
 
-export default function AIPanel() {
+export default function AIPanel({ canEdit = true, isContributor = true } = {}) {
   const { currentProject, current: currentWorkspace } = useWorkspace();
   const { toast, paywallModal } = useUI();
+  const allowRun = canEdit && isContributor;
   const [active, setActive] = useState('summary');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -253,6 +254,9 @@ export default function AIPanel() {
   const run = async () => {
     if (!currentProject) {
       toast('Select a project first', 'error'); return;
+    }
+    if (!allowRun) {
+      toast('Only project contributors can run AI tools.', 'error'); return;
     }
     // #region agent log
     fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:run:start',message:'Run clicked',data:{active,hasProject:!!currentProject,hasWorkspace:!!currentWorkspace,workspaceId:currentWorkspace?._id??null},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
@@ -329,10 +333,22 @@ export default function AIPanel() {
         <div className={s.output}>
           <div className={s.outputHeader}>
             <span className={s.panelTitle}>{panel?.icon} {panel?.label}</span>
-            <Button variant="primary" size="sm" loading={loading} onClick={run}>
+            <Button
+              variant="primary"
+              size="sm"
+              loading={loading}
+              onClick={run}
+              disabled={!allowRun}
+              title={!allowRun ? 'Only project contributors can run AI tools' : undefined}
+            >
               {loading ? 'Thinking…' : 'Run'}
             </Button>
           </div>
+          {!allowRun && (
+            <div className={s.placeholder} style={{ marginTop: 8, color: '#f59e0b', fontSize: 12 }}>
+              ⚠ Viewers can't run AI tools. Ask a contributor to run them for you.
+            </div>
+          )}
 
           {/* Extra inputs for specific panels */}
           {active === 'plan' && (

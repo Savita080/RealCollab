@@ -55,8 +55,8 @@ const PROJECT_ROLE_HIERARCHY = {
 
 export const requireProjectRole = (minRole) => async (req, res, next) => {
     try {
-        const { projectId } = req.params;
-        
+        const projectId = req.params.projectId || req.body?.projectId;
+
         if (!projectId) {
             return res.status(400).json({ message: "Project ID is required for role checking." });
         }
@@ -105,11 +105,33 @@ export const requireProjectRole = (minRole) => async (req, res, next) => {
 
         req.project = project;
         req.projectRole = isSuperAdmin ? 'ADMIN' : member.role;
-        
+
         next();
 
     } catch (error) {
         console.error("Error in Project RBAC middleware:", error.message);
         res.status(500).json({ error: "Internal Server Error in project role checking" });
+    }
+};
+
+// Only the project creator (or workspace OWNER/ADMIN) may proceed.
+// Used for irreversible actions like deleting the project itself or kicking the creator.
+export const requireProjectCreator = async (req, res, next) => {
+    try {
+        const project = req.project || await Project.findById(req.params.projectId);
+        if (!project) return res.status(404).json({ message: "Project not found." });
+
+        const isWsAdmin = req.memberRole === 'OWNER' || req.memberRole === 'ADMIN';
+        const isCreator = project.createdBy && project.createdBy.toString() === req.userId;
+
+        if (!isWsAdmin && !isCreator) {
+            return res.status(403).json({ message: "Only the project creator can perform this action." });
+        }
+
+        req.project = project;
+        next();
+    } catch (error) {
+        console.error("Error in project creator check:", error.message);
+        res.status(500).json({ error: "Internal Server Error in creator check" });
     }
 };
