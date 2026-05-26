@@ -32,6 +32,13 @@ export const THEMES = [
     description: 'Mint cream + deep forest green.',
     swatch: ['#F4F8F4', '#8EB69B', '#163832'],
   },
+  {
+    id: 'charcoal',
+    name: 'Royal Charcoal',
+    kind: 'dark',
+    description: 'Monochrome graphite with platinum accents.',
+    swatch: ['#1e1f22', '#4c4e51', '#C5CDD6'],
+  },
 ];
 
 const THEME_STORAGE_KEY = 'rc:theme';

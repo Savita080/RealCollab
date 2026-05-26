@@ -131,6 +131,57 @@
   color-scheme: dark;
 }
 
+/* ── Royal Charcoal (monochromatic graphite — premium dark) ───────────────── */
+[data-theme="charcoal"] {
+  --bg:          #1e1f22;                     /* darkest — page */
+  --bg-2:        rgba(30, 31, 34, 0.4);
+  --bg-card:     #26282b;                     /* lifted card */
+  --bg-hover:    rgba(255, 255, 255, 0.05);
+  --bg-glass:    rgba(30, 31, 34, 0.7);
+  --bg-dropdown: #2a2c2f;
+  --border:      rgba(255, 255, 255, 0.07);
+  --border-hover:rgba(255, 255, 255, 0.16);
+
+  --bg-card-premium: rgba(76, 78, 81, 0.20);
+  --border-premium:  rgba(255, 255, 255, 0.08);
+  --card-shadow-premium: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* Accents — desaturated cool platinum + minimal warm tints for status hierarchy.
+     Names retain their semantic role (primary/secondary/tertiary). */
+  --cyan:   #9CA3AB;   /* secondary → cool steel */
+  --indigo: #C5CDD6;   /* primary → platinum silver */
+  --violet: #A8ACB3;   /* tertiary → mid graphite */
+  --pink:   #C97864;   /* highlight → muted terracotta */
+  --green:  #7E9587;   /* success-tinted → muted sage */
+  --amber:  #C9A86A;   /* warning-tinted → champagne */
+
+  --accent-soft: rgba(197, 205, 214, 0.08);
+  --focus-ring:  rgba(197, 205, 214, 0.25);
+
+  --status-success: #7E9587;   /* muted sage */
+  --status-warning: #C9A86A;   /* champagne */
+  --status-danger:  #C97864;   /* muted terracotta */
+  --status-info:    #9CA3AB;   /* cool steel */
+
+  --bubble-me:   linear-gradient(135deg, #47484c, #4c4e51);
+  --bubble-them: rgba(255, 255, 255, 0.04);
+  --scrollbar-thumb: #4c4e51;
+
+  /* Subtle silver haze orbs */
+  --orb-1: rgba(197, 205, 214, 0.08);
+  --orb-2: rgba(156, 163, 171, 0.10);
+
+  --text-1: #EAEDF0;
+  --text-2: #9DA2A9;
+  --text-3: #6C7077;
+
+  --glow-cyan:   0 0 40px rgba(156, 163, 171, 0.15);
+  --glow-indigo: 0 0 40px rgba(197, 205, 214, 0.18);
+  --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
 /* ── Sage (light forest theme — mint + deep evergreen palette) ────────────── */
 [data-theme="sage"] {
   --bg:          #F4F8F4;                     /* near-white mint cream */
