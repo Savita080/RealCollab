@@ -53,13 +53,6 @@ export const THEMES = [
     description: 'Soft cream paper with stone neutrals.',
     swatch: ['#F2EFE5', '#C7C8CC', '#B4B4B8'],
   },
-  {
-    id: 'marine',
-    name: 'Marine',
-    kind: 'dark',
-    description: 'Deep ocean navy with sky-blue accents.',
-    swatch: ['#021024', '#5483B3', '#C1E8FF'],
-  },
 ];
 
 const THEME_STORAGE_KEY = 'rc:theme';

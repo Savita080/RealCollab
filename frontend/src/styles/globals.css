@@ -131,57 +131,6 @@
   color-scheme: dark;
 }
 
-/* ── Marine (deep ocean navy — premium dark blue) ─────────────────────────── */
-[data-theme="marine"] {
-  --bg:          #021024;                     /* deepest navy — page */
-  --bg-2:        rgba(2, 16, 36, 0.4);
-  --bg-card:     #07193D;                     /* lifted navy card */
-  --bg-hover:    rgba(193, 232, 255, 0.06);
-  --bg-glass:    rgba(2, 16, 36, 0.75);
-  --bg-dropdown: #052659;
-  --border:      rgba(193, 232, 255, 0.08);
-  --border-hover:rgba(193, 232, 255, 0.20);
-
-  --bg-card-premium: rgba(5, 38, 89, 0.55);
-  --border-premium:  rgba(193, 232, 255, 0.10);
-  --card-shadow-premium: 0 8px 24px rgba(2, 16, 36, 0.55);
-
-  /* Accents — drawn from palette + minimal warm tints for status hierarchy.
-     Names retain their semantic role. */
-  --cyan:   #7DA0CA;   /* secondary → mid blue */
-  --indigo: #5483B3;   /* primary → steel blue */
-  --violet: #8F9BD0;   /* tertiary → derived periwinkle */
-  --pink:   #D89784;   /* highlight → muted coral against navy */
-  --green:  #7AB39A;   /* success-tinted → muted sea-green */
-  --amber:  #D4A864;   /* warning-tinted → muted gold */
-
-  --accent-soft: rgba(125, 160, 202, 0.12);
-  --focus-ring:  rgba(193, 232, 255, 0.32);
-
-  --status-success: #7AB39A;   /* sea-green */
-  --status-warning: #D4A864;   /* muted gold */
-  --status-danger:  #D89784;   /* muted coral */
-  --status-info:    #7DA0CA;   /* mid blue */
-
-  --bubble-me:   linear-gradient(135deg, #5483B3, #7DA0CA);
-  --bubble-them: rgba(193, 232, 255, 0.06);
-  --scrollbar-thumb: #5483B3;
-
-  /* Sky-blue ambient orbs — bright accent against deep navy */
-  --orb-1: rgba(193, 232, 255, 0.10);
-  --orb-2: rgba(125, 160, 202, 0.14);
-
-  --text-1: #E8F2FF;   /* near-white sky */
-  --text-2: #A5BCD8;   /* soft mid blue */
-  --text-3: #6F8AAB;   /* muted steel */
-
-  --glow-cyan:   0 0 40px rgba(193, 232, 255, 0.20);
-  --glow-indigo: 0 0 40px rgba(125, 160, 202, 0.25);
-  --shadow-card: 0 4px 32px rgba(2, 16, 36, 0.60);
-
-  color-scheme: dark;
-}
-
 /* ── Linen (paper & stone — neutral monochrome light) ────────────────────── */
 [data-theme="linen"] {
   --bg:          #F2EFE5;                     /* lightest cream paper */
