@@ -110,6 +110,29 @@ export default function ActivityFeedPanel({
       .catch(() => setMembers([]));
   }, [workspaceId]);
 
+  useEffect(() => {
+    // #region agent log (debug)
+    fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2ee502' },
+      body: JSON.stringify({
+        sessionId: '2ee502',
+        runId: 'pre-fix',
+        hypothesisId: 'B',
+        location: 'frontend/src/components/activity/ActivityFeedPanel.jsx:membersEffect',
+        message: 'Activity feed inputs / members state',
+        data: {
+          workspaceId: workspaceId || null,
+          projectId: projectId || null,
+          scope,
+          membersLen: Array.isArray(members) ? members.length : null,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, [workspaceId, projectId, scope, members]);
+
   const queryParams = useMemo(() => {
     const p = {};
     if (userId) p.userId = userId;

@@ -25,7 +25,27 @@ export function Textarea({ label, error, className, ...props }) {
   );
 }
 
-export function Select({ label, error, options = [], className, ...props }) {
+export function Select({ label, error, options = [], className, children, ...props }) {
+  // #region agent log (debug)
+  fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '2ee502' },
+    body: JSON.stringify({
+      sessionId: '2ee502',
+      runId: 'pre-fix',
+      hypothesisId: 'A',
+      location: 'frontend/src/components/ui/Input.jsx:Select',
+      message: 'Select render inputs',
+      data: {
+        label: label || null,
+        optionsLen: Array.isArray(options) ? options.length : null,
+        hasChildren: !!children,
+        value: props.value ?? null,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
   return (
     <label className={s.wrap}>
       {label && <span className={s.label}>{label}</span>}
@@ -33,6 +53,7 @@ export function Select({ label, error, options = [], className, ...props }) {
         {options.map(o => (
           <option key={o.value ?? o} value={o.value ?? o}>{o.label ?? o}</option>
         ))}
+        {children}
       </select>
       {error && <span className={s.msg}>{error}</span>}
     </label>
