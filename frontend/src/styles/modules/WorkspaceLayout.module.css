@@ -20,8 +20,7 @@
 .content {
   padding: 24px 28px 48px;
   animation: fadeIn 0.25s ease;
-  max-width: 1500px;
-  margin: 0 auto;
+  max-width: none;
   width: 100%;
 }
 

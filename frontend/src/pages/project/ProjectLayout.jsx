@@ -76,7 +76,7 @@ export default function ProjectLayout() {
   if (!hasAccess) {
     return (
       <div className={s.layout}>
-        <ProjectSidebar project={project} canEdit={false} />
+        <ProjectSidebar project={project} canEdit={false} role={workspaceRole} />
         <div className={s.right}>
           <WorkspaceTopBar workspace={wsContext?.workspace} role={workspaceRole} />
           <main className={s.main}>
@@ -93,7 +93,7 @@ export default function ProjectLayout() {
 
   return (
     <div className={s.layout}>
-      <ProjectSidebar project={project} canEdit={canEdit} />
+      <ProjectSidebar project={project} canEdit={canEdit} role={workspaceRole} />
       <div className={s.right}>
         <WorkspaceTopBar workspace={wsContext?.workspace} role={workspaceRole} />
         <main className={s.main}>
