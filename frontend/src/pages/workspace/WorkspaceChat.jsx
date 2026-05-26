@@ -21,6 +21,9 @@ export default function WorkspaceChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
+  const [typingUser, setTypingUser] = useState(null);
+  const typingTimeoutRef = useRef(null);
+  const typingEmitRef = useRef(null);
   const bottomRef = useRef(null);
 
   // Join workspace socket room + load history
@@ -40,15 +43,27 @@ export default function WorkspaceChat() {
     return () => leaveWorkspace(workspaceId);
   }, [workspaceId]);
 
-  // Realtime new messages
+  // Realtime new messages + typing
   useEffect(() => {
     if (!workspaceId) return;
     const onNew = (msg) => {
       setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
     };
+    const onTyping = ({ workspaceId: wsId, userName }) => {
+      if (wsId === workspaceId && userName !== user?.name) {
+        setTypingUser(userName);
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 2500);
+      }
+    };
     socket.on('new_workspace_message', onNew);
-    return () => socket.off('new_workspace_message', onNew);
-  }, [workspaceId]);
+    socket.on('workspace_user_typing', onTyping);
+    return () => {
+      socket.off('new_workspace_message', onNew);
+      socket.off('workspace_user_typing', onTyping);
+      clearTimeout(typingTimeoutRef.current);
+    };
+  }, [workspaceId, user?.name]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -113,6 +128,12 @@ export default function WorkspaceChat() {
         <div ref={bottomRef} />
       </div>
 
+      {typingUser && (
+        <div style={{ padding: '4px 8px', fontSize: 11, color: 'var(--text-3)', fontStyle: 'italic' }}>
+          {typingUser} is typing…
+        </div>
+      )}
+
       <form className={s.inputRow} onSubmit={send}>
         <MentionInput
           className={s.mentionWrap}
@@ -120,7 +141,13 @@ export default function WorkspaceChat() {
           placeholder={`Message ${workspace?.name || 'workspace'}… (use @ to mention)`}
           value={input}
           members={members}
-          onChange={e => setInput(e.target.value)}
+          onChange={e => {
+            setInput(e.target.value);
+            if (workspaceId && user?.name && !typingEmitRef.current) {
+              socket.emit('workspace_typing', { workspaceId, userName: user.name });
+              typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
+            }
+          }}
         />
         <button type="submit" className={s.sendBtn} disabled={!input.trim()} title="Send">
           <Send size={14} />

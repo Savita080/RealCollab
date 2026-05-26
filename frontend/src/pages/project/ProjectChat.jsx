@@ -57,10 +57,10 @@ export default function ProjectChat() {
       }
     };
     socket.on('new_group_message', onNew);
-    socket.on('typing', onTyping);
+    socket.on('user_typing', onTyping);
     return () => {
       socket.off('new_group_message', onNew);
-      socket.off('typing', onTyping);
+      socket.off('user_typing', onTyping);
       clearTimeout(typingTimeoutRef.current);
     };
   }, [projectId, user?.name]);

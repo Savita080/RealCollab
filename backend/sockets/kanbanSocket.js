@@ -58,6 +58,11 @@ export const setupKanbanSockets = (io) => {
             socket.to(projectId).emit('user_typing', { userName, projectId });
         });
 
+        socket.on('workspace_typing', ({ workspaceId, userName }) => {
+            if (!workspaceId || !userName) return;
+            socket.to(`workspace_${workspaceId}`).emit('workspace_user_typing', { userName, workspaceId });
+        });
+
         // 4. MOVE TASK: The user dragged a card!
         socket.on('task_move', async (data) => {
             const { taskId, projectId, newStatus, newPosition } = data;
