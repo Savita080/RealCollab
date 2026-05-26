@@ -32,6 +32,13 @@
   line-height: 1.8;
   max-width: 800px;
 }
+.content:empty::before {
+  content: attr(placeholder);
+  color: var(--text-3);
+  opacity: 0.8;
+  pointer-events: none;
+  display: inline-block;
+}
 .content h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-1); margin: 24px 0 12px; }
 .content h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text-1); margin: 20px 0 8px; }
 .content p { margin: 0 0 12px; }

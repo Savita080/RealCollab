@@ -13,8 +13,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2.5 cursor-pointer group">
-          <span className="font-sans font-black text-xl tracking-tight text-white group-hover:text-[#00D4FF] transition-colors duration-300">
-            RealCollab
+          <span className="font-sans font-black text-xl tracking-tight text-white transition-colors duration-300">
+            <span className="bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] bg-clip-text text-transparent">Real</span>Collab
           </span>
         </Link>
 

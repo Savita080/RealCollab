@@ -88,10 +88,10 @@
   position: absolute;
   left: 12px; right: 12px;
   top: calc(100% - 4px);
-  background: var(--bg-card);
+  background: var(--bg-dropdown);
   border: 1px solid rgba(99,102,241,0.25);
   border-radius: var(--r-md);
-  z-index: 200;
+  z-index: 500;
   box-shadow: 0 12px 40px rgba(0,0,0,0.6);
   padding: 4px;
   max-height: 360px;

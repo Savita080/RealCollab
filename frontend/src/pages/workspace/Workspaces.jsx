@@ -1,7 +1,7 @@
 // pages/workspace/Workspaces.jsx — landing/master after login: list all workspaces
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Users, FolderKanban, Sparkles, ArrowRight, LogOut } from 'lucide-react';
+import { Plus, Users, FolderKanban, Sparkles, ArrowRight, LogOut, MoreHorizontal } from 'lucide-react';
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
@@ -81,8 +81,9 @@ export default function Workspaces() {
       {/* Top bar */}
       <header className={s.topbar}>
         <div className={s.brand}>
-          <span className={s.brandLogo}>RC</span>
-          <span className={s.brandName}>REALCOLLAB</span>
+          <span className={s.brandName}>
+            <span className={s.brandReal}>Real</span>Collab
+          </span>
         </div>
         <div className={s.userBox}>
           <Avatar name={user?.name || 'U'} size={32} />
@@ -138,35 +139,58 @@ export default function Workspaces() {
           return (
             <button
               key={w._id}
-              className={s.card}
+              className={s.folderCard}
               onClick={() => navigate(`/workspaces/${w._id}`)}
               style={{ '--accent-1': grad[0], '--accent-2': grad[1] }}
             >
-              <div className={s.cardHead}>
-                <div
-                  className={s.cardAvatar}
-                  style={{ background: `linear-gradient(135deg, ${grad[0]}, ${grad[1]})` }}
-                >
-                  {w.name[0]?.toUpperCase()}
+              {/* Folder Backing (Gradient Top) */}
+              <div className={s.folderBack} style={{ background: `linear-gradient(135deg, ${grad[0]}, ${grad[1]})` }} />
+
+              {/* Emerging Papers */}
+              <div className={s.papers}>
+                <div className={s.paper1}>
+                  <div className={s.paperLineShort} />
+                  <div className={s.paperLineLong} />
+                  <div className={s.paperLineLong} />
                 </div>
-                <div className={s.cardArrow}>
-                  <ArrowRight size={16} />
+                <div className={s.paper2}>
+                  <span className={s.paperWatermark}>{w.name[0]?.toUpperCase()}</span>
+                  <div className={s.paperLineShort} />
+                  <div className={s.paperLineLong} />
+                  <div className={s.paperLineLong} />
+                  <div className={s.paperLineLong} />
+                </div>
+                <div className={s.paper3}>
+                  <div className={s.paperLineShort} />
+                  <div className={s.paperLineLong} />
+                  <div className={s.paperLineLong} />
                 </div>
               </div>
-              <h3 className={s.cardName}>{w.name}</h3>
-              <div className={s.cardStats}>
-                <span className={s.stat}>
-                  <Users size={12} />
-                  {st ? `${st.members} member${st.members === 1 ? '' : 's'}` : '…'}
-                </span>
-                <span className={s.statDot}>·</span>
-                <span className={s.stat}>
-                  <FolderKanban size={12} />
-                  {st ? `${st.projects} project${st.projects === 1 ? '' : 's'}` : '…'}
-                </span>
-              </div>
-              <div className={s.cardFooter}>
-                <span className={s.cardMeta}>Open workspace</span>
+
+              {/* Folder Front Cover (Masked via CSS Clip Path) */}
+              <div className={s.folderFront}>
+                <div className={s.folderContent}>
+                  <div className={s.folderHeader}>
+                    <div className={s.folderTitleBox}>
+                      <h3 className={s.folderTitle}>{w.name}</h3>
+                      <span className={s.folderSubtitle}>Workspace</span>
+                    </div>
+                    <div className={s.folderDots} onClick={e => e.stopPropagation()}>
+                      <MoreHorizontal size={16} />
+                    </div>
+                  </div>
+                  
+                  <div className={s.folderFooter}>
+                    <div className={s.folderStat}>
+                      <Users size={12} className={s.folderStatIcon} />
+                      <span>{st ? `${st.members} Member${st.members === 1 ? '' : 's'}` : '…'}</span>
+                    </div>
+                    <div className={s.folderStat}>
+                      <FolderKanban size={12} className={s.folderStatIcon} />
+                      <span>{st ? `${st.projects} Project${st.projects === 1 ? '' : 's'}` : '…'}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </button>
           );
@@ -205,6 +229,22 @@ export default function Workspaces() {
           </div>
         </div>
       )}
+      {/* SVG Clip Path for Folder Front Cover Tab */}
+      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+        <defs>
+          <clipPath id="folder-clip" clipPathUnits="objectBoundingBox">
+            <path d="M 0,0.12
+                     C 0,0.12 0,0 0.04,0
+                     L 0.38,0
+                     C 0.42,0 0.44,0.12 0.48,0.12
+                     L 0.96,0.12
+                     C 0.98,0.12 1,0.16 1,0.22
+                     L 1,1
+                     L 0,1
+                     Z" />
+          </clipPath>
+        </defs>
+      </svg>
     </div>
   );
 }

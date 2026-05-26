@@ -190,7 +190,7 @@ export default function Register() {
           {/* logo + heading */}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2 mb-5 text-white font-bold text-xl">
-              RealCollab
+              <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">Real</span>Collab
             </Link>
             <h1 className="text-2xl font-black text-white tracking-tight">Create your account</h1>
             <p className="mt-1 text-sm text-white/40">Join 2,400+ teams already shipping faster</p>

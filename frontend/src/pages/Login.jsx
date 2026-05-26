@@ -71,7 +71,7 @@ export default function Login() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center">
               <Zap size={14} className="text-white" />
             </div>
-            RealCollab
+            <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Real</span>Collab
           </div>
 
           {/* glassmorphism card */}

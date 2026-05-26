@@ -26,8 +26,27 @@ export default function ProjectSidebar({ project, canEdit, role }) {
   const [projDropOpen, setProjDropOpen] = useState(false);
   const [wsDropOpen, setWsDropOpen] = useState(false);
 
-  const dropRef = useRef(null);
-  useClickOutside(dropRef, () => setWsDropOpen(false));
+  const wsDropRef = useRef(null);
+  const projDropRef = useRef(null);
+
+  useClickOutside(wsDropRef, () => setWsDropOpen(false));
+  useClickOutside(projDropRef, () => setProjDropOpen(false));
+
+  const toggleWsDrop = () => {
+    setWsDropOpen(o => {
+      const next = !o;
+      if (next) setProjDropOpen(false);
+      return next;
+    });
+  };
+
+  const toggleProjDrop = () => {
+    setProjDropOpen(o => {
+      const next = !o;
+      if (next) setWsDropOpen(false);
+      return next;
+    });
+  };
 
   const projBase = `/workspaces/${workspaceId}/projects/${projectId}`;
   const currentWorkspaceName = current?.name || 'Loading…';
@@ -58,14 +77,15 @@ export default function ProjectSidebar({ project, canEdit, role }) {
     <aside className={s.sidebar}>
       {/* Brand */}
       <button className={wsStyles.brand} onClick={() => navigate('/workspaces')}>
-        <span className={wsStyles.brandLogo}>RC</span>
-        <span className={wsStyles.brandName}>REALCOLLAB</span>
+        <span className={wsStyles.brandName}>
+          <span className={wsStyles.brandReal}>Real</span>Collab
+        </span>
       </button>
 
       {/* Workspace switcher */}
-      <div className={wsStyles.wsSection} ref={dropRef}>
+      <div className={wsStyles.wsSection} ref={wsDropRef}>
         <div className={wsStyles.wsLabel}>WORKSPACE</div>
-        <button className={wsStyles.wsSelector} onClick={() => setWsDropOpen(o => !o)}>
+        <button className={wsStyles.wsSelector} onClick={toggleWsDrop}>
           <span className={wsStyles.wsAvatar}>{currentWorkspaceName[0]?.toUpperCase()}</span>
           <span className={wsStyles.wsName}>{currentWorkspaceName}</span>
           <ChevronDown size={14} className={`${wsStyles.chev} ${wsDropOpen ? wsStyles.chevUp : ''}`} />
@@ -104,8 +124,8 @@ export default function ProjectSidebar({ project, canEdit, role }) {
       </div>
 
       {/* Project header / switcher */}
-      <div className={s.projHead}>
-        <button className={s.projHeadBtn} onClick={() => setProjDropOpen(o => !o)}>
+      <div className={s.projHead} ref={projDropRef}>
+        <button className={s.projHeadBtn} onClick={toggleProjDrop}>
           <span className={s.projDot} style={{ background: projColor }} />
           <div className={s.projHeadText}>
             <div className={s.projLabel}>PROJECT</div>

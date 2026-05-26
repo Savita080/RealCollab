@@ -116,7 +116,9 @@ export default function Sidebar() {
       <aside className={s.sidebar}>
         {/* Brand */}
         <div className={s.brand}>
-          <span className={s.brandName}>REALCOLLAB</span>
+          <span className={s.brandName}>
+            <span className={s.brandReal}>Real</span>Collab
+          </span>
         </div>
 
         {/* Workspace selector */}

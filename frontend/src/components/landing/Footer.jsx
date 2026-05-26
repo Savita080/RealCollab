@@ -11,7 +11,7 @@ export default function Footer() {
         {/* Branding & Mission */}
         <div className="md:col-span-5 space-y-4">
           <div className="text-xl font-sans font-black tracking-tight text-white flex items-center gap-2.5">
-            <span>RealCollab</span>
+            <span><span className="bg-gradient-to-r from-[#6C63FF] to-[#00D4FF] bg-clip-text text-transparent">Real</span>Collab</span>
           </div>
           <p className="text-sm max-w-sm text-gray-400 leading-relaxed">
             Eliminating coordination lag to establish high-throughput development pipelines for modern engineering squads globally.

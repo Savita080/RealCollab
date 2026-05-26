@@ -59,7 +59,8 @@ export default function WikiEditor({ page, onSave }) {
         className={s.content}
         contentEditable
         suppressContentEditableWarning
-        dangerouslySetInnerHTML={{ __html: page.content || '<p>Start writing…</p>' }}
+        dangerouslySetInnerHTML={{ __html: page.content || '' }}
+        placeholder="Start writing..."
       />
     </div>
   );

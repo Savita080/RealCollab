@@ -32,9 +32,16 @@
 }
 .wordmark {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 900;
+  font-size: 19px;
+  letter-spacing: -0.02em;
   color: var(--text-1);
+}
+.brandReal {
+  background: linear-gradient(135deg, var(--cyan), var(--indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .wsSelect {
@@ -87,7 +94,7 @@
   border: 1.5px solid var(--bg);
 }
 
-.userWrap { position: relative; }
+.notifWrap, .userWrap { position: relative; }
 .userBtn {
   background: none; border: none;
   cursor: pointer; padding: 3px;
@@ -102,13 +109,13 @@
   top: calc(100% + 8px);
   right: 0;
   width: 200px;
-  background: var(--bg-card);
+  background: var(--bg-dropdown);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
   animation: popIn 0.15s ease;
-  z-index: 300;
+  z-index: 500;
 }
 @keyframes popIn { from { opacity: 0; transform: scale(0.95) translateY(-4px); } to { opacity: 1; transform: none; } }
 

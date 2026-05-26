@@ -16,14 +16,33 @@ export default function Navbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const userRef = useRef(null);
+  const notifRef = useRef(null);
   useClickOutside(userRef, () => setUserOpen(false));
+  useClickOutside(notifRef, () => setNotifOpen(false));
+
+  const toggleNotif = () => {
+    setNotifOpen(o => {
+      const next = !o;
+      if (next) setUserOpen(false);
+      return next;
+    });
+  };
+
+  const toggleUser = () => {
+    setUserOpen(o => {
+      const next = !o;
+      if (next) setNotifOpen(false);
+      return next;
+    });
+  };
 
   return (
     <header className={s.bar}>
       {/* Brand */}
       <Link to="/dashboard" className={s.brand}>
-        <span className={s.logo}>RC</span>
-        <span className={s.wordmark}>RealCollab</span>
+        <span className={s.wordmark}>
+          <span className={s.brandReal}>Real</span>Collab
+        </span>
       </Link>
 
       {/* Workspace selector */}
@@ -42,21 +61,23 @@ export default function Navbar() {
 
       <div className={s.right}>
         {/* Notification bell */}
-        <button
-          className={s.iconBtn}
-          onClick={() => setNotifOpen(o => !o)}
-          aria-label="Notifications"
-        >
-          <BellIcon />
-          {unreadCount > 0 && (
-            <span className={s.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-          )}
-        </button>
-        {notifOpen && <NotificationDropdown onClose={() => setNotifOpen(false)} />}
+        <div className={s.notifWrap} ref={notifRef}>
+          <button
+            className={s.iconBtn}
+            onClick={toggleNotif}
+            aria-label="Notifications"
+          >
+            <BellIcon />
+            {unreadCount > 0 && (
+              <span className={s.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
+          </button>
+          {notifOpen && <NotificationDropdown onClose={() => setNotifOpen(false)} />}
+        </div>
 
         {/* User menu */}
         <div className={s.userWrap} ref={userRef}>
-          <button className={s.userBtn} onClick={() => setUserOpen(o => !o)}>
+          <button className={s.userBtn} onClick={toggleUser}>
             <Avatar name={user?.name || 'U'} size={30} />
           </button>
           {userOpen && (

@@ -27,7 +27,25 @@ export default function TopBar() {
   const [userOpen, setUserOpen] = useState(false);
   const [search, setSearch] = useState('');
   const userRef = useRef(null);
+  const notifRef = useRef(null);
   useClickOutside(userRef, () => setUserOpen(false));
+  useClickOutside(notifRef, () => setNotifOpen(false));
+
+  const toggleNotif = () => {
+    setNotifOpen(o => {
+      const next = !o;
+      if (next) setUserOpen(false);
+      return next;
+    });
+  };
+
+  const toggleUser = () => {
+    setUserOpen(o => {
+      const next = !o;
+      if (next) setNotifOpen(false);
+      return next;
+    });
+  };
 
   const pageLabel = PAGE_LABELS[location.pathname] || 'DASHBOARD';
 
@@ -53,21 +71,23 @@ export default function TopBar() {
       {/* Right controls */}
       <div className={s.right}>
         {/* Bell */}
-        <button
-          className={s.iconBtn}
-          onClick={() => setNotifOpen(o => !o)}
-          aria-label="Notifications"
-        >
-          <BellIcon />
-          {unreadCount > 0 && (
-            <span className={s.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-          )}
-        </button>
-        {notifOpen && <NotificationDropdown onClose={() => setNotifOpen(false)} />}
+        <div className={s.notifWrap} ref={notifRef}>
+          <button
+            className={s.iconBtn}
+            onClick={toggleNotif}
+            aria-label="Notifications"
+          >
+            <BellIcon />
+            {unreadCount > 0 && (
+              <span className={s.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
+          </button>
+          {notifOpen && <NotificationDropdown onClose={() => setNotifOpen(false)} />}
+        </div>
 
         {/* Avatar */}
         <div className={s.userWrap} ref={userRef}>
-          <button className={s.userBtn} onClick={() => setUserOpen(o => !o)}>
+          <button className={s.userBtn} onClick={toggleUser}>
             <Avatar name={user?.name || 'U'} size={28} />
           </button>
           {userOpen && (

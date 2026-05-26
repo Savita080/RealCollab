@@ -33,10 +33,17 @@
   letter-spacing: 0.04em;
 }
 .brandName {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
   color: #fff;
+}
+.brandReal {
+  background: linear-gradient(135deg, var(--cyan), var(--indigo));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
 .userBox {
@@ -131,110 +138,217 @@
 
 /* ─── Workspace card ────────────────────────── */
 
-.card {
+/* ─── Premium Folder Card ────────────────────────── */
+.folderCard {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 20px;
-  text-align: left;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 18px;
+  height: 200px;
+  background: transparent;
+  border: none;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   font-family: var(--font-body);
   color: var(--text-1);
-  transition:
-    transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
-    border-color 0.2s,
-    background 0.2s,
-    box-shadow 0.25s;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-/* Top accent line */
-.card::before {
-  content: '';
+.folderCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+/* Folder Backing (holds the color gradient at the top) */
+.folderBack {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-  opacity: 0;
-  transition: opacity 0.22s;
+  height: 100px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.card:hover {
-  transform: translateY(-6px) scale(1.02);
-  border-color: rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.07);
-  box-shadow:
-    0 20px 40px rgba(0,0,0,0.4),
-    0 0 0 1px rgba(var(--accent-rgb, 99,102,241),0.25);
+/* Sheets of paper inside */
+.papers {
+  position: absolute;
+  bottom: 80px; left: 0; right: 0;
+  height: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-.card:hover::before { opacity: 1; }
 
-.cardHead {
+.folderCard:hover .papers {
+  transform: translateY(-12px);
+}
+
+/* Individual Paper Sheets */
+.paper1, .paper2, .paper3 {
+  background: #ffffff;
+  border-radius: 4px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: absolute;
+  bottom: -4px;
+  transform-origin: bottom center;
+  transition: transform 0.25s ease;
+}
+
+.paper1 {
+  width: 90px; height: 75px;
+  left: 20%;
+  transform: rotate(-6deg);
+  opacity: 0.85;
+  z-index: 1;
+}
+
+.paper2 {
+  width: 100px; height: 82px;
+  left: 33%;
+  transform: rotate(0deg);
+  z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.cardAvatar {
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff;
-  font-size: 19px;
-  font-weight: 800;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
-}
-.cardArrow {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.12);
-  display: flex; align-items: center; justify-content: center;
-  color: #64748b;
-  transition: all 0.22s;
-}
-.card:hover .cardArrow {
-  border-color: rgba(255,255,255,0.3);
-  color: #fff;
-  transform: translateX(3px);
+  justify-content: center;
 }
 
-.cardName {
-  font-size: 16px;
-  font-weight: 600;
-  color: #f1f5f9;
-  margin: 0 0 8px;
+.paper3 {
+  width: 90px; height: 75px;
+  right: 20%;
+  transform: rotate(6deg);
+  opacity: 0.85;
+  z-index: 1;
+}
+
+/* paper hover effects */
+.folderCard:hover .paper1 {
+  transform: rotate(-10deg) translateY(-2px);
+}
+.folderCard:hover .paper2 {
+  transform: scale(1.03) translateY(-4px);
+}
+.folderCard:hover .paper3 {
+  transform: rotate(10deg) translateY(-2px);
+}
+
+/* Paper Details (text lines / watermark) */
+.paperLineShort, .paperLineLong {
+  height: 2px;
+  background: #e2e8f0;
+  border-radius: 1px;
+}
+.paperLineShort { width: 40%; }
+.paperLineLong { width: 100%; }
+
+.paperWatermark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  color: rgba(99, 102, 241, 0.15);
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  user-select: none;
+}
+
+/* Folder Front Cover (Opaque Dark Body with Tab clipping) */
+.folderFront {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 120px;
+  background: #111322;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  clip-path: url(#folder-clip);
+  transition: background 0.22s, transform 0.25s;
+  z-index: 3;
+}
+
+.folderCard:hover .folderFront {
+  background: #15172b;
+}
+
+/* Folder Content Inside Cover */
+.folderContent {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 100%;
+  padding: 24px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.folderHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.folderTitleBox {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.folderTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
-.cardStats {
+.folderSubtitle {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.folderDots {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  transition: all 0.15s;
+}
+.folderDots:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-1);
+}
+
+.folderFooter {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   font-size: 12px;
-  color: #64748b;
-  margin-bottom: 14px;
+  color: var(--text-2);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
 }
-.stat {
-  display: inline-flex;
+.folderStat {
+  display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
-.statDot { color: #1e293b; }
-.cardFooter {
-  border-top: 1px solid rgba(255,255,255,0.06);
-  padding-top: 11px;
-}
-.cardMeta {
-  font-size: 11px;
-  font-family: var(--font-mono);
-  color: #475569;
-  letter-spacing: 0.04em;
+.folderStatIcon {
+  color: var(--text-3);
 }
 
 /* ─── New workspace card ─────────────────────────────── */
@@ -245,36 +359,22 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 170px;
+  height: 200px;
   padding: 22px;
-  background: transparent;
-  border: 1.5px dashed rgba(255,255,255,0.1);
-  border-radius: 18px;
+  background: rgba(255,255,255,0.01);
+  border: 1.5px dashed rgba(255,255,255,0.08);
+  border-radius: 20px;
   cursor: pointer;
-  color: #475569;
+  color: var(--text-3);
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s;
-  margin-top: 18px; /* align with pinned cards */
-}
-.newCardIcon {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 1.5px dashed #475569;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  font-weight: 300;
-  transition: all 0.2s;
 }
 .newCard:hover {
-  border-color: rgba(6,182,212,0.5);
-  color: #06b6d4;
-  background: rgba(6,182,212,0.04);
-  transform: translateY(-3px);
-}
-.newCard:hover .newCardIcon {
-  border-color: #06b6d4;
-  background: rgba(6,182,212,0.1);
+  border-color: rgba(99,102,241,0.4);
+  color: var(--indigo);
+  background: rgba(99,102,241,0.02);
+  transform: translateY(-4px);
 }
 
 /* ─── Empty state ────────────────────────────────────── */

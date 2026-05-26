@@ -63,8 +63,9 @@ export default function WorkspaceSidebar({ role }) {
       <aside className={s.sidebar}>
         {/* Brand */}
         <button className={s.brand} onClick={() => navigate('/workspaces')}>
-          <span className={s.brandLogo}>RC</span>
-          <span className={s.brandName}>REALCOLLAB</span>
+          <span className={s.brandName}>
+            <span className={s.brandReal}>Real</span>Collab
+          </span>
         </button>
 
         {/* Workspace switcher */}

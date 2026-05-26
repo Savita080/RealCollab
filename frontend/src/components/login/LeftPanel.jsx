@@ -50,7 +50,7 @@ export default function LeftPanel() {
       {/* content top */}
       <div className="relative z-10 flex-none">
         <Link to="/" className="flex items-center gap-2 text-white font-bold text-xl tracking-tight">
-          RealCollab
+          <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Real</span>Collab
         </Link>
       </div>
 

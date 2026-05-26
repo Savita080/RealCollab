@@ -43,6 +43,22 @@ export default function WorkspaceTopBar({ workspace, role }) {
   useClickOutside(userRef, () => setUserOpen(false));
   useClickOutside(notifRef, () => setNotifOpen(false));
 
+  const toggleNotif = () => {
+    setNotifOpen(o => {
+      const next = !o;
+      if (next) setUserOpen(false);
+      return next;
+    });
+  };
+
+  const toggleUser = () => {
+    setUserOpen(o => {
+      const next = !o;
+      if (next) setNotifOpen(false);
+      return next;
+    });
+  };
+
   // Build breadcrumbs from URL segments
   const segs = location.pathname.split('/').filter(Boolean);
   const crumbs = [];
@@ -108,7 +124,7 @@ export default function WorkspaceTopBar({ workspace, role }) {
         <div className={s.notifWrap} ref={notifRef}>
           <button
             className={s.iconBtn}
-            onClick={() => setNotifOpen(o => !o)}
+            onClick={toggleNotif}
             aria-label="Notifications"
           >
             <Bell size={16} />
@@ -120,7 +136,7 @@ export default function WorkspaceTopBar({ workspace, role }) {
         </div>
 
         <div className={s.userWrap} ref={userRef}>
-          <button className={s.userBtn} onClick={() => setUserOpen(o => !o)}>
+          <button className={s.userBtn} onClick={toggleUser}>
             <Avatar name={user?.name || 'U'} size={28} />
           </button>
           {userOpen && (
