@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Loader2, ArrowRight, User, Mail, Lock } from "lucide-react";
@@ -19,9 +19,33 @@ const dots = Array.from({ length: 28 }, (_, i) => ({
 
 function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) {
   const [focused, setFocused] = useState(false);
+  const [autofilled, setAutofilled] = useState(false);
   const [showPw, setShowPw] = useState(false);
+  const inputRef = useRef(null);
   const isPassword = type === "password";
   const hasValue = value.length > 0;
+  const lifted = focused || autofilled || hasValue;
+
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    let stopped = false;
+    const sync = () => {
+      if (stopped || !inputRef.current) return;
+      const node = inputRef.current;
+      let isAutofill = false;
+      try { isAutofill = node.matches(':-webkit-autofill'); } catch {}
+      if (isAutofill) setAutofilled(true);
+      if (node.value && node.value !== (value ?? '') && onChange) {
+        onChange({ target: { value: node.value, name: node.name } });
+      }
+    };
+    sync();
+    const id = setInterval(sync, 150);
+    const stop = setTimeout(() => { clearInterval(id); stopped = true; }, 3000);
+    return () => { clearInterval(id); clearTimeout(stop); stopped = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const borderColor = focused
     ? 'var(--violet)'
@@ -49,7 +73,7 @@ function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) 
           htmlFor={id}
           className="absolute left-11 pointer-events-none transition-all duration-200 select-none"
           style={
-            focused || hasValue
+            lifted
               ? {
                   top: '8px',
                   fontSize: '10px',
@@ -71,15 +95,19 @@ function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) 
 
         <input
           id={id}
+          ref={inputRef}
           type={isPassword ? (showPw ? "text" : "password") : type}
           value={value}
           onChange={onChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="w-full bg-transparent pl-11 pr-10 pb-3 text-sm outline-none"
+          onAnimationStart={(e) => {
+            if (e.animationName === 'rc-autofill-start') setAutofilled(true);
+          }}
+          className="w-full bg-transparent pl-11 pr-10 pb-3 text-sm outline-none rc-floating-input"
           style={{
             color: 'var(--text-1)',
-            paddingTop: focused || hasValue ? '24px' : '16px',
+            paddingTop: lifted ? '24px' : '16px',
           }}
         />
 

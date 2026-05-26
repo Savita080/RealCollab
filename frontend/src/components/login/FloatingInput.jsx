@@ -1,13 +1,36 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function FloatingInput({ id, label, type = "text", value, onChange, error, autoComplete }) {
   const [focused, setFocused] = useState(false);
+  const [autofilled, setAutofilled] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const inputRef = useRef(null);
   const isPassword = type === "password";
   const inputType = isPassword ? (showPass ? "text" : "password") : type;
-  const lifted = focused || (value && value.length > 0);
+  const lifted = focused || autofilled || (value && value.length > 0);
+
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    let stopped = false;
+    const sync = () => {
+      if (stopped || !inputRef.current) return;
+      const node = inputRef.current;
+      let isAutofill = false;
+      try { isAutofill = node.matches(':-webkit-autofill'); } catch {}
+      if (isAutofill) setAutofilled(true);
+      if (node.value && node.value !== (value ?? '') && onChange) {
+        onChange({ target: { value: node.value, name: node.name } });
+      }
+    };
+    sync();
+    const id = setInterval(sync, 150);
+    const stop = setTimeout(() => { clearInterval(id); stopped = true; }, 3000);
+    return () => { clearInterval(id); clearTimeout(stop); stopped = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const borderColor = focused
     ? 'var(--cyan)'
@@ -53,13 +76,17 @@ export default function FloatingInput({ id, label, type = "text", value, onChang
 
         <input
           id={id}
+          ref={inputRef}
           type={inputType}
           autoComplete={autoComplete}
           value={value}
           onChange={onChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="w-full bg-transparent px-4 pb-3 text-sm outline-none"
+          onAnimationStart={(e) => {
+            if (e.animationName === 'rc-autofill-start') setAutofilled(true);
+          }}
+          className="w-full bg-transparent px-4 pb-3 text-sm outline-none rc-floating-input"
           style={{
             color: 'var(--text-1)',
             paddingTop: lifted ? '24px' : '16px',

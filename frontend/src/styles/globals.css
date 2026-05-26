@@ -131,6 +131,56 @@
   color-scheme: dark;
 }
 
+/* ── Sage (light forest theme — mint + deep evergreen palette) ────────────── */
+[data-theme="sage"] {
+  --bg:          #F4F8F4;                     /* near-white mint cream */
+  --bg-2:        rgba(244, 248, 244, 0.7);
+  --bg-card:     #E2EEE5;                     /* soft sage card */
+  --bg-hover:    rgba(5, 31, 32, 0.05);
+  --bg-glass:    rgba(244, 248, 244, 0.85);
+  --bg-dropdown: #ECF3ED;
+  --border:      rgba(5, 31, 32, 0.10);
+  --border-hover:rgba(5, 31, 32, 0.20);
+
+  --bg-card-premium: rgba(142, 182, 155, 0.18);
+  --border-premium:  rgba(5, 31, 32, 0.12);
+  --card-shadow-premium: 0 8px 24px rgba(5, 31, 32, 0.10);
+
+  /* Accents shift to forest tones — names retain semantic role */
+  --cyan:   #235347;   /* secondary accent → forest pine */
+  --indigo: #163832;   /* primary accent → deep evergreen */
+  --violet: #2D6A4A;   /* tertiary → kelly green */
+  --pink:   #B05B3F;   /* highlight → terracotta against green */
+  --green:  #52796F;   /* sage olive — softer than pure green */
+  --amber:  #C9913E;   /* warm wheat for contrast */
+
+  --accent-soft: rgba(35, 83, 71, 0.12);
+  --focus-ring:  rgba(35, 83, 71, 0.32);
+
+  --status-success: #52796F;   /* sage olive */
+  --status-warning: #C9913E;   /* wheat amber */
+  --status-danger:  #B05B3F;   /* terracotta */
+  --status-info:    #235347;   /* forest pine */
+
+  --bubble-me:   linear-gradient(135deg, #8EB69B, #235347);
+  --bubble-them: #E2EEE5;
+  --scrollbar-thumb: #235347;
+
+  /* Soften ambient orbs — pale mint haze */
+  --orb-1: rgba(142, 182, 155, 0.32);
+  --orb-2: rgba(35, 83, 71, 0.16);
+
+  --text-1: #051F20;   /* deepest evergreen */
+  --text-2: #0B2B26;   /* dark forest */
+  --text-3: #4A6A5F;   /* muted moss */
+
+  --glow-cyan:   0 0 40px rgba(35, 83, 71, 0.18);
+  --glow-indigo: 0 0 40px rgba(142, 182, 155, 0.30);
+  --shadow-card: 0 4px 24px rgba(5, 31, 32, 0.10);
+
+  color-scheme: light;
+}
+
 /* ── Caramel (warm light theme — coffee + cream palette) ──────────────────── */
 [data-theme="caramel"] {
   --bg:          #FFF2DF;                     /* lightest cream */
@@ -230,6 +280,27 @@ body::after {
 
 /* Selection */
 ::selection { background: var(--focus-ring); color: var(--text-1); }
+
+/* Browser autofill — keep our themed bg/text instead of Chrome's yellow/blue */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--text-1) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--bg-card) inset !important;
+  caret-color: var(--text-1);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Floating-input autofill detection — only the start animation, so we don't
+   accidentally clear autofilled state on initially-empty inputs. */
+input.rc-floating-input:-webkit-autofill {
+  animation-name: rc-autofill-start;
+  animation-duration: 1ms;
+}
+@keyframes rc-autofill-start { from {} to {} }
 
 /* Utilities */
 .font-display { font-family: var(--font-display); }

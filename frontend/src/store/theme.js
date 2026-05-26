@@ -25,6 +25,13 @@ export const THEMES = [
     description: 'Warm cream + caramel coffee.',
     swatch: ['#FFF2DF', '#D3A376', '#3E2522'],
   },
+  {
+    id: 'sage',
+    name: 'Sage',
+    kind: 'light',
+    description: 'Mint cream + deep forest green.',
+    swatch: ['#F4F8F4', '#8EB69B', '#163832'],
+  },
 ];
 
 const THEME_STORAGE_KEY = 'rc:theme';
