@@ -13,7 +13,7 @@ import NotificationPopupStack from '../../components/ui/NotificationPopup';
 import s from '../../styles/modules/WorkspaceLayout.module.css';
 
 export default function WorkspaceLayout() {
-  const { workspaceId } = useParams();
+  const { workspaceId, projectId } = useParams();
   const navigate = useNavigate();
   const { role, members, loading, isOwner, isAdmin, canManage, canCreate } = useWorkspaceRole(workspaceId);
   const { workspaces: wsList, current, fetchWorkspaces, setWorkspace, refreshProjects } = useWorkspace();
@@ -70,28 +70,36 @@ export default function WorkspaceLayout() {
     );
   }
 
+  const contextVal = {
+    workspaceId,
+    workspace: current,
+    role,
+    members,
+    isOwner,
+    isAdmin,
+    canManage,
+    canCreate,
+  };
+
   return (
-    <div className={s.layout}>
-      <WorkspaceSidebar role={role} />
-      <div className={s.right}>
-        <WorkspaceTopBar workspace={current} role={role} />
-        <main className={s.main}>
-          <div className={s.content}>
-            <Outlet context={{
-              workspaceId,
-              workspace: current,
-              role,
-              members,
-              isOwner,
-              isAdmin,
-              canManage,
-              canCreate,
-            }} />
+    <>
+      {projectId ? (
+        <Outlet context={contextVal} />
+      ) : (
+        <div className={s.layout}>
+          <WorkspaceSidebar role={role} />
+          <div className={s.right}>
+            <WorkspaceTopBar workspace={current} role={role} />
+            <main className={s.main}>
+              <div className={s.content}>
+                <Outlet context={contextVal} />
+              </div>
+            </main>
           </div>
-        </main>
-      </div>
+        </div>
+      )}
       <ToastStack />
       <NotificationPopupStack />
-    </div>
+    </>
   );
 }

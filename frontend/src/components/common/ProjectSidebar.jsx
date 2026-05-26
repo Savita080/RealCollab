@@ -1,25 +1,38 @@
 // components/common/ProjectSidebar.jsx — project-scoped left nav (slim)
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, LayoutGrid, KanbanSquare, MessageSquare, FileText, Code2,
-  Palette, Sparkles, Activity, Users, Settings, Folder, Plus,
+  Palette, Sparkles, Activity, Users, Settings, Folder, Plus, ChevronDown, Check, LogOut,
 } from 'lucide-react';
 import { useWorkspace } from '../../store/workspace';
+import { useAuth } from '../../store/auth';
+import { useClickOutside } from '../../lib/hooks';
+import { Avatar } from '../ui/Badge';
 import s from '../../styles/modules/ProjectSidebar.module.css';
+import wsStyles from '../../styles/modules/WorkspaceSidebar.module.css';
 
 const PROJECT_COLORS = [
   '#6366f1', '#00d4ff', '#10b981', '#f59e0b',
   '#ec4899', '#8b5cf6', '#ef4444', '#06b6d4',
 ];
 
-export default function ProjectSidebar({ project, canEdit }) {
+export default function ProjectSidebar({ project, canEdit, role }) {
   const { workspaceId, projectId } = useParams();
   const navigate = useNavigate();
-  const { projects } = useWorkspace();
+  const { projects, workspaces: wsList, current } = useWorkspace();
+  const { user, logout } = useAuth();
+  
   const [projDropOpen, setProjDropOpen] = useState(false);
+  const [wsDropOpen, setWsDropOpen] = useState(false);
+
+  const dropRef = useRef(null);
+  useClickOutside(dropRef, () => setWsDropOpen(false));
 
   const projBase = `/workspaces/${workspaceId}/projects/${projectId}`;
+  const currentWorkspaceName = current?.name || 'Loading…';
+  const firstName = user?.name?.split(' ')[0] || 'User';
+
   const NAV = [
     { to: `${projBase}`,             label: 'Overview',    icon: LayoutGrid, end: true },
     { to: `${projBase}/kanban`,      label: 'Kanban',      icon: KanbanSquare },
@@ -36,16 +49,59 @@ export default function ProjectSidebar({ project, canEdit }) {
     { to: `${projBase}/settings`, label: 'Settings', icon: Settings, editorOnly: true },
   ];
 
+  const activeProj = project || projects.find(p => p._id === projectId);
+  const projectName = activeProj?.name || 'Loading…';
   const projIdx = projects.findIndex(p => p._id === projectId);
   const projColor = PROJECT_COLORS[projIdx % PROJECT_COLORS.length] || PROJECT_COLORS[0];
 
   return (
     <aside className={s.sidebar}>
-      {/* Back to workspace */}
-      <button className={s.back} onClick={() => navigate(`/workspaces/${workspaceId}`)}>
-        <ArrowLeft size={14} />
-        <span>Back to workspace</span>
+      {/* Brand */}
+      <button className={wsStyles.brand} onClick={() => navigate('/workspaces')}>
+        <span className={wsStyles.brandLogo}>RC</span>
+        <span className={wsStyles.brandName}>REALCOLLAB</span>
       </button>
+
+      {/* Workspace switcher */}
+      <div className={wsStyles.wsSection} ref={dropRef}>
+        <div className={wsStyles.wsLabel}>WORKSPACE</div>
+        <button className={wsStyles.wsSelector} onClick={() => setWsDropOpen(o => !o)}>
+          <span className={wsStyles.wsAvatar}>{currentWorkspaceName[0]?.toUpperCase()}</span>
+          <span className={wsStyles.wsName}>{currentWorkspaceName}</span>
+          <ChevronDown size={14} className={`${wsStyles.chev} ${wsDropOpen ? wsStyles.chevUp : ''}`} />
+        </button>
+
+        {wsDropOpen && (
+          <div className={wsStyles.wsDrop}>
+            {wsList.map(w => {
+              const active = workspaceId === w._id;
+              return (
+                <button
+                  key={w._id}
+                  className={`${wsStyles.wsOpt} ${active ? wsStyles.wsOptActive : ''}`}
+                  onClick={() => {
+                    setWsDropOpen(false);
+                    navigate(`/workspaces/${w._id}`);
+                  }}
+                >
+                  <span className={wsStyles.wsAvatarSm}>{w.name[0]?.toUpperCase()}</span>
+                  <span className={wsStyles.wsOptName}>{w.name}</span>
+                  {active && <Check size={12} className={wsStyles.wsOptCheck} />}
+                </button>
+              );
+            })}
+            <button
+              className={wsStyles.wsOptNew}
+              onClick={() => {
+                setWsDropOpen(false);
+                navigate('/workspaces');
+              }}
+            >
+              All workspaces…
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Project header / switcher */}
       <div className={s.projHead}>
@@ -53,7 +109,7 @@ export default function ProjectSidebar({ project, canEdit }) {
           <span className={s.projDot} style={{ background: projColor }} />
           <div className={s.projHeadText}>
             <div className={s.projLabel}>PROJECT</div>
-            <div className={s.projName}>{project?.name || 'Loading…'}</div>
+            <div className={s.projName}>{projectName}</div>
           </div>
           <Folder size={14} className={s.projHeadChev} />
         </button>
@@ -91,7 +147,7 @@ export default function ProjectSidebar({ project, canEdit }) {
 
       {/* Main nav */}
       <nav className={s.navSection}>
-        <div className={s.sectionLabel}>WORKSPACE</div>
+        <div className={s.sectionLabel}>PROJECT</div>
         {NAV.map(n => (
           <NavLink
             key={n.to}
@@ -129,6 +185,20 @@ export default function ProjectSidebar({ project, canEdit }) {
         <div className={s.footHint}>
           {canEdit ? 'You can create and edit content' : 'Read-only access'}
         </div>
+      </div>
+
+      {/* User footer */}
+      <div className={wsStyles.userFoot}>
+        <Avatar name={user?.name || 'U'} size={32} />
+        <div className={wsStyles.userInfo}>
+          <button className={wsStyles.userNameBtn} onClick={() => navigate('/profile')} title="Edit profile">
+            {firstName}
+          </button>
+          <span className={wsStyles.userRole}>{role || 'Member'}</span>
+        </div>
+        <button className={wsStyles.logoutBtn} onClick={logout} title="Sign out">
+          <LogOut size={14} />
+        </button>
       </div>
     </aside>
   );
