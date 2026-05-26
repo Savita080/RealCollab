@@ -31,15 +31,29 @@ import WikiPageVersion from '../models/wikiPageVersion.js';
 import Whiteboard from '../models/whiteboard.js';
 import Notification from '../models/notification.js';
 
+
+//made optional context and weight fields and mapped to 3 urls
 export const reviewCode = async (req, res) => {
     try {
-        const { code, language, snippetId } = req.body;
-        const aiServiceUrl = process.env.AI_REVIEW_URL || 'http://localhost:8000';
+        const { code, language, snippetId, context, weights } = req.body;
+
+        const lang = (language || '').toLowerCase();
+
+        let aiServiceUrl;
+        if (lang === 'python') {
+            aiServiceUrl = process.env.PY_REVIEWER_URL || 'http://localhost:8000';
+        } else if (lang === 'javascript' || lang === 'typescript') {
+            aiServiceUrl = process.env.JS_REVIEWER_URL || 'http://localhost:8001';
+        } else if (['java', 'c++', 'go'].includes(lang)) {
+            aiServiceUrl = process.env.COMB_REVIEWER_URL || 'http://localhost:8002';
+        } else {
+            return res.status(400).json({ error: `Unsupported language: ${language}` });
+        }
 
         const response = await fetch(`${aiServiceUrl}/review`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, language, snippetId })
+            body: JSON.stringify({ code, language, snippetId, context, weights })
         });
 
         if (!response.ok) throw new Error(`AI Service responded with status: ${response.status}`);
@@ -268,15 +282,31 @@ export const summarizeProject = async (req, res) => {
     }
 };
 
+// it was using wrong url and wrong endpoint , fixed that
 export const generateTasks = async (req, res) => {
     try {
         const { projectId, featureDescription } = req.body;
-        const aiServiceUrl = process.env.AI_BLOCKER_URL || 'http://localhost:8001';
+        const aiServiceUrl = process.env.AI_BREAKDOWN_URL || 'http://localhost:8004';
 
-        const response = await fetch(`${aiServiceUrl}/find-bottleneck`, {
+        const project = await Project.findById(projectId);
+        if (!project) return res.status(404).json({ message: "Project not found" });
+
+        const tasks = await Task.find({ project: projectId }).lean();
+
+        const payload = {
+            projectId,
+            featureDescription,
+            context: {
+                project_name: project.name,
+                project_description: project.description || '',
+                existing_tasks: tasks.map(t => ({ title: t.title, status: t.status }))
+            }
+        };
+
+        const response = await fetch(`${aiServiceUrl}/api/breakdown`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ projectId, featureDescription })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) throw new Error(`AI Service responded with status: ${response.status}`);
