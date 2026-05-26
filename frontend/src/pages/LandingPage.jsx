@@ -10,14 +10,17 @@ import Footer from "../components/landing/Footer";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen text-[#e2e8f0] relative selection:bg-[#6C63FF]/30 select-text overflow-x-hidden">
+    <div
+      className="min-h-screen relative select-text overflow-x-hidden"
+      style={{ color: 'var(--text-1)' }}
+    >
       {/* Dynamic Font Import & Scrollbar Setup */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap');
-        
+
         body {
           font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
-          background-color: #030014;
+          background-color: var(--bg);
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -28,20 +31,7 @@ export default function LandingPage() {
           scroll-behavior: smooth;
         }
 
-        /* Tech-styled Scrollbar */
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-          background: #030014;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: linear-gradient(180deg, #6C63FF 0%, #00D4FF 100%);
-          border-radius: 99px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(180deg, #a78bfa 0%, #38bdf8 100%);
-        }
+        ::selection { background: var(--accent-soft); }
       `}</style>
 
       <CustomCursor />

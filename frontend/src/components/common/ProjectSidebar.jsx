@@ -14,8 +14,8 @@ import s from '../../styles/modules/ProjectSidebar.module.css';
 import wsStyles from '../../styles/modules/WorkspaceSidebar.module.css';
 
 const PROJECT_COLORS = [
-  '#6366f1', '#00d4ff', '#10b981', '#f59e0b',
-  '#ec4899', '#8b5cf6', '#ef4444', '#06b6d4',
+  'var(--indigo)', 'var(--cyan)', 'var(--green)', 'var(--amber)',
+  'var(--pink)', 'var(--violet)', 'var(--status-danger)', 'var(--cyan)',
 ];
 
 export default function ProjectSidebar({ project, canEdit, role }) {

@@ -11,8 +11,8 @@ import { Select } from '../../components/ui/Input';
 import s from '../../styles/modules/ProjectMembers.module.css';
 
 const PROJ_ROLES = ['CONTRIBUTOR', 'VIEWER'];
-const PROJ_ROLE_COLORS = { CONTRIBUTOR: '#00d4ff', VIEWER: '#8b5cf6' };
-const WS_ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };
+const PROJ_ROLE_COLORS = { CONTRIBUTOR: 'var(--cyan)', VIEWER: 'var(--violet)' };
+const WS_ROLE_COLORS = { OWNER: 'var(--amber)', ADMIN: 'var(--indigo)', MEMBER: 'var(--green)', VIEWER: 'var(--text-3)' };
 
 export default function ProjectMembers() {
   const { workspaceId, projectId, project, isContributor, canEdit, workspaceRole } = useOutletContext();
@@ -133,7 +133,7 @@ export default function ProjectMembers() {
                   </div>
                   <span
                     className={s.roleBadge}
-                    style={{ '--rc': PROJ_ROLE_COLORS[m.role] || '#6b7280' }}
+                    style={{ '--rc': PROJ_ROLE_COLORS[m.role] || 'var(--text-3)' }}
                   >
                     {m.role}
                   </span>
@@ -175,7 +175,7 @@ export default function ProjectMembers() {
                     <strong>{m.user?.name || 'Unknown'}</strong>
                     <span className={s.email}>{m.user?.email || ''}</span>
                   </div>
-                  <span className={s.wsRoleBadge} style={{ '--rc': WS_ROLE_COLORS[m.role] || '#6b7280' }}>
+                  <span className={s.wsRoleBadge} style={{ '--rc': WS_ROLE_COLORS[m.role] || 'var(--text-3)' }}>
                     {m.role}
                   </span>
                   <Select

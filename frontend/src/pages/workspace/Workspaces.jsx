@@ -11,6 +11,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/Input';
 import { useClickOutside } from '../../lib/hooks';
 import ProfileCardBadge from '../../components/layout/ProfileCardBadge';
+import ThemeQuickPick from '../../components/layout/ThemeQuickPick';
 import Button from '../../components/ui/Button';
 import s from '../../styles/modules/Workspaces.module.css';
 
@@ -23,7 +24,7 @@ const WS_GRADIENTS = [
   ['#8b5cf6', '#ec4899'],
 ];
 
-const ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };
+const ROLE_COLORS = { OWNER: 'var(--amber)', ADMIN: 'var(--indigo)', MEMBER: 'var(--green)', VIEWER: 'var(--text-3)' };
 
 export default function Workspaces() {
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ export default function Workspaces() {
           </span>
         </div>
         <div className={s.userBox} ref={userRef} style={{ position: 'relative' }}>
+          <ThemeQuickPick />
           <button className={s.userClickArea} onClick={() => setUserOpen(o => !o)}>
             <Avatar name={user?.name || 'U'} src={user?.avatar} size={32} />
             <div className={s.userText}>

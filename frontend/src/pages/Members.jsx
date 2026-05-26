@@ -12,7 +12,7 @@ import { Input, Select } from '../components/ui/Input';
 import s from '../styles/modules/Members.module.css';
 
 const ROLES = ['VIEWER', 'MEMBER', 'ADMIN', 'OWNER'];
-const ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };
+const ROLE_COLORS = { OWNER: 'var(--amber)', ADMIN: 'var(--indigo)', MEMBER: 'var(--green)', VIEWER: 'var(--text-3)' };
 
 export default function Members() {
   const { current: ws, setWorkspaces, workspaces } = useWorkspace();
@@ -183,14 +183,14 @@ export default function Members() {
                     className={s.roleSelect}
                     value={m.role}
                     onChange={e => handleRoleChange(uid, e.target.value)}
-                    style={{ '--rc': ROLE_COLORS[m.role] || '#6b7280' }}
+                    style={{ '--rc': ROLE_COLORS[m.role] || 'var(--text-3)' }}
                   >
                     {ROLES.filter(r => r !== 'OWNER').map(r => (
                       <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 ) : (
-                  <span className={s.roleBadge} style={{ '--rc': ROLE_COLORS[m.role] || '#6b7280' }}>
+                  <span className={s.roleBadge} style={{ '--rc': ROLE_COLORS[m.role] || 'var(--text-3)' }}>
                     {m.role}
                   </span>
                 )}
@@ -300,7 +300,7 @@ export default function Members() {
 
           {/* Delete */}
           <div className={s.settingBlock}>
-            <h4 className={s.settingLabel} style={{ color: '#ef4444' }}>⚠ Delete Workspace</h4>
+            <h4 className={s.settingLabel} style={{ color: 'var(--status-danger)' }}>⚠ Delete Workspace</h4>
             <p className={s.settingHint}>
               This permanently deletes <strong>{ws.name}</strong> and all its projects, tasks, wiki pages, and snippets. Type the workspace name to confirm.
             </p>

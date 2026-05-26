@@ -26,9 +26,9 @@
 .chip:active { transform: scale(0.96); }
 
 .chip.mine {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: #6366f1;
-  color: #c7d2fe;
+  background: var(--accent-soft);
+  border-color: var(--indigo);
+  color: var(--indigo);
 }
 
 .chip.add {

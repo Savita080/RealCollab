@@ -12,10 +12,10 @@ export const TASK_COLUMNS = [
 ];
 
 export const TASK_STATUS_COLORS = {
-  'To Do': '#6366f1',
-  'In Progress': '#f59e0b',
-  'In Review': '#00d4ff',
-  'Done': '#10b981',
+  'To Do': 'var(--indigo)',
+  'In Progress': 'var(--amber)',
+  'In Review': 'var(--cyan)',
+  'Done': 'var(--green)',
 };
 
 const COLS = TASK_COLUMNS.map(c => c.key);

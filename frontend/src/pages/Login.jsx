@@ -4,10 +4,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { Loader2, ArrowRight, Zap } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
-import { cn } from "../lib/utils";
 import FloatingInput from "../components/login/FloatingInput";
 import LeftPanel from "../components/login/LeftPanel";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import ThemeQuickPick from "../components/layout/ThemeQuickPick";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export default function Login() {
 
     try {
       await login({ email: fields.email, password: fields.password });
-      toast.success("Welcome back! 🚀");
+      toast.success("Welcome back!");
       navigate("/dashboard");
     } catch (err) {
       const msg =
@@ -50,14 +50,22 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#050811] font-sans">
+    <div className="min-h-screen flex font-sans" style={{ background: 'var(--bg)' }}>
       <LeftPanel />
 
       {/* ── Right Panel ── */}
       <div className="flex w-full lg:w-1/2 items-center justify-center px-6 py-16 relative overflow-hidden">
+        {/* theme toggle */}
+        <div className="absolute top-6 right-6 z-20">
+          <ThemeQuickPick />
+        </div>
+
         {/* subtle background glow */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-[120px]" />
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px]"
+            style={{ background: 'var(--accent-soft)' }}
+          />
         </div>
 
         <motion.div
@@ -67,18 +75,42 @@ export default function Login() {
           className="relative z-10 w-full max-w-md"
         >
           {/* mobile logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-10 text-white font-bold text-lg">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-400 to-indigo-500 flex items-center justify-center">
-              <Zap size={14} className="text-white" />
+          <div
+            className="lg:hidden flex items-center gap-2 mb-10 font-bold text-lg"
+            style={{ color: 'var(--text-1)' }}
+          >
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ backgroundImage: 'linear-gradient(to bottom right, var(--cyan), var(--indigo))' }}
+            >
+              <Zap size={14} style={{ color: 'var(--bg)' }} />
             </div>
-            <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Real</span>Collab
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(to right, var(--cyan), var(--indigo))' }}
+            >
+              Real
+            </span>
+            Collab
           </div>
 
           {/* glassmorphism card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl p-8 shadow-[0_0_80px_rgba(0,0,0,0.5)]">
+          <div
+            className="rounded-2xl backdrop-blur-xl p-8"
+            style={{
+              border: '1px solid var(--border)',
+              background: 'var(--bg-glass)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-white tracking-tight">Welcome back</h1>
-              <p className="mt-1 text-sm text-white/40">
+              <h1
+                className="text-2xl font-bold tracking-tight"
+                style={{ color: 'var(--text-1)' }}
+              >
+                Welcome back
+              </h1>
+              <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
                 Sign in to continue to your workspace
               </p>
             </div>
@@ -106,7 +138,8 @@ export default function Login() {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  className="text-xs text-cyan-400/70 hover:text-cyan-400 transition-colors"
+                  className="text-xs transition-colors"
+                  style={{ color: 'var(--cyan)' }}
                 >
                   Forgot password?
                 </button>
@@ -116,13 +149,12 @@ export default function Login() {
                 type="submit"
                 disabled={loading}
                 whileTap={{ scale: 0.98 }}
-                className={cn(
-                  "relative w-full mt-2 rounded-xl py-3.5 text-sm font-semibold text-white transition-all duration-300",
-                  "bg-gradient-to-r from-cyan-500 to-indigo-500",
-                  "hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] hover:brightness-110",
-                  "disabled:opacity-60 disabled:cursor-not-allowed",
-                  "flex items-center justify-center gap-2"
-                )}
+                className="relative w-full mt-2 rounded-xl py-3.5 text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  backgroundImage: 'linear-gradient(to right, var(--cyan), var(--indigo))',
+                  color: 'var(--bg)',
+                  boxShadow: 'var(--glow-cyan)',
+                }}
               >
                 {loading ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -137,32 +169,38 @@ export default function Login() {
 
             {/* divider */}
             <div className="my-6 flex items-center gap-3">
-              <div className="flex-1 h-px bg-white/[0.07]" />
-              <span className="text-[11px] text-white/25 tracking-widest uppercase">or</span>
-              <div className="flex-1 h-px bg-white/[0.07]" />
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+              <span
+                className="text-[11px] tracking-widest uppercase"
+                style={{ color: 'var(--text-3)' }}
+              >
+                or
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
             </div>
 
             {/* Google OAuth Button */}
             <GoogleAuthButton label="Continue with Google" />
 
-            <p className="mt-6 text-center text-xs text-white/30">
+            <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-3)' }}>
               Don't have an account?{" "}
               <Link
                 to="/register"
-                className="text-cyan-400/80 hover:text-cyan-400 transition-colors font-medium"
+                className="transition-colors font-medium"
+                style={{ color: 'var(--cyan)' }}
               >
                 Start for free
               </Link>
             </p>
           </div>
 
-          <p className="mt-5 text-center text-[11px] text-white/20">
+          <p className="mt-5 text-center text-[11px]" style={{ color: 'var(--text-3)' }}>
             By signing in, you agree to our{" "}
-            <span className="underline underline-offset-2 cursor-pointer hover:text-white/40 transition-colors">
+            <span className="underline underline-offset-2 cursor-pointer transition-colors">
               Terms
             </span>{" "}
             and{" "}
-            <span className="underline underline-offset-2 cursor-pointer hover:text-white/40 transition-colors">
+            <span className="underline underline-offset-2 cursor-pointer transition-colors">
               Privacy Policy
             </span>
           </p>

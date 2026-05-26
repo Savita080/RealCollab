@@ -6,7 +6,7 @@
   align-items: center;
   gap: 18px;
   padding: 0 24px;
-  background: rgba(10,10,26,0.85);
+  background: var(--bg-glass);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -39,7 +39,7 @@
 }
 .crumbLink:hover {
   color: var(--text-1);
-  background: rgba(99,102,241,0.06);
+  background: var(--accent-soft);
 }
 .crumbActive {
   color: var(--text-1);
@@ -67,7 +67,7 @@
 }
 .search {
   width: 100%;
-  background: rgba(99,102,241,0.04);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   padding: 8px 12px 8px 34px;
@@ -79,23 +79,23 @@
 .search::placeholder { color: var(--text-3); }
 .search:focus {
   outline: none;
-  border-color: rgba(99,102,241,0.4);
-  background: rgba(99,102,241,0.08);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  border-color: var(--focus-ring);
+  background: var(--bg-hover);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 .clearBtn {
   position: absolute;
   right: 8px;
   width: 22px; height: 22px;
   border: none;
-  background: rgba(99,102,241,0.08);
+  background: var(--accent-soft);
   border-radius: 50%;
   color: var(--text-3);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
 }
-.clearBtn:hover { color: var(--text-1); background: rgba(99,102,241,0.16); }
+.clearBtn:hover { color: var(--text-1); background: var(--bg-hover); }
 
 .right {
   display: flex;
@@ -110,7 +110,7 @@
 .iconBtn {
   width: 36px; height: 36px;
   border-radius: var(--r-sm);
-  background: rgba(99,102,241,0.04);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-2);
   cursor: pointer;
@@ -119,9 +119,9 @@
   transition: all 0.15s;
 }
 .iconBtn:hover {
-  background: rgba(99,102,241,0.1);
+  background: var(--accent-soft);
   color: var(--text-1);
-  border-color: rgba(99,102,241,0.3);
+  border-color: var(--border-hover);
 }
 .badge {
   position: absolute;
@@ -130,7 +130,7 @@
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
-  background: linear-gradient(135deg, #ef4444, #f59e0b);
+  background: linear-gradient(135deg, var(--status-danger), var(--status-warning));
   color: #fff;
   font-size: 9.5px;
   font-weight: 700;
@@ -140,13 +140,13 @@
   align-items: center;
   justify-content: center;
   border: 2px solid var(--bg);
-  box-shadow: 0 2px 6px rgba(239,68,68,0.4);
+  box-shadow: 0 2px 6px var(--focus-ring);
 }
 
 .userBtn {
   width: 36px; height: 36px;
   border: 1px solid var(--border);
-  background: rgba(99,102,241,0.04);
+  background: var(--bg-card);
   border-radius: 50%;
   cursor: pointer;
   padding: 3px;
@@ -154,8 +154,8 @@
   transition: all 0.15s;
 }
 .userBtn:hover {
-  border-color: rgba(99,102,241,0.4);
-  background: rgba(99,102,241,0.1);
+  border-color: var(--border-hover);
+  background: var(--accent-soft);
 }
 
 .dropdown {
@@ -164,10 +164,10 @@
   top: calc(100% + 8px);
   min-width: 220px;
   background: var(--bg-dropdown);
-  border: 1px solid rgba(99,102,241,0.2);
+  border: 1px solid var(--border-hover);
   border-radius: var(--r-md);
   padding: 6px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  box-shadow: var(--shadow-card);
   z-index: 600;
   animation: pop 0.15s ease;
 }
@@ -194,7 +194,7 @@
 }
 .sep {
   border: none;
-  border-top: 1px solid rgba(99,102,241,0.1);
+  border-top: 1px solid var(--border);
   margin: 4px 0;
 }
 .item {
@@ -215,17 +215,17 @@
   transition: all 0.12s;
 }
 .item:hover {
-  background: rgba(99,102,241,0.08);
+  background: var(--accent-soft);
   color: var(--text-1);
 }
-.danger { color: #ef4444; }
-.danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+.danger { color: var(--status-danger); }
+.danger:hover { background: var(--bg-hover); color: var(--status-danger); }
 
 .toggleBtn {
   width: 32px;
   height: 32px;
   border-radius: var(--r-sm);
-  background: rgba(99, 102, 241, 0.04);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-2);
   cursor: pointer;
@@ -236,7 +236,7 @@
   flex-shrink: 0;
 }
 .toggleBtn:hover {
-  background: rgba(99, 102, 241, 0.1);
+  background: var(--accent-soft);
   color: var(--text-1);
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--border-hover);
 }

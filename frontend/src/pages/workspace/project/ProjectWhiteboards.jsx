@@ -5,6 +5,7 @@ import { whiteboards as wbApi } from '../../../lib/api';
 import { joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb } from '../../../lib/socket';
 import socket from '../../../lib/socket';
 import { useUI } from '../../../store/ui';
+import { useTheme } from '../../../store/theme';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
@@ -17,6 +18,7 @@ export default function ProjectWhiteboards() {
   const ctx = useOutletContext();
   const { workspaceId, projectId, canEdit } = ctx;
   const { toast } = useUI();
+  const themeKind = useTheme(s => s.getActive().kind);
 
   const [whiteboards, setWhiteboards] = useState([]);
   const [activeWb, setActiveWb] = useState(null);
@@ -167,7 +169,7 @@ export default function ProjectWhiteboards() {
                       excalidrawAPI={(api) => setExcalidrawAPI(api)}
                       initialData={initialData ?? { elements: elementsRef.current, scrollToContent: false }}
                       onChange={onChange}
-                      theme="dark"
+                      theme={themeKind}
                       viewModeEnabled={!canEdit}
                       UIOptions={{ canvasActions: { saveToActiveFile: false, loadScene: false, export: false } }}
                     />

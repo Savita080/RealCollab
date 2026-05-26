@@ -7,6 +7,7 @@ import { Avatar } from '../ui/Badge';
 import { useClickOutside } from '../../lib/hooks';
 import NotificationDropdown from './NotificationDropdown';
 import ProfileCardBadge from './ProfileCardBadge';
+import ThemeQuickPick from './ThemeQuickPick';
 import s from '../../styles/modules/TopBar.module.css';
 
 const PAGE_LABELS = {
@@ -85,6 +86,9 @@ export default function TopBar() {
           </button>
           {notifOpen && <NotificationDropdown onClose={() => setNotifOpen(false)} />}
         </div>
+
+        {/* Theme picker */}
+        <ThemeQuickPick />
 
         {/* Avatar */}
         <div className={s.userWrap} ref={userRef}>

@@ -2,7 +2,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5,5,15,0.8);
+  background: var(--bg-glass);
   backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
@@ -13,7 +13,7 @@
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .panel {
-  background: var(--bg-card);
+  background: var(--bg-dropdown);
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-card), var(--glow-indigo);
@@ -52,6 +52,6 @@
   border-radius: var(--r-sm);
   transition: color 0.2s, background 0.2s;
 }
-.close:hover { color: var(--text-1); background: rgba(255,255,255,0.06); }
+.close:hover { color: var(--text-1); background: var(--bg-hover); }
 
 .body { padding: 24px; }

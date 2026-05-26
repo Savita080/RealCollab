@@ -34,8 +34,8 @@
   gap: 12px;
 }
 .section.danger {
-  border-color: rgba(239,68,68,0.25);
-  background: linear-gradient(135deg, rgba(239,68,68,0.04), var(--bg-card));
+  border-color: var(--border-hover);
+  background: linear-gradient(135deg, var(--bg-2), var(--bg-card));
 }
 .sectionHead {
   display: flex;
@@ -43,7 +43,7 @@
   gap: 8px;
   color: var(--indigo);
 }
-.section.danger .sectionHead { color: #ef4444; }
+.section.danger .sectionHead { color: var(--status-danger); }
 .sectionHead h3 {
   font-family: var(--font-display);
   font-size: 16px;

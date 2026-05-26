@@ -101,7 +101,7 @@ export default function ProfileCardBadge({ user, onClose, onLogout, style }) {
                     {user.githubUrl.replace('https://github.com/', '')}
                   </a>
                 ) : (
-                  <span style={{ color: '#94a3b8', fontStyle: 'italic', fontWeight: 'normal' }}>—</span>
+                  <span style={{ color: 'var(--text-3)', fontStyle: 'italic', fontWeight: 'normal' }}>—</span>
                 )}
               </span>
             </div>

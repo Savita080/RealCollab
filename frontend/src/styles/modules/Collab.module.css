@@ -1,27 +1,30 @@
 /* ─── Collab.module.css ─────────────────────────────────────────────────────── */
 
-/* Design tokens */
-:root {
-  --bg-base:       #0d0f17;
-  --bg-surface:    #12151f;
-  --bg-card:       #181c2a;
-  --bg-hover:      #1e2235;
-  --border:        rgba(255,255,255,0.07);
-  --border-active: rgba(99,179,237,0.4);
-  --accent:        #63b3ed;
-  --accent-green:  #68d391;
-  --accent-glow:   rgba(99,179,237,0.15);
-  --text-primary:  #e8eaf0;
-  --text-secondary:#8892a4;
-  --text-muted:    #4a5568;
-  --bubble-me:     linear-gradient(135deg,#2b4c7e,#1a3a6b);
-  --bubble-them:   #1e2235;
-  --font-mono:     'JetBrains Mono', 'Fira Code', monospace;
-  --radius-sm:     8px;
-  --radius-md:     12px;
-  --radius-lg:     18px;
-  --shadow-card:   0 4px 32px rgba(0,0,0,0.45);
-}
+/*
+  Local design tokens are intentionally NOT declared here. This module relies on
+  the global theme tokens declared in styles/globals.css so the live-collab page
+  switches color schemes alongside the rest of the app. If a value below feels
+  too theme-specific, prefer adding it to globals.css rather than re-introducing
+  a `:root` block here.
+
+  Token map (Collab → globals):
+    --bg-base       → --bg
+    --bg-surface    → --bg-2
+    --bg-card       → --bg-card
+    --bg-hover      → --bg-hover
+    --border        → --border
+    --border-active → --border-hover
+    --accent        → --indigo            (primary accent role)
+    --accent-green  → --status-success
+    --accent-glow   → --accent-soft
+    --bubble-me     → --bubble-me
+    --bubble-them   → --bubble-them
+    --text-primary  → --text-1
+    --text-secondary→ --text-2
+    --text-muted    → --text-3
+    --radius-sm/md  → --r-sm / --r-md
+    --shadow-card   → --shadow-card
+*/
 
 /* ── Page shell ─────────────────────────────────────────────────────────────── */
 .page {
@@ -29,8 +32,8 @@
   flex-direction: column;
   height: 100vh;          /* fill viewport */
   overflow: hidden;
-  background: var(--bg-base);
-  color: var(--text-primary);
+  background: var(--bg);
+  color: var(--text-1);
   font-family: var(--font-mono);
 }
 
@@ -43,7 +46,7 @@
   padding: 0 24px;
   height: 56px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-2);
   backdrop-filter: blur(12px);
   z-index: 10;
 }
@@ -52,7 +55,7 @@
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--text-primary);
+  color: var(--text-1);
   margin: 0;
 }
 
@@ -64,7 +67,7 @@
 
 .onlineLabel {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--text-2);
   margin-left: 4px;
 }
 
@@ -88,7 +91,7 @@
   flex-direction: column;
   min-height: 0;
   border-right: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-2);
 }
 
 .chatHeader {
@@ -101,7 +104,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-2);
   border-bottom: 1px solid var(--border);
 }
 
@@ -113,9 +116,9 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: var(--accent-green);
-  background: rgba(104,211,145,0.1);
-  border: 1px solid rgba(104,211,145,0.25);
+  color: var(--status-success);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
   border-radius: 99px;
   padding: 2px 8px;
   animation: pulse 2s ease-in-out infinite;
@@ -146,7 +149,7 @@
 
 .noMsg {
   margin: auto;
-  color: var(--text-muted);
+  color: var(--text-3);
   font-size: 13px;
   text-align: center;
 }
@@ -174,7 +177,7 @@
 
 .senderName {
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--text-2);
 }
 
 .bubble {
@@ -183,28 +186,28 @@
   gap: 3px;
   background: var(--bubble-them);
   padding: 9px 13px;
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   border-bottom-left-radius: 4px;
   border: 1px solid var(--border);
 }
 
 .mine .bubble {
   background: var(--bubble-me);
-  border-radius: var(--radius-md);
+  border-radius: var(--r-md);
   border-bottom-right-radius: 4px;
-  border-color: rgba(99,179,237,0.2);
+  border-color: var(--border-hover);
 }
 
 .msgText {
   font-size: 13.5px;
   line-height: 1.55;
-  color: var(--text-primary);
+  color: var(--text-1);
   word-break: break-word;
 }
 
 .msgTime {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-3);
   align-self: flex-end;
 }
 
@@ -216,7 +219,7 @@
   gap: 8px;
   padding: 12px;
   border-top: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-2);
 }
 
 .mentionWrap { flex: 1; min-width: 0; }
@@ -225,8 +228,8 @@
   flex: 1;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
+  border-radius: var(--r-sm);
+  color: var(--text-1);
   font-family: var(--font-mono);
   font-size: 13px;
   padding: 9px 13px;
@@ -234,8 +237,8 @@
   transition: border-color 0.2s;
 }
 
-.chatInput::placeholder { color: var(--text-muted); }
-.chatInput:focus { border-color: var(--border-active); }
+.chatInput::placeholder { color: var(--text-3); }
+.chatInput:focus { border-color: var(--border-hover); }
 
 .sendBtn {
   flex: 0 0 36px;
@@ -243,8 +246,8 @@
   width: 36px;
   border-radius: 50%;
   border: none;
-  background: var(--accent);
-  color: #0d0f17;
+  background: var(--indigo);
+  color: var(--bg);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -260,7 +263,7 @@
 .typingIndicator {
   padding: 4px 18px 8px;
   font-size: 11px;
-  color: var(--text-secondary);
+  color: var(--text-2);
   font-style: italic;
   min-height: 22px;
 }
@@ -272,7 +275,7 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  background: var(--bg-base);
+  background: var(--bg);
   position: relative;
 }
 
@@ -287,16 +290,16 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--text-secondary);
-  background: var(--bg-surface);
+  color: var(--text-2);
+  background: var(--bg-2);
 }
 
 .wbBadge {
   font-size: 10px;
   font-weight: 700;
-  color: var(--accent);
-  background: var(--accent-glow);
-  border: 1px solid rgba(99,179,237,0.25);
+  color: var(--indigo);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
   border-radius: 99px;
   padding: 2px 9px;
   letter-spacing: 0.08em;
@@ -322,10 +325,10 @@
   align-items: center;
   justify-content: center;
   height: 100vh;
-  color: var(--text-muted);
+  color: var(--text-3);
   font-family: var(--font-mono);
   font-size: 14px;
-  background: var(--bg-base);
+  background: var(--bg);
 }
 
 /* ── Responsive: stack vertically on narrow screens ─────────────────────────── */
@@ -349,7 +352,7 @@
   display: flex;
   gap: 0;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-2);
   padding: 0 16px;
 }
 
@@ -361,17 +364,17 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.05em;
-  color: var(--text-secondary);
+  color: var(--text-2);
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
-.tab:hover { color: var(--text-primary); }
+.tab:hover { color: var(--text-1); }
 .tabActive {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: var(--indigo);
+  border-bottom-color: var(--indigo);
 }
 
 /* ── Full-width chat (used in tab mode) ──────────────────────────────────────── */
@@ -380,7 +383,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--bg-surface);
+  background: var(--bg-2);
 }
 
 /* ── Whiteboard panel with sidebar ──────────────────────────────────────────── */
@@ -396,7 +399,7 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-2);
   min-height: 0;
   overflow: hidden;
 }
@@ -410,7 +413,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-secondary);
+  color: var(--text-2);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -418,9 +421,9 @@
 .wbNewBtn {
   width: 22px; height: 22px;
   border-radius: 50%;
-  border: 1px solid var(--border-active);
+  border: 1px solid var(--border-hover);
   background: none;
-  color: var(--accent);
+  color: var(--indigo);
   font-size: 16px;
   cursor: pointer;
   display: flex;
@@ -428,7 +431,7 @@
   justify-content: center;
   transition: background 0.15s;
 }
-.wbNewBtn:hover { background: rgba(99,179,237,0.12); }
+.wbNewBtn:hover { background: var(--accent-soft); }
 
 .wbList {
   flex: 1 1 0;
@@ -439,7 +442,7 @@
 .wbEmpty {
   padding: 16px;
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-3);
   text-align: center;
   line-height: 1.6;
 }
@@ -456,7 +459,7 @@
   text-align: left;
   padding: 8px 8px;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-2);
   background: none;
   border: none;
   border-radius: 6px;
@@ -466,14 +469,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wbItemBtn:hover { background: var(--bg-hover); color: var(--text-primary); }
-.wbItemActive .wbItemBtn { color: var(--accent); background: rgba(99,179,237,0.1); }
+.wbItemBtn:hover { background: var(--bg-hover); color: var(--text-1); }
+.wbItemActive .wbItemBtn { color: var(--indigo); background: var(--accent-soft); }
 
 .wbDeleteBtn {
   flex-shrink: 0;
   width: 18px; height: 18px;
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-3);
   background: none;
   border: none;
   cursor: pointer;
@@ -482,7 +485,7 @@
   transition: opacity 0.15s, color 0.15s;
 }
 .wbItem:hover .wbDeleteBtn { opacity: 1; }
-.wbDeleteBtn:hover { color: #ef4444; }
+.wbDeleteBtn:hover { color: var(--status-danger); }
 
 .wbPlaceholder {
   flex: 1;
@@ -491,6 +494,6 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: var(--text-muted);
+  color: var(--text-3);
   font-size: 14px;
 }

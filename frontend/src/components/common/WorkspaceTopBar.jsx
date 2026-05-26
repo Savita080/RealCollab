@@ -9,6 +9,7 @@ import { Avatar } from '../ui/Badge';
 import { useClickOutside } from '../../lib/hooks';
 import NotificationDropdown from '../layout/NotificationDropdown';
 import ProfileCardBadge from '../layout/ProfileCardBadge';
+import ThemeQuickPick from '../layout/ThemeQuickPick';
 import s from '../../styles/modules/WorkspaceTopBar.module.css';
 
 const SEGMENT_LABELS = {
@@ -139,6 +140,8 @@ export default function WorkspaceTopBar({ workspace, role }) {
           </button>
           {notifOpen && <NotificationDropdown onClose={() => setNotifOpen(false)} />}
         </div>
+
+        <ThemeQuickPick />
 
         <div className={s.userWrap} ref={userRef}>
           <button className={s.userBtn} onClick={toggleUser}>

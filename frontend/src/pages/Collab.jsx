@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useWorkspace } from '../store/workspace';
 import { useAuth } from '../store/auth';
+import { useTheme } from '../store/theme';
 import { usePresence } from '../lib/hooks';
 import {
   joinProject, leaveProject,
@@ -32,6 +33,7 @@ export default function Collab() {
   const { current: ws, currentProject } = useWorkspace();
   const { user } = useAuth();
   const { toast } = useUI();
+  const themeKind = useTheme(s => s.getActive().kind);
   const online = usePresence(currentProject?._id);
 
   const [tab, setTab] = useState('project');
@@ -467,7 +469,7 @@ export default function Collab() {
                         excalidrawAPI={(api) => setExcalidrawAPI(api)}
                         initialData={initialData ?? { elements: elementsRef.current, scrollToContent: false }}
                         onChange={onWhiteboardChange}
-                        theme="dark"
+                        theme={themeKind}
                         UIOptions={{
                           canvasActions: {
                             saveToActiveFile: false,

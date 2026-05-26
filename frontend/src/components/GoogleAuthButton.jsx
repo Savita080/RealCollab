@@ -59,18 +59,24 @@ export default function GoogleAuthButton({ label = "Continue with Google", class
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className={`
-        flex w-full items-center justify-center gap-3
-        rounded-xl border border-white/10 bg-white/5
-        px-4 py-3 text-sm font-semibold text-white
-        transition-all duration-200
-        hover:bg-white/10 hover:border-white/20
-        disabled:opacity-50 disabled:cursor-not-allowed
-        ${className}
-      `}
+      className={`flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+      style={{
+        border: '1px solid var(--border)',
+        background: 'var(--bg-card)',
+        color: 'var(--text-1)',
+      }}
+      onMouseEnter={(e) => {
+        if (loading) return;
+        e.currentTarget.style.background = 'var(--bg-hover)';
+        e.currentTarget.style.borderColor = 'var(--border-hover)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'var(--bg-card)';
+        e.currentTarget.style.borderColor = 'var(--border)';
+      }}
     >
       {loading ? (
-        <svg className="h-5 w-5 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+        <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text-1)' }}>
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
         </svg>

@@ -5,8 +5,10 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
+import { useTheme } from '../../store/theme';
 
 export default function EmojiPickerButton({ onSelect, title = 'Add emoji', children, className, style }) {
+  const themeKind = useTheme(s => s.getActive().kind);
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0, flipUp: false });
   const btnRef = useRef(null);
@@ -75,7 +77,7 @@ export default function EmojiPickerButton({ onSelect, title = 'Add emoji', child
         >
           <Picker
             data={data}
-            theme="dark"
+            theme={themeKind}
             onEmojiSelect={handleSelect}
             previewPosition="none"
             skinTonePosition="none"

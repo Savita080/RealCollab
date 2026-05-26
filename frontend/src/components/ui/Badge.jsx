@@ -40,9 +40,9 @@ export function AvatarGroup({ users = [], max = 4 }) {
 
 // Priority chip
 export function PriorityChip({ priority }) {
-  const colors = { P0: '#ef4444', P1: '#f59e0b', P2: '#10b981' };
+  const colors = { P0: 'var(--status-danger)', P1: 'var(--amber)', P2: 'var(--green)' };
   return (
-    <span className={s.chip} style={{ '--c': colors[priority] || '#6366f1' }}>
+    <span className={s.chip} style={{ '--c': colors[priority] || 'var(--indigo)' }}>
       {priority}
     </span>
   );

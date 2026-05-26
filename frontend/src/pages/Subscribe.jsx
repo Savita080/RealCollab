@@ -161,7 +161,7 @@ export default function Subscribe() {
                 className={s.barFill}
                 style={{
                   width: `${pct}%`,
-                  background: pct > 80 ? '#ef4444' : pct > 50 ? '#f59e0b' : '#10b981',
+                  background: `var(${pct > 80 ? '--status-danger' : pct > 50 ? '--status-warning' : '--status-success'})`,
                 }}
               />
             </div>

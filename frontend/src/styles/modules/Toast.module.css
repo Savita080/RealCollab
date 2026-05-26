@@ -29,7 +29,7 @@
 }
 .info    .icon { color: var(--cyan); }
 .success .icon { color: var(--green); }
-.error   .icon { color: #ef4444; }
+.error   .icon { color: var(--status-danger); }
 .warning .icon { color: var(--amber); }
 
 .icon { font-size: 16px; flex-shrink: 0; }

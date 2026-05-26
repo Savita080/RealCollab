@@ -26,25 +26,25 @@ function StandupResult({ data }) {
     <div className={s.structured}>
       {done && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#10b981' }}>✓ DONE</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-success)' }}>✓ DONE</span>
           <p className={s.sText}>{done}</p>
         </div>
       )}
       {today && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#6366f1' }}>→ TODAY</span>
+          <span className={s.sLabel} style={{ color: 'var(--indigo)' }}>→ TODAY</span>
           <p className={s.sText}>{today}</p>
         </div>
       )}
       {blockers && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#f59e0b' }}>⚠ BLOCKERS</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-warning)' }}>⚠ BLOCKERS</span>
           <p className={s.sText}>{blockers}</p>
         </div>
       )}
       {summary && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#00d4ff' }}>◎ SUMMARY</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-info)' }}>◎ SUMMARY</span>
           <p className={s.sText}>{summary}</p>
         </div>
       )}
@@ -62,7 +62,7 @@ function BlockersResult({ data }) {
     <div className={s.structured}>
       <div className={s.statRow}>
         <span className={s.statChip}>{total} IN PROGRESS</span>
-        <span className={s.statChip} style={{ '--cc': '#f59e0b' }}>{stalled} STALLED</span>
+        <span className={s.statChip} style={{ '--cc': 'var(--status-warning)' }}>{stalled} STALLED</span>
       </div>
       {message && <p className={s.sText} style={{ marginTop: 8 }}>{message}</p>}
       {results.map((item, i) => (
@@ -125,7 +125,7 @@ function SummaryResult({ data }) {
               className={s.barFill}
               style={{
                 width: `${healthScore}%`,
-                background: healthScore > 70 ? '#10b981' : healthScore > 40 ? '#f59e0b' : '#ef4444',
+                background: `var(${healthScore > 70 ? '--status-success' : healthScore > 40 ? '--status-warning' : '--status-danger'})`,
               }}
             />
           </div>
@@ -173,25 +173,25 @@ function ReviewResult({ data }) {
     <div className={s.structured}>
       {overall && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#00d4ff' }}>Overall</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-info)' }}>Overall</span>
           <p className={s.sText}>{overall}</p>
         </div>
       )}
       {bugs && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#ef4444' }}>🐛 Bugs</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-danger)' }}>🐛 Bugs</span>
           <p className={s.sText}>{typeof bugs === 'string' ? bugs : JSON.stringify(bugs)}</p>
         </div>
       )}
       {performance && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#f59e0b' }}>⚡ Performance</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-warning)' }}>⚡ Performance</span>
           <p className={s.sText}>{typeof performance === 'string' ? performance : JSON.stringify(performance)}</p>
         </div>
       )}
       {readability && (
         <div className={s.section}>
-          <span className={s.sLabel} style={{ color: '#10b981' }}>📖 Readability</span>
+          <span className={s.sLabel} style={{ color: 'var(--status-success)' }}>📖 Readability</span>
           <p className={s.sText}>{typeof readability === 'string' ? readability : JSON.stringify(readability)}</p>
         </div>
       )}
@@ -345,7 +345,7 @@ export default function AIPanel({ canEdit = true, isContributor = true } = {}) {
             </Button>
           </div>
           {!allowRun && (
-            <div className={s.placeholder} style={{ marginTop: 8, color: '#f59e0b', fontSize: 12 }}>
+            <div className={s.placeholder} style={{ marginTop: 8, color: 'var(--status-warning)', fontSize: 12 }}>
               ⚠ Viewers can't run AI tools. Ask a contributor to run them for you.
             </div>
           )}
@@ -388,7 +388,7 @@ export default function AIPanel({ canEdit = true, isContributor = true } = {}) {
               <div className={s.placeholder}>
                 <span>✦</span>
                 <p>Click "Run" to get {panel?.label?.toLowerCase()}.</p>
-                {!currentProject && <p style={{ color: '#f59e0b', fontSize: 12 }}>⚠ Select a project first</p>}
+                {!currentProject && <p style={{ color: 'var(--status-warning)', fontSize: 12 }}>⚠ Select a project first</p>}
               </div>
             )}
             {loading && (

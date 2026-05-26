@@ -15,7 +15,7 @@
   transition: all 0.2s;
 }
 .tag:hover { border-color: var(--indigo); color: var(--text-1); }
-.activeTag { background: rgba(99,102,241,0.12); border-color: var(--indigo); color: var(--text-1); }
+.activeTag { background: var(--accent-soft); border-color: var(--indigo); color: var(--text-1); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
 .empty { color: var(--text-3); font-size: 14px; padding: 40px 0; }

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '../store/auth';
 import { useUI } from '../store/ui';
+import { useTheme } from '../store/theme';
 import Button from '../components/ui/Button';
 import { Input, Textarea } from '../components/ui/Input';
 import ProfileCardBadge from '../components/layout/ProfileCardBadge';
@@ -19,6 +20,7 @@ const PRESET_AVATARS = [
 export default function Profile() {
   const { user, updateProfile } = useAuth();
   const { toast } = useUI();
+  const { themes, current: currentTheme, setTheme } = useTheme();
 
   const [form, setForm] = useState({
     name:      user?.name      || '',
@@ -151,6 +153,39 @@ export default function Profile() {
             <span className={s.badge}>{user?.role || 'Member'}</span>
           </div>
         </form>
+
+        {/* Appearance / Theme picker */}
+        <div className={s.themeCard}>
+          <div className={s.themeCardHead}>
+            <span className={s.themeCardTitle}>Appearance</span>
+            <span className={s.themeCardSub}>Pick a theme — applied instantly across the app and remembered on this device.</span>
+          </div>
+          <div className={s.themeGrid}>
+            {themes.map(t => {
+              const active = t.id === currentTheme;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTheme(t.id)}
+                  className={`${s.themeCardItem} ${active ? s.themeCardItemActive : ''}`}
+                >
+                  <div className={s.themePreview}>
+                    {t.swatch.map((c, i) => (
+                      <div key={i} className={s.themePreviewBlock} style={{ background: c }} />
+                    ))}
+                  </div>
+                  <div className={s.themeMeta}>
+                    <span className={s.themeName}>{t.name}</span>
+                    <span className={s.themeKind}>{t.kind}</span>
+                  </div>
+                  <p className={s.themeDesc}>{t.description}</p>
+                  {active && <span className={s.themeCheck}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className={s.rightColumn}>

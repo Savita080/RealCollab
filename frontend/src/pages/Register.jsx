@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../store/auth";
 import { cn } from "../lib/utils";
 import GoogleAuthButton from "../components/GoogleAuthButton";
+import ThemeQuickPick from "../components/layout/ThemeQuickPick";
 
 const dots = Array.from({ length: 28 }, (_, i) => ({
   id: i,
@@ -22,25 +23,49 @@ function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) 
   const isPassword = type === "password";
   const hasValue = value.length > 0;
 
+  const borderColor = focused
+    ? 'var(--violet)'
+    : error
+    ? 'var(--status-danger)'
+    : 'var(--border)';
+
   return (
     <div>
-      <div className={cn(
-        "relative rounded-xl border bg-white/[0.04] backdrop-blur-sm transition-all duration-300",
-        focused ? "border-violet-400 shadow-[0_0_20px_rgba(167,139,250,0.2)]"
-               : error  ? "border-red-500/60"
-               : "border-white/10"
-      )}>
-        <Icon size={15} className={cn(
-          "absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300",
-          focused ? "text-violet-400" : "text-white/25"
-        )} />
+      <div
+        className="relative rounded-xl backdrop-blur-sm transition-all duration-300"
+        style={{
+          border: `1px solid ${borderColor}`,
+          background: 'var(--bg-card)',
+          boxShadow: focused ? 'var(--glow-indigo)' : 'none',
+        }}
+      >
+        <Icon
+          size={15}
+          className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300"
+          style={{ color: focused ? 'var(--violet)' : 'var(--text-3)' }}
+        />
 
-        <label htmlFor={id} className={cn(
-          "absolute left-11 pointer-events-none transition-all duration-200 select-none",
-          focused || hasValue
-            ? "top-2 text-[10px] font-semibold uppercase tracking-widest text-violet-400"
-            : "top-1/2 -translate-y-1/2 text-sm text-white/35"
-        )}>
+        <label
+          htmlFor={id}
+          className="absolute left-11 pointer-events-none transition-all duration-200 select-none"
+          style={
+            focused || hasValue
+              ? {
+                  top: '8px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: 'var(--violet)',
+                }
+              : {
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '14px',
+                  color: 'var(--text-3)',
+                }
+          }
+        >
           {label}
         </label>
 
@@ -51,10 +76,11 @@ function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) 
           onChange={onChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={cn(
-            "w-full bg-transparent pl-11 pr-10 pb-3 text-sm text-white outline-none",
-            focused || hasValue ? "pt-6" : "pt-4"
-          )}
+          className="w-full bg-transparent pl-11 pr-10 pb-3 text-sm outline-none"
+          style={{
+            color: 'var(--text-1)',
+            paddingTop: focused || hasValue ? '24px' : '16px',
+          }}
         />
 
         {isPassword && (
@@ -62,7 +88,10 @@ function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) 
             type="button"
             tabIndex={-1}
             onClick={() => setShowPw(v => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/25 hover:text-violet-400 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: 'var(--text-3)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--violet)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-3)')}
           >
             {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
           </button>
@@ -73,7 +102,8 @@ function FloatingInput({ id, label, type, value, onChange, error, icon: Icon }) 
         {error && (
           <motion.p
             initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="mt-1 pl-1 text-[11px] text-red-400"
+            className="mt-1 pl-1 text-[11px]"
+            style={{ color: 'var(--status-danger)' }}
           >
             {error}
           </motion.p>
@@ -93,18 +123,23 @@ function PasswordStrength({ password }) {
     /[^A-Za-z0-9]/.test(password),
   ].filter(Boolean).length;
 
-  const color = ["", "bg-red-500", "bg-orange-400", "bg-yellow-400", "bg-emerald-400"][passed];
-  const label = ["", "Weak", "Fair", "Good", "Strong"][passed];
-  const textColor = ["", "text-red-400", "text-orange-400", "text-yellow-400", "text-emerald-400"][passed];
+  const colorTokens = ['', 'var(--status-danger)', 'var(--amber)', 'var(--amber)', 'var(--status-success)'];
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const tokenColor = colorTokens[passed];
+  const label = labels[passed];
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-2 space-y-1">
       <div className="flex gap-1.5">
         {[1, 2, 3, 4].map(n => (
-          <div key={n} className={cn("h-1 flex-1 rounded-full transition-all duration-300", n <= passed ? color : "bg-white/10")} />
+          <div
+            key={n}
+            className="h-1 flex-1 rounded-full transition-all duration-300"
+            style={{ background: n <= passed ? tokenColor : 'var(--bg-hover)' }}
+          />
         ))}
       </div>
-      <p className={cn("text-[11px]", textColor)}>{label} password</p>
+      <p className="text-[11px]" style={{ color: tokenColor }}>{label} password</p>
     </motion.div>
   );
 }
@@ -140,7 +175,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register({ name, email, password });
-      toast.success("Account created! Welcome 🎉");
+      toast.success("Account created! Welcome");
       navigate("/dashboard");
     } catch (err) {
       const msg = err?.response?.data?.message || "Something went wrong.";
@@ -152,15 +187,28 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050811] px-4 py-16 relative overflow-hidden">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 py-16 relative overflow-hidden"
+      style={{ background: 'var(--bg)' }}
+    >
+      {/* theme toggle */}
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeQuickPick />
+      </div>
 
       {/* background glows */}
-      <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-violet-600/10 blur-[140px] pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[140px] pointer-events-none" />
+      <div
+        className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full blur-[140px] pointer-events-none"
+        style={{ background: 'var(--orb-2)' }}
+      />
+      <div
+        className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none"
+        style={{ background: 'var(--orb-1)' }}
+      />
 
       {/* subtle grid */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-        backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+        backgroundImage: "linear-gradient(var(--text-1) 1px, transparent 1px), linear-gradient(90deg, var(--text-1) 1px, transparent 1px)",
         backgroundSize: "50px 50px"
       }} />
 
@@ -168,8 +216,15 @@ export default function Register() {
       {dots.map(dot => (
         <motion.div
           key={dot.id}
-          className="absolute rounded-full bg-cyan-400/25 pointer-events-none"
-          style={{ left: `${dot.x}%`, top: `${dot.y}%`, width: dot.size, height: dot.size }}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            left: `${dot.x}%`,
+            top: `${dot.y}%`,
+            width: dot.size,
+            height: dot.size,
+            background: 'var(--cyan)',
+            opacity: 0.25,
+          }}
           animate={{ opacity: [0, 1, 0], y: [0, -40, -80] }}
           transition={{ duration: dot.duration, delay: dot.delay, repeat: Infinity }}
         />
@@ -183,17 +238,43 @@ export default function Register() {
         className="relative z-10 w-full max-w-lg"
       >
         {/* top glow line on card */}
-        <div className="absolute -top-px left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-violet-400/60 to-transparent" />
+        <div
+          className="absolute -top-px left-1/2 -translate-x-1/2 w-1/2 h-px"
+          style={{ background: 'linear-gradient(to right, transparent, var(--violet), transparent)' }}
+        />
 
-        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] backdrop-blur-2xl p-8 shadow-[0_0_100px_rgba(0,0,0,0.5)]">
-
+        <div
+          className="rounded-2xl backdrop-blur-2xl p-8"
+          style={{
+            border: '1px solid var(--border)',
+            background: 'var(--bg-glass)',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
           {/* logo + heading */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center gap-2 mb-5 text-white font-bold text-xl">
-              <span className="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">Real</span>Collab
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 mb-5 font-bold text-xl"
+              style={{ color: 'var(--text-1)' }}
+            >
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: 'linear-gradient(to right, var(--violet), var(--indigo))' }}
+              >
+                Real
+              </span>
+              Collab
             </Link>
-            <h1 className="text-2xl font-black text-white tracking-tight">Create your account</h1>
-            <p className="mt-1 text-sm text-white/40">Join 2,400+ teams already shipping faster</p>
+            <h1
+              className="text-2xl font-black tracking-tight"
+              style={{ color: 'var(--text-1)' }}
+            >
+              Create your account
+            </h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--text-3)' }}>
+              Join 2,400+ teams already shipping faster
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -210,24 +291,32 @@ export default function Register() {
               <label className="flex items-start gap-3 cursor-pointer group">
                 <div
                   onClick={() => setAgreed(v => !v)}
-                  className={cn(
-                    "mt-0.5 w-4 h-4 flex-shrink-0 rounded border transition-all flex items-center justify-center",
-                    agreed ? "bg-violet-500 border-violet-500" : "border-white/20 group-hover:border-violet-400/50"
-                  )}
+                  className="mt-0.5 w-4 h-4 flex-shrink-0 rounded transition-all flex items-center justify-center"
+                  style={{
+                    background: agreed ? 'var(--violet)' : 'transparent',
+                    border: `1px solid ${agreed ? 'var(--violet)' : 'var(--border-hover)'}`,
+                  }}
                 >
                   {agreed && (
                     <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
-                      <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M1 3.5L3.5 6L8 1" stroke="var(--bg)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}
                 </div>
-                <span className="text-xs text-white/40 leading-relaxed">
-                  I agree to the <span className="text-violet-400 underline underline-offset-2">Terms</span> and <span className="text-violet-400 underline underline-offset-2">Privacy Policy</span>
+                <span className="text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>
+                  I agree to the{" "}
+                  <span className="underline underline-offset-2" style={{ color: 'var(--violet)' }}>Terms</span>
+                  {" "}and{" "}
+                  <span className="underline underline-offset-2" style={{ color: 'var(--violet)' }}>Privacy Policy</span>
                 </span>
               </label>
               <AnimatePresence>
                 {errors.agree && (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-1 pl-7 text-[11px] text-red-400">
+                  <motion.p
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="mt-1 pl-7 text-[11px]"
+                    style={{ color: 'var(--status-danger)' }}
+                  >
                     {errors.agree}
                   </motion.p>
                 )}
@@ -238,27 +327,46 @@ export default function Register() {
               type="submit"
               disabled={loading}
               whileTap={{ scale: 0.98 }}
-              className="w-full rounded-xl py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 hover:brightness-110 hover:shadow-[0_0_30px_rgba(167,139,250,0.35)] transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full rounded-xl py-3.5 text-sm font-semibold transition-all duration-300 disabled:opacity-60 flex items-center justify-center gap-2"
+              style={{
+                backgroundImage: 'linear-gradient(to right, var(--violet), var(--indigo), var(--cyan))',
+                color: 'var(--bg)',
+                boxShadow: 'var(--glow-indigo)',
+              }}
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <> Create Account <ArrowRight size={15} /></>}
             </motion.button>
           </form>
 
           <div className="my-5 flex items-center gap-3">
-            <div className="flex-1 h-px bg-white/[0.07]" />
-            <span className="text-[11px] text-white/25 uppercase tracking-widest">or</span>
-            <div className="flex-1 h-px bg-white/[0.07]" />
+            <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+            <span
+              className="text-[11px] uppercase tracking-widest"
+              style={{ color: 'var(--text-3)' }}
+            >
+              or
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
           </div>
 
           <GoogleAuthButton label="Sign up with Google" />
 
-          <p className="mt-6 text-center text-xs text-white/30">
+          <p className="mt-6 text-center text-xs" style={{ color: 'var(--text-3)' }}>
             Already have an account?{" "}
-            <Link to="/login" className="text-violet-400 hover:text-violet-300 transition-colors font-medium">Sign in</Link>
+            <Link
+              to="/login"
+              className="transition-colors font-medium"
+              style={{ color: 'var(--violet)' }}
+            >
+              Sign in
+            </Link>
           </p>
         </div>
 
-        <div className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1/3 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
+        <div
+          className="absolute -bottom-px left-1/2 -translate-x-1/2 w-1/3 h-px"
+          style={{ background: 'linear-gradient(to right, transparent, var(--cyan), transparent)' }}
+        />
       </motion.div>
     </div>
   );

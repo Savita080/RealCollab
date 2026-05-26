@@ -13,14 +13,14 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow-card);
   animation: pop 0.3s ease;
 }
 .iconCircle {
   width: 64px; height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
-  border: 1px solid rgba(99,102,241,0.3);
+  background: linear-gradient(135deg, var(--accent-soft), var(--bg-hover));
+  border: 1px solid var(--focus-ring);
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 18px;
   color: var(--indigo);

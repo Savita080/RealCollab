@@ -15,7 +15,7 @@ import { Input } from '../../components/ui/Input';
 import { fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/WorkspaceOverview.module.css';
 
-const PROJECT_COLORS = ['#6366f1', '#00d4ff', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+const PROJECT_COLORS = ['var(--indigo)', 'var(--cyan)', 'var(--green)', 'var(--amber)', 'var(--pink)', 'var(--violet)'];
 
 export default function WorkspaceOverview() {
   const { workspaceId, workspace, role, members, isAdmin, canCreate } = useOutletContext();

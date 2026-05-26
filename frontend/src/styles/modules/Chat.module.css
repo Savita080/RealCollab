@@ -34,9 +34,9 @@
   gap: 6px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(16,185,129,0.12);
-  border: 1px solid rgba(16,185,129,0.25);
-  color: #10b981;
+  background: var(--accent-soft);
+  border: 1px solid var(--border-hover);
+  color: var(--status-success);
   font-size: 10.5px;
   font-family: var(--font-mono);
   letter-spacing: 0.1em;
@@ -90,8 +90,8 @@
   word-wrap: break-word;
 }
 .mine .bubble {
-  background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(0,212,255,0.12));
-  border-color: rgba(99,102,241,0.3);
+  background: var(--bubble-me);
+  border-color: var(--focus-ring);
   border-radius: 14px 14px 4px 14px;
 }
 .msgText {
@@ -138,8 +138,8 @@
 .input::placeholder { color: var(--text-3); }
 .input:focus {
   outline: none;
-  border-color: rgba(99,102,241,0.4);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .sendBtn {
@@ -148,17 +148,17 @@
   border: none;
   background: linear-gradient(135deg, var(--indigo), var(--cyan));
   border-radius: var(--r-md);
-  color: #fff;
+  color: var(--bg);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s;
-  box-shadow: 0 4px 16px rgba(99,102,241,0.25);
+  box-shadow: var(--glow-indigo);
 }
 .sendBtn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 22px rgba(99,102,241,0.4);
+  box-shadow: 0 6px 22px var(--focus-ring);
 }
 .sendBtn:disabled {
   opacity: 0.4;

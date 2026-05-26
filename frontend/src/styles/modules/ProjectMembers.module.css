@@ -78,7 +78,7 @@
 }
 .memberCard:hover {
   background: var(--bg-2);
-  border-color: rgba(99,102,241,0.18);
+  border-color: var(--border-hover);
 }
 
 .memberInfo {
@@ -107,8 +107,8 @@
 .youBadge {
   font-size: 9.5px;
   font-family: var(--font-mono);
-  background: rgba(99,102,241,0.15);
-  border: 1px solid rgba(99,102,241,0.3);
+  background: var(--accent-soft);
+  border: 1px solid var(--focus-ring);
   color: var(--indigo);
   padding: 1px 7px;
   border-radius: 999px;
@@ -122,9 +122,9 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: rgba(245,158,11,0.15);
-  color: #f59e0b;
-  border: 1px solid rgba(245,158,11,0.3);
+  background: var(--accent-soft);
+  color: var(--status-warning);
+  border: 1px solid var(--focus-ring);
 }
 
 .roleBadge {
@@ -133,8 +133,8 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(99,102,241,0.06);
-  border: 1px solid var(--rc, rgba(99,102,241,0.3));
+  background: var(--accent-soft);
+  border: 1px solid var(--rc, var(--focus-ring));
   color: var(--rc, var(--indigo));
   letter-spacing: 0.06em;
 }
@@ -146,7 +146,7 @@
   padding: 3px 8px;
   border-radius: 999px;
   background: transparent;
-  border: 1px solid var(--rc, rgba(99,102,241,0.3));
+  border: 1px solid var(--rc, var(--focus-ring));
   color: var(--rc, var(--text-2));
   letter-spacing: 0.05em;
   opacity: 0.85;

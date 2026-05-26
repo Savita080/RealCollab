@@ -8,7 +8,7 @@ import { fmtRelative } from '../../../lib/utils';
 import s from '../../../styles/modules/ProjectOverview.module.css';
 
 const STATUS_MAP = { TODO: 'To Do', IN_PROGRESS: 'In Progress', IN_REVIEW: 'In Review', DONE: 'Done' };
-const STATUS_COLORS = { 'To Do': '#6366f1', 'In Progress': '#f59e0b', 'In Review': '#00d4ff', 'Done': '#10b981' };
+const STATUS_COLORS = { 'To Do': 'var(--indigo)', 'In Progress': 'var(--amber)', 'In Review': 'var(--cyan)', 'Done': 'var(--green)' };
 
 export default function ProjectOverview() {
   const ctx = useOutletContext();

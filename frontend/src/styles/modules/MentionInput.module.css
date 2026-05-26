@@ -7,24 +7,24 @@
 .input {
   width: 100%;
   background: transparent;
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
-  color: var(--text-1, #e8eaf0);
+  border: 1px solid var(--border);
+  color: var(--text-1);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 14px;
   outline: none;
   font-family: inherit;
 }
-.input:focus { border-color: var(--accent, #63b3ed); }
+.input:focus { border-color: var(--indigo); }
 
 .menu {
   list-style: none;
   margin: 0;
   padding: 4px;
-  background: var(--bg-card, #181c2a);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+  box-shadow: var(--shadow-card);
   max-width: 320px;
   z-index: 9999;
   backdrop-filter: blur(14px);
@@ -43,18 +43,18 @@
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.12s;
-  color: var(--text-1, #e8eaf0);
+  color: var(--text-1);
   font-size: 13px;
 }
 .item:hover, .active {
-  background: rgba(99, 102, 241, 0.18);
+  background: var(--accent-soft);
 }
 
 .avatar {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
   color: #fff;
   display: inline-flex;
   align-items: center;

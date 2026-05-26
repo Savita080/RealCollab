@@ -29,11 +29,11 @@
   cursor: pointer; text-align: left; width: 100%;
   transition: all 0.2s; font-family: var(--font-body);
 }
-.panelBtn:hover { border-color: rgba(99,102,241,0.35); }
+.panelBtn:hover { border-color: var(--border-hover); }
 .panelBtn.activePanel {
   border-color: var(--indigo);
-  background: rgba(99,102,241,0.08);
-  box-shadow: 0 0 20px rgba(99,102,241,0.1);
+  background: var(--accent-soft);
+  box-shadow: var(--glow-indigo);
 }
 .panelIcon { font-size: 18px; color: var(--indigo); font-family: var(--font-mono); flex-shrink: 0; margin-top: 1px; }
 .panelBtn strong { display: block; font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
@@ -98,7 +98,7 @@
 .statChip {
   font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
   padding: 3px 10px; border-radius: 99px;
-  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   color: var(--indigo); font-family: var(--font-mono); white-space: nowrap;
 }
 
@@ -109,7 +109,7 @@
 }
 .blockerTitle { font-size: 13px; font-weight: 600; color: var(--text-1); }
 .blockerMeta { font-size: 11px; color: var(--text-3); }
-.suggestion { font-size: 12px; color: #10b981; font-style: italic; margin: 0; }
+.suggestion { font-size: 12px; color: var(--status-success); font-style: italic; margin: 0; }
 
 .healthBar {
   display: flex; align-items: center; gap: 10px;
@@ -128,9 +128,9 @@
 .planItem strong { color: var(--text-1); font-size: 14px; }
 
 .errorBox {
-  padding: 14px 16px; background: rgba(239,68,68,0.08);
-  border: 1px solid rgba(239,68,68,0.25); border-radius: var(--r-sm);
-  color: #ef4444; font-size: 13px; width: 100%;
+  padding: 14px 16px; background: var(--bg-2);
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  color: var(--status-danger); font-size: 13px; width: 100%;
 }
 .emptyResult { font-size: 13px; color: var(--text-3); text-align: center; padding: 24px 0; }
 

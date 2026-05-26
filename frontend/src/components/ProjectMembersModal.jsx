@@ -8,15 +8,15 @@ import { useUI } from '../store/ui';
 import s from './ProjectMembersModal.module.css';
 
 const WS_ROLE_COLORS = {
-  OWNER:  '#f59e0b',
-  ADMIN:  '#6366f1',
-  MEMBER: '#10b981',
-  VIEWER: '#6b7280',
+  OWNER:  'var(--amber)',
+  ADMIN:  'var(--indigo)',
+  MEMBER: 'var(--green)',
+  VIEWER: 'var(--text-3)',
 };
 
 const PROJ_ROLE_COLORS = {
-  CONTRIBUTOR: '#00d4ff',
-  VIEWER:      '#8b5cf6',
+  CONTRIBUTOR: 'var(--cyan)',
+  VIEWER:      'var(--violet)',
 };
 
 export default function ProjectMembersModal({ open, onClose, workspace, project, currentUserId, workspaceRole }) {
@@ -147,7 +147,7 @@ export default function ProjectMembersModal({ open, onClose, workspace, project,
                 </div>
                 <span
                   className={s.roleChip}
-                  style={{ '--c': PROJ_ROLE_COLORS[pm.role] || '#6b7280' }}
+                  style={{ '--c': PROJ_ROLE_COLORS[pm.role] || 'var(--text-3)' }}
                 >
                   {pm.role}
                 </span>
@@ -209,7 +209,7 @@ export default function ProjectMembersModal({ open, onClose, workspace, project,
                   <Avatar name={wsm.user?.name || '?'} size={34} />
                   <div className={s.info}>
                     <span className={s.name}>{wsm.user?.name || 'Unknown'}</span>
-                    <span className={s.wsBadge} style={{ '--c': WS_ROLE_COLORS[wsm.role] || '#6b7280' }}>
+                    <span className={s.wsBadge} style={{ '--c': WS_ROLE_COLORS[wsm.role] || 'var(--text-3)' }}>
                       {wsm.role}
                     </span>
                   </div>

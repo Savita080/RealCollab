@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
-import { cn } from "../../lib/utils";
 
 export default function FloatingInput({ id, label, type = "text", value, onChange, error, autoComplete }) {
   const [focused, setFocused] = useState(false);
@@ -10,28 +9,44 @@ export default function FloatingInput({ id, label, type = "text", value, onChang
   const inputType = isPassword ? (showPass ? "text" : "password") : type;
   const lifted = focused || (value && value.length > 0);
 
+  const borderColor = focused
+    ? 'var(--cyan)'
+    : error
+    ? 'var(--status-danger)'
+    : 'var(--border)';
+  const boxShadow = focused ? 'var(--glow-cyan)' : 'none';
+
   return (
     <div className="relative">
       <div
-        className={cn(
-          "relative rounded-xl border transition-all duration-300",
-          focused
-            ? "border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.25)]"
-            : error
-            ? "border-red-500/60"
-            : "border-white/10",
-          "bg-white/5 backdrop-blur-sm"
-        )}
+        className="relative rounded-xl backdrop-blur-sm transition-all duration-300"
+        style={{
+          border: `1px solid ${borderColor}`,
+          boxShadow,
+          background: 'var(--bg-card)',
+        }}
       >
         {/* floating label */}
         <label
           htmlFor={id}
-          className={cn(
-            "absolute left-4 transition-all duration-200 pointer-events-none select-none",
+          className="absolute left-4 transition-all duration-200 pointer-events-none select-none"
+          style={
             lifted
-              ? "top-2 text-[10px] font-semibold tracking-widest uppercase text-cyan-400"
-              : "top-1/2 -translate-y-1/2 text-sm text-white/40"
-          )}
+              ? {
+                  top: '8px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: 'var(--cyan)',
+                }
+              : {
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '14px',
+                  color: 'var(--text-3)',
+                }
+          }
         >
           {label}
         </label>
@@ -44,10 +59,11 @@ export default function FloatingInput({ id, label, type = "text", value, onChang
           onChange={onChange}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={cn(
-            "w-full bg-transparent px-4 pb-3 text-sm text-white outline-none",
-            lifted ? "pt-6" : "pt-4"
-          )}
+          className="w-full bg-transparent px-4 pb-3 text-sm outline-none"
+          style={{
+            color: 'var(--text-1)',
+            paddingTop: lifted ? '24px' : '16px',
+          }}
         />
 
         {isPassword && (
@@ -55,7 +71,10 @@ export default function FloatingInput({ id, label, type = "text", value, onChang
             type="button"
             tabIndex={-1}
             onClick={() => setShowPass((p) => !p)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-cyan-400 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+            style={{ color: 'var(--text-3)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--cyan)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-3)')}
           >
             {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
           </button>
@@ -68,7 +87,8 @@ export default function FloatingInput({ id, label, type = "text", value, onChang
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="mt-1 pl-1 text-[11px] text-red-400"
+            className="mt-1 pl-1 text-[11px]"
+            style={{ color: 'var(--status-danger)' }}
           >
             {error}
           </motion.p>

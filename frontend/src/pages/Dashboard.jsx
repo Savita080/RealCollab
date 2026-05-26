@@ -15,8 +15,8 @@ import { Input } from '../components/ui/Input';
 import ProjectMembersModal from '../components/ProjectMembersModal';
 import s from '../styles/modules/Dashboard.module.css';
 
-const PROJECT_COLORS = ['#6366f1','#00d4ff','#10b981','#f59e0b','#ec4899','#8b5cf6'];
-const STATUS_COLORS = { 'To Do': '#6366f1', 'In Progress': '#f59e0b', 'In Review': '#00d4ff', 'Done': '#10b981' };
+const PROJECT_COLORS = ['var(--indigo)','var(--cyan)','var(--green)','var(--amber)','var(--pink)','var(--violet)'];
+const STATUS_COLORS = { 'To Do': 'var(--indigo)', 'In Progress': 'var(--amber)', 'In Review': 'var(--cyan)', 'Done': 'var(--green)' };
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -122,32 +122,32 @@ export default function Dashboard() {
           num={activeTasks}
           label="ACTIVE TASKS"
           sub={`↑ ${activeTasks} open`}
-          color="#6366f1"
-          bg="rgba(99,102,241,0.08)"
+          color="var(--indigo)"
+          bg="var(--accent-soft)"
         />
         <StatCard
           icon={<CheckIcon />}
           num={doneTasks}
           label="DONE THIS WEEK"
           sub="↑ +18% velocity"
-          color="#10b981"
-          bg="rgba(16,185,129,0.08)"
+          color="var(--status-success)"
+          bg="var(--accent-soft)"
         />
         <StatCard
           icon={<OnlineIcon />}
           num={members.length}
           label="TEAM MEMBERS"
           sub="● Active workspace"
-          color="#00d4ff"
-          bg="rgba(0,212,255,0.08)"
+          color="var(--cyan)"
+          bg="var(--accent-soft)"
         />
         <StatCard
           icon={<BlockerIcon />}
           num={blockers}
           label="BLOCKERS"
           sub={blockers > 0 ? "Needs attention" : "All clear ✓"}
-          color={blockers > 0 ? "#f59e0b" : "#10b981"}
-          bg={blockers > 0 ? "rgba(245,158,11,0.08)" : "rgba(16,185,129,0.08)"}
+          color={blockers > 0 ? "var(--status-warning)" : "var(--status-success)"}
+          bg="var(--accent-soft)"
         />
       </div>
 
@@ -189,7 +189,7 @@ export default function Dashboard() {
             {members.length === 0 && <p className={s.emptyFeed}>No members loaded.</p>}
             {members.slice(0, 6).map((m, i) => {
               const isMe = m.user?._id === user?.id || m.user?._id === user?._id;
-              const colors = ['#10b981','#6366f1','#00d4ff','#f59e0b','#8b5cf6','#ec4899'];
+              const colors = ['var(--green)','var(--indigo)','var(--cyan)','var(--amber)','var(--violet)','var(--pink)'];
               return (
                 <div key={m.user?._id || i} className={s.onlineMember}>
                   <span className={s.onlineDot} style={{ background: colors[i % colors.length] }} />
@@ -219,9 +219,9 @@ export default function Dashboard() {
             {myTasks.length === 0 && <p className={s.emptyFeed}>No tasks assigned yet.</p>}
             {myTasks.map(t => (
               <div key={t._id} className={s.taskRow}>
-                <span className={s.taskDot} style={{ background: STATUS_COLORS[t.status] || '#6366f1' }} />
+                <span className={s.taskDot} style={{ background: STATUS_COLORS[t.status] || 'var(--indigo)' }} />
                 <span className={s.taskName}>{t.title}</span>
-                <span className={s.taskStatus} style={{ '--c': STATUS_COLORS[t.status] || '#6366f1' }}>
+                <span className={s.taskStatus} style={{ '--c': STATUS_COLORS[t.status] || 'var(--indigo)' }}>
                   {t.status}
                 </span>
               </div>
@@ -266,7 +266,7 @@ export default function Dashboard() {
                 <div className={s.progressFill}
                   style={{
                     width: `${sprintProgress.length > 0 ? Math.round(sprintProgress.reduce((a, p) => a + p.pct, 0) / sprintProgress.length) : 0}%`,
-                    background: 'linear-gradient(90deg, #6366f1, #00d4ff)'
+                    background: 'linear-gradient(90deg, var(--indigo), var(--cyan))'
                   }}
                 />
               </div>
@@ -314,19 +314,19 @@ export default function Dashboard() {
             <div className={s.standupBody}>
               {standup.done && (
                 <div className={s.standupSection}>
-                  <span className={s.standupTag} style={{ color: '#10b981' }}>DONE</span>
+                  <span className={s.standupTag} style={{ color: 'var(--status-success)' }}>DONE</span>
                   <p className={s.standupText}>{standup.done}</p>
                 </div>
               )}
               {standup.today && (
                 <div className={s.standupSection}>
-                  <span className={s.standupTag} style={{ color: '#6366f1' }}>TODAY</span>
+                  <span className={s.standupTag} style={{ color: 'var(--indigo)' }}>TODAY</span>
                   <p className={s.standupText}>{standup.today}</p>
                 </div>
               )}
               {standup.blockers && (
                 <div className={s.standupSection}>
-                  <span className={s.standupTag} style={{ color: '#f59e0b' }}>BLOCKED</span>
+                  <span className={s.standupTag} style={{ color: 'var(--status-warning)' }}>BLOCKED</span>
                   <p className={s.standupText}>{standup.blockers}</p>
                 </div>
               )}

@@ -1,22 +1,24 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Zap } from "lucide-react";
 import mascot from "../../assets/mascot.png";
 export default function LeftPanel() {
   const orbs = [
-    { size: 420, x: "-10%", y: "-15%", color: "rgba(99,102,241,0.35)", dur: 18 },
-    { size: 300, x: "55%",  y: "50%",  color: "rgba(34,211,238,0.25)", dur: 14 },
-    { size: 200, x: "20%",  y: "65%",  color: "rgba(139,92,246,0.2)",  dur: 22 },
+    { size: 420, x: "-10%", y: "-15%", color: 'var(--orb-1)', dur: 18 },
+    { size: 300, x: "55%",  y: "50%",  color: 'var(--orb-2)', dur: 14 },
+    { size: 200, x: "20%",  y: "65%",  color: 'var(--accent-soft)',  dur: 22 },
   ];
 
   return (
-    <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-[#050818] p-14">
+    <div
+      className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden p-14"
+      style={{ background: 'var(--bg)' }}
+    >
       {/* animated mesh background */}
       <div
         className="absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            "radial-gradient(ellipse at 20% 20%, rgba(99,102,241,0.3) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(34,211,238,0.2) 0%, transparent 60%)",
+            "radial-gradient(ellipse at 20% 20%, var(--orb-1) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, var(--orb-2) 0%, transparent 60%)",
         }}
       />
 
@@ -42,27 +44,37 @@ export default function LeftPanel() {
         className="absolute inset-0 opacity-[0.04]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+            "linear-gradient(var(--text-1) 1px, transparent 1px), linear-gradient(90deg, var(--text-1) 1px, transparent 1px)",
           backgroundSize: "40px 40px",
         }}
       />
 
       {/* content top */}
       <div className="relative z-10 flex-none">
-        <Link to="/" className="flex items-center gap-2 text-white font-bold text-xl tracking-tight">
-          <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">Real</span>Collab
+        <Link
+          to="/"
+          className="flex items-center gap-2 font-bold text-xl tracking-tight"
+          style={{ color: 'var(--text-1)' }}
+        >
+          <span
+            className="bg-clip-text text-transparent"
+            style={{ backgroundImage: 'linear-gradient(to right, var(--cyan), var(--indigo))' }}
+          >
+            Real
+          </span>
+          Collab
         </Link>
       </div>
 
       {/* Mascot centered */}
       <div className="relative z-10 flex-1 flex items-center justify-center pointer-events-none mt-8 mb-8">
-        <motion.img 
-          src={mascot} 
-          alt="RealCollab Mascot" 
+        <motion.img
+          src={mascot}
+          alt="RealCollab Mascot"
           className="w-72 lg:w-96 object-contain drop-shadow-2xl"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1, y: [0, -12, 0] }}
-          transition={{ 
+          transition={{
             opacity: { duration: 1 },
             scale: { duration: 1 },
             y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
@@ -77,14 +89,23 @@ export default function LeftPanel() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <h2 className="text-5xl font-black text-white leading-[1.05] tracking-tight">
+          <h2
+            className="text-5xl font-black leading-[1.05] tracking-tight"
+            style={{ color: 'var(--text-1)' }}
+          >
             Ship faster,
             <br />
-            <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(to right, var(--cyan), var(--indigo))' }}
+            >
               together.
             </span>
           </h2>
-          <p className="mt-4 text-white/50 text-base leading-relaxed max-w-xs">
+          <p
+            className="mt-4 text-base leading-relaxed max-w-xs"
+            style={{ color: 'var(--text-2)' }}
+          >
             Your team's mission control. Tasks, code, wikis, and standups — unified.
           </p>
         </motion.div>
@@ -103,35 +124,24 @@ export default function LeftPanel() {
           ].map((s) => (
             <div
               key={s.label}
-              className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-xs text-white/60"
+              className="px-3 py-1.5 rounded-full backdrop-blur-sm text-xs"
+              style={{
+                border: '1px solid var(--border)',
+                background: 'var(--bg-card)',
+                color: 'var(--text-2)',
+              }}
             >
               {s.label}
             </div>
           ))}
         </motion.div>
-
-        {/* testimonial card */}
-        {/* <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.55 }}
-          className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 max-w-xs"
-        >
-          <p className="text-white/70 text-sm leading-relaxed">
-            "RealCollab cut our sprint planning time in half. The AI standup alone is worth it."
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-400 to-indigo-500" />
-            <div>
-              <p className="text-xs text-white font-semibold">Maya Chen</p>
-              <p className="text-[10px] text-white/40">Lead Engineer, Vercel</p>
-            </div>
-          </div>
-        </motion.div> */}
       </div>
 
       {/* bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#050818] to-transparent pointer-events-none" />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, var(--bg), transparent)' }}
+      />
     </div>
   );
 }

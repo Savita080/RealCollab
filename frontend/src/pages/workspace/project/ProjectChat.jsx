@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useAuth } from '../../../store/auth';
+import { useTheme } from '../../../store/theme';
 import { usePresence } from '../../../lib/hooks';
 import { emitTyping, joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb } from '../../../lib/socket';
 import socket from '../../../lib/socket';
@@ -28,6 +29,7 @@ export default function ProjectChat() {
   const { workspaceId, projectId, project, projectMembers, canEdit } = ctx;
   const { user } = useAuth();
   const { toast } = useUI();
+  const themeKind = useTheme(s => s.getActive().kind);
   const online = usePresence(projectId);
 
   const [messages, setMessages] = useState([]);
@@ -375,7 +377,7 @@ export default function ProjectChat() {
                         excalidrawAPI={(api) => setExcalidrawAPI(api)}
                         initialData={initialData ?? { elements: elementsRef.current, scrollToContent: false }}
                         onChange={onWhiteboardChange}
-                        theme="dark"
+                        theme={themeKind}
                         viewModeEnabled={!canEdit}
                         UIOptions={{ canvasActions: { saveToActiveFile: false, loadScene: false, export: false } }}
                       />

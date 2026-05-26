@@ -98,7 +98,8 @@ export default function Features() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-5xl font-black tracking-tight text-white"
+            className="text-5xl font-black tracking-tight"
+            style={{ color: 'var(--text-1)' }}
           >
             Built For High-<br />Velocity Squads
           </motion.h2>
@@ -107,7 +108,8 @@ export default function Features() {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15 }}
-            className="mx-auto mt-4 max-w-md text-base text-gray-500"
+            className="mx-auto mt-4 max-w-md text-base"
+            style={{ color: 'var(--text-3)' }}
           >
             All tools required for modern agile product shipping, packed into a
             single modular, unified interface.
@@ -205,7 +207,8 @@ export default function Features() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="mx-auto mt-10 max-w-xs text-center text-sm text-gray-400"
+            className="mx-auto mt-10 max-w-xs text-center text-sm"
+            style={{ color: 'var(--text-2)' }}
           >
             {features[focus].desc}
           </motion.p>
@@ -222,7 +225,7 @@ export default function Features() {
                 width: i === focus ? 24 : 8,
                 height: 8,
                 borderRadius: 99,
-                background: i === focus ? "#fff" : "rgba(255,255,255,0.2)",
+                background: i === focus ? 'var(--text-1)' : 'var(--bg-hover)',
                 border: "none",
                 cursor: "pointer",
                 padding: 0,

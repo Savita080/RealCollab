@@ -42,7 +42,7 @@
   transition: background 0.15s;
   border-bottom: 1px solid var(--border);
 }
-.item:hover { background: rgba(99,102,241,0.06); }
+.item:hover { background: var(--accent-soft); }
 .item:last-child { border-bottom: none; }
 
 .dot {

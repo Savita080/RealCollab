@@ -53,8 +53,8 @@
 .search::placeholder { color: var(--text-3); }
 .search:focus {
   outline: none;
-  border-color: rgba(99,102,241,0.4);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  border-color: var(--focus-ring);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .grid {
@@ -74,7 +74,7 @@
 .card:hover {
   border-color: var(--border-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-card);
 }
 .cardBody {
   display: flex;
@@ -121,7 +121,7 @@
 .metaDot { color: var(--text-3); }
 .progressBar {
   height: 5px;
-  background: rgba(99,102,241,0.08);
+  background: var(--accent-soft);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -146,7 +146,7 @@
 .menuBtn {
   width: 28px; height: 28px;
   border-radius: var(--r-sm);
-  background: rgba(99,102,241,0.06);
+  background: var(--accent-soft);
   border: 1px solid var(--border);
   color: var(--text-2);
   cursor: pointer;
@@ -156,18 +156,18 @@
   transition: all 0.15s;
 }
 .menuBtn:hover {
-  background: rgba(99,102,241,0.14);
+  background: var(--bg-hover);
   color: var(--text-1);
 }
 .menu {
   position: absolute;
   right: 0;
   top: calc(100% + 6px);
-  background: var(--bg-card);
-  border: 1px solid rgba(99,102,241,0.25);
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border-hover);
   border-radius: var(--r-md);
   padding: 4px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  box-shadow: var(--shadow-card);
   z-index: 50;
   min-width: 160px;
   animation: pop 0.14s ease;
@@ -189,11 +189,11 @@
   transition: all 0.12s;
 }
 .menu button:hover {
-  background: rgba(99,102,241,0.08);
+  background: var(--accent-soft);
   color: var(--text-1);
 }
-.menu .danger { color: #ef4444; }
-.menu .danger:hover { background: rgba(239,68,68,0.1); color: #ef4444; }
+.menu .danger { color: var(--status-danger); }
+.menu .danger:hover { background: var(--bg-hover); color: var(--status-danger); }
 
 .newCard {
   display: flex;
@@ -203,8 +203,8 @@
   gap: 8px;
   min-height: 150px;
   padding: 18px;
-  background: rgba(99,102,241,0.04);
-  border: 1.5px dashed rgba(99,102,241,0.25);
+  background: var(--bg-2);
+  border: 1.5px dashed var(--border-hover);
   border-radius: var(--r-md);
   cursor: pointer;
   color: var(--text-2);
@@ -214,8 +214,8 @@
   transition: all 0.2s;
 }
 .newCard:hover {
-  background: rgba(99,102,241,0.08);
-  border-color: rgba(99,102,241,0.5);
+  background: var(--accent-soft);
+  border-color: var(--indigo);
   color: var(--indigo);
   transform: translateY(-2px);
 }
@@ -242,18 +242,18 @@
 
 .modalOverlay {
   position: fixed; inset: 0;
-  background: rgba(5,5,15,0.78);
+  background: var(--bg-glass);
   backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
 }
 .modal {
   width: 440px; max-width: 90vw;
-  background: var(--bg-card);
-  border: 1px solid rgba(99,102,241,0.25);
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border-hover);
   border-radius: var(--r-lg);
   padding: 28px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  box-shadow: var(--shadow-card);
   animation: pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes pop { from { opacity: 0; transform: scale(0.92) translateY(12px); } to { opacity: 1; transform: none; } }

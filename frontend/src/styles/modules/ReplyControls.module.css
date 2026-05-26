@@ -2,8 +2,8 @@
 
 .replyBtn {
   background: transparent;
-  border: 1px solid var(--border, rgba(255,255,255,0.07));
-  color: var(--text-2, #8892a4);
+  border: 1px solid var(--border);
+  color: var(--text-2);
   width: 22px;
   height: 22px;
   border-radius: 6px;
@@ -18,8 +18,8 @@
 }
 .replyBtn:hover {
   opacity: 1;
-  background: rgba(99,102,241,0.12);
-  color: var(--indigo, #818cf8);
+  background: var(--accent-soft);
+  color: var(--indigo);
 }
 
 /* Highlight pulse used when jumping to an original message */
@@ -27,7 +27,7 @@
   animation: replyHighlight 1.4s ease-out;
 }
 @keyframes replyHighlight {
-  0%   { background: rgba(99,102,241,0.25); }
+  0%   { background: var(--focus-ring); }
   100% { background: transparent; }
 }
 
@@ -38,34 +38,34 @@
   gap: 2px;
   align-items: flex-start;
   text-align: left;
-  background: rgba(99,102,241,0.10);
-  border-left: 3px solid rgba(99,102,241,0.55);
+  background: var(--accent-soft);
+  border-left: 3px solid var(--indigo);
   border-radius: 8px;
   padding: 6px 10px;
   margin-bottom: 4px;
   max-width: 100%;
   cursor: pointer;
-  border-top: 1px solid rgba(255,255,255,0.04);
-  border-right: 1px solid rgba(255,255,255,0.04);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   transition: background 0.15s;
 }
-.quote:hover { background: rgba(99,102,241,0.18); }
+.quote:hover { background: var(--bg-hover); }
 .quoteMine {
-  border-left-color: rgba(0,212,255,0.55);
-  background: rgba(0,212,255,0.10);
+  border-left-color: var(--cyan);
+  background: var(--bg-hover);
 }
-.quoteMine:hover { background: rgba(0,212,255,0.18); }
+.quoteMine:hover { background: var(--accent-soft); }
 .quoteName {
   font-size: 11px;
   font-weight: 700;
-  color: var(--indigo, #818cf8);
+  color: var(--indigo);
   letter-spacing: 0.01em;
 }
-.quoteMine .quoteName { color: var(--cyan, #22d3ee); }
+.quoteMine .quoteName { color: var(--cyan); }
 .quoteText {
   font-size: 12px;
-  color: var(--text-2, #8892a4);
+  color: var(--text-2);
   line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
@@ -80,14 +80,14 @@
   gap: 10px;
   padding: 8px 10px;
   margin: 4px 4px 6px;
-  background: var(--bg-card, #181c2a);
-  border: 1px solid var(--border, rgba(255,255,255,0.07));
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 8px;
 }
 .previewBar {
   width: 3px;
   border-radius: 2px;
-  background: linear-gradient(180deg, var(--indigo, #6366f1), var(--cyan, #00d4ff));
+  background: linear-gradient(180deg, var(--indigo), var(--cyan));
   flex-shrink: 0;
 }
 .previewBody {
@@ -99,12 +99,12 @@
 }
 .previewLabel {
   font-size: 11px;
-  color: var(--text-2, #8892a4);
+  color: var(--text-2);
 }
-.previewLabel strong { color: var(--indigo, #818cf8); font-weight: 700; }
+.previewLabel strong { color: var(--indigo); font-weight: 700; }
 .previewText {
   font-size: 12.5px;
-  color: var(--text-1, #e8eaf0);
+  color: var(--text-1);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -112,7 +112,7 @@
 .previewClose {
   background: transparent;
   border: none;
-  color: var(--text-3, #4a5568);
+  color: var(--text-3);
   font-size: 14px;
   cursor: pointer;
   padding: 0 4px;
@@ -120,4 +120,4 @@
   border-radius: 4px;
   transition: color 0.15s, background 0.15s;
 }
-.previewClose:hover { color: var(--text-1, #e8eaf0); background: rgba(255,255,255,0.05); }
+.previewClose:hover { color: var(--text-1); background: var(--bg-hover); }

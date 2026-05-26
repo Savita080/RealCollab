@@ -40,12 +40,12 @@
 .input::placeholder { color: var(--text-3); }
 .input:focus {
   border-color: var(--indigo);
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
 .ta  { resize: vertical; min-height: 100px; }
 .sel { cursor: pointer; }
 .sel option { background: var(--bg-2); }
 
-.err  { border-color: #ef4444 !important; }
-.msg  { font-size: 11px; color: #ef4444; }
+.err  { border-color: var(--status-danger) !important; }
+.msg  { font-size: 11px; color: var(--status-danger); }

@@ -139,7 +139,7 @@ export default function Sidebar() {
                   className={`${s.wsOpt} ${ws?._id === w._id ? s.wsOptActive : ''}`}
                   onClick={() => openWsDetail(w)}
                 >
-                  <span className={s.wsOptDot} style={{ background: ws?._id === w._id ? '#6366f1' : '#5c5c8a' }} />
+                  <span className={s.wsOptDot} style={{ background: ws?._id === w._id ? 'var(--indigo)' : 'var(--text-3)' }} />
                   <span className={s.wsOptName}>{w.name}</span>
                   {ws?._id === w._id && <span className={s.wsOptCheck}>✓</span>}
                 </button>

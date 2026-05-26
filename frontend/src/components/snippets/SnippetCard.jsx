@@ -20,7 +20,7 @@ export default function SnippetCard({ snippet, onDelete, onEdit, onAiReview }) {
     <div className={s.card}>
       <div className={s.cardHeader}>
         <div className={s.left}>
-          <span className={s.lang} style={{ '--c': LANG_COLORS[snippet.language] || '#6366f1' }}>
+          <span className={s.lang} style={{ '--c': LANG_COLORS[snippet.language] || 'var(--indigo)' }}>
             {snippet.language}
           </span>
           <h3 className={s.title}>{snippet.title}</h3>

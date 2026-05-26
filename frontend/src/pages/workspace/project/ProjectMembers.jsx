@@ -11,7 +11,7 @@ import { Select } from '../../../components/ui/Input';
 import RoleGate from '../../../components/common/RoleGate';
 import s from '../../../styles/modules/Members.module.css';
 
-const ROLE_COLORS = { CONTRIBUTOR: '#6366f1', VIEWER: '#6b7280' };
+const ROLE_COLORS = { CONTRIBUTOR: 'var(--indigo)', VIEWER: 'var(--text-3)' };
 
 export default function ProjectMembers() {
   const ctx = useOutletContext();
@@ -93,7 +93,7 @@ export default function ProjectMembers() {
                   </div>
                 </div>
                 <div className={s.memberActions}>
-                  <span className={s.roleBadge} style={{ background: ROLE_COLORS[m.role] || '#6b7280' }}>
+                  <span className={s.roleBadge} style={{ background: ROLE_COLORS[m.role] || 'var(--text-3)' }}>
                     {m.role}
                   </span>
                   <RoleGate show={canEdit && memberId !== uid}>

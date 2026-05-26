@@ -4,28 +4,63 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ────────────────────────────────────────────────────────────────────────────
+   THEME TOKEN SYSTEM
+   Each theme overrides the same set of CSS custom properties on :root via a
+   [data-theme="<id>"] selector applied on <html>. The DEFAULT values below
+   match the "Midnight" theme so legacy code that didn't know about themes
+   keeps working unchanged.
+   Categorical accents (--indigo, --cyan, --violet, --pink, --green, --amber)
+   keep their NAMES but their VALUES shift per theme — the name encodes the
+   semantic role (primary accent / secondary accent / etc.), not the hue.
+──────────────────────────────────────────────────────────────────────────── */
 :root {
   /* Core palette */
   --bg:          #0a0e1a;
   --bg-2:        rgba(10, 14, 26, 0.4);
   --bg-card:     rgba(255,255,255,0.04);
+  --bg-hover:    rgba(255,255,255,0.07);
   --bg-glass:    rgba(13,13,32,0.7);
   --bg-dropdown: #0d0d22;
   --border:      rgba(255,255,255,0.09);
   --border-hover:rgba(255,255,255,0.18);
-  
+
   /* Premium Aesthetics */
   --bg-card-premium: rgba(255,255,255,0.04);
   --border-premium: rgba(255,255,255,0.09);
   --card-shadow-premium: 0 8px 24px rgba(0,0,0,0.28);
 
-  /* Accents */
+  /* Accents — primary/secondary/tertiary brand colors. The names persist across
+     themes, but the values change. */
   --cyan:        #00d4ff;
   --indigo:      #6366f1;
   --violet:      #8b5cf6;
   --pink:        #ec4899;
   --green:       #10b981;
   --amber:       #f59e0b;
+
+  /* Translucent accent for highlights / hover backgrounds */
+  --accent-soft: rgba(99,102,241,0.12);
+  --focus-ring:  rgba(99,102,241,0.35);
+
+  /* Status — semantic colors (success / warning / danger / info). Override
+     these per-theme so warm palettes can use sage/terracotta instead of
+     bright primary green/red. */
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger:  #ef4444;
+  --status-info:    #00d4ff;
+
+  /* Chat bubble backgrounds */
+  --bubble-me:   linear-gradient(135deg, rgba(99,102,241,0.18), rgba(0,212,255,0.12));
+  --bubble-them: rgba(255,255,255,0.04);
+
+  /* Scrollbar */
+  --scrollbar-thumb: var(--indigo);
+
+  /* Background ambient orbs (set to transparent in light themes) */
+  --orb-1: rgba(6,182,212,0.13);
+  --orb-2: rgba(139,92,246,0.15);
 
   /* Text */
   --text-1:      #f0f0ff;
@@ -49,6 +84,103 @@
   --shadow-card: 0 4px 32px rgba(0,0,0,0.4);
 }
 
+/* ── Midnight (current dark indigo/cyan look — same as :root defaults) ───── */
+[data-theme="midnight"] {
+  --bg:          #0a0e1a;
+  --bg-2:        rgba(10, 14, 26, 0.4);
+  --bg-card:     rgba(255,255,255,0.04);
+  --bg-hover:    rgba(255,255,255,0.07);
+  --bg-glass:    rgba(13,13,32,0.7);
+  --bg-dropdown: #0d0d22;
+  --border:      rgba(255,255,255,0.09);
+  --border-hover:rgba(255,255,255,0.18);
+  --bg-card-premium: rgba(255,255,255,0.04);
+  --border-premium:  rgba(255,255,255,0.09);
+  --card-shadow-premium: 0 8px 24px rgba(0,0,0,0.28);
+
+  --cyan:   #00d4ff;
+  --indigo: #6366f1;
+  --violet: #8b5cf6;
+  --pink:   #ec4899;
+  --green:  #10b981;
+  --amber:  #f59e0b;
+
+  --accent-soft: rgba(99,102,241,0.12);
+  --focus-ring:  rgba(99,102,241,0.35);
+
+  --status-success: #10b981;
+  --status-warning: #f59e0b;
+  --status-danger:  #ef4444;
+  --status-info:    #00d4ff;
+
+  --bubble-me:   linear-gradient(135deg, rgba(99,102,241,0.18), rgba(0,212,255,0.12));
+  --bubble-them: rgba(255,255,255,0.04);
+  --scrollbar-thumb: var(--indigo);
+
+  --orb-1: rgba(6,182,212,0.13);
+  --orb-2: rgba(139,92,246,0.15);
+
+  --text-1: #f0f0ff;
+  --text-2: #9494b8;
+  --text-3: #5c5c8a;
+
+  --glow-cyan:   0 0 40px rgba(0,212,255,0.15);
+  --glow-indigo: 0 0 40px rgba(99,102,241,0.2);
+  --shadow-card: 0 4px 32px rgba(0,0,0,0.4);
+
+  color-scheme: dark;
+}
+
+/* ── Caramel (warm light theme — coffee + cream palette) ──────────────────── */
+[data-theme="caramel"] {
+  --bg:          #FFF2DF;                     /* lightest cream */
+  --bg-2:        rgba(255, 242, 223, 0.7);
+  --bg-card:     #FFE7C4;                     /* peach card */
+  --bg-hover:    rgba(62, 37, 34, 0.05);
+  --bg-glass:    rgba(255, 242, 223, 0.85);
+  --bg-dropdown: #FFEFD4;
+  --border:      rgba(62, 37, 34, 0.12);
+  --border-hover:rgba(62, 37, 34, 0.22);
+
+  --bg-card-premium: rgba(255, 224, 178, 0.55);
+  --border-premium:  rgba(62, 37, 34, 0.14);
+  --card-shadow-premium: 0 8px 24px rgba(62, 37, 34, 0.10);
+
+  /* Accents shift to warm tones — names retain their roles */
+  --cyan:   #8C6E63;   /* secondary accent → taupe */
+  --indigo: #B07A47;   /* primary accent → caramel-coffee */
+  --violet: #A47551;   /* tertiary → warm tan */
+  --pink:   #C2614F;   /* highlight → terracotta */
+  --green:  #7C9070;   /* success-tinted → sage */
+  --amber:  #D89B4A;   /* warning-tinted → burnt amber */
+
+  --accent-soft: rgba(176, 122, 71, 0.14);
+  --focus-ring:  rgba(176, 122, 71, 0.35);
+
+  --status-success: #7C9070;   /* sage olive */
+  --status-warning: #D89B4A;   /* burnt amber */
+  --status-danger:  #C2614F;   /* terracotta */
+  --status-info:    #8C6E63;   /* taupe */
+
+  --bubble-me:   linear-gradient(135deg, #D3A376, #B07A47);
+  --bubble-them: #FFE7C4;
+  --scrollbar-thumb: #B07A47;
+
+  /* Soften the orbs in light theme — barely-there warm haze */
+  --orb-1: rgba(211, 163, 118, 0.30);
+  --orb-2: rgba(140, 110, 99, 0.18);
+
+  --text-1: #3E2522;   /* dark coffee */
+  --text-2: #6B4F47;   /* mid coffee */
+  --text-3: #9C8A82;   /* muted taupe */
+
+  --glow-cyan:   0 0 40px rgba(140, 110, 99, 0.18);
+  --glow-indigo: 0 0 40px rgba(211, 163, 118, 0.25);
+  --shadow-card: 0 4px 24px rgba(62, 37, 34, 0.12);
+
+  color-scheme: light;
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
@@ -67,13 +199,13 @@ body {
   position: relative;
 }
 
-/* Global Ambient Orbs */
+/* Global Ambient Orbs — softened/transparent in light themes via --orb-* tokens */
 body::before {
   content: '';
   position: fixed;
   width: 420px; height: 420px;
   border-radius: 50%;
-  background: rgba(6,182,212,0.13);
+  background: var(--orb-1);
   filter: blur(90px);
   top: -100px; left: -80px;
   pointer-events: none;
@@ -84,7 +216,7 @@ body::after {
   position: fixed;
   width: 360px; height: 360px;
   border-radius: 50%;
-  background: rgba(139,92,246,0.15);
+  background: var(--orb-2);
   filter: blur(80px);
   top: 60px; right: 40px;
   pointer-events: none;
@@ -94,10 +226,10 @@ body::after {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--indigo); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
 
 /* Selection */
-::selection { background: rgba(99,102,241,0.3); color: var(--text-1); }
+::selection { background: var(--focus-ring); color: var(--text-1); }
 
 /* Utilities */
 .font-display { font-family: var(--font-display); }

@@ -5,6 +5,7 @@ import { Plus, Palette, Trash2 } from 'lucide-react';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import { useUI } from '../../store/ui';
+import { useTheme } from '../../store/theme';
 import { whiteboards as wbApi } from '../../lib/api';
 import { joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb } from '../../lib/socket';
 import socket from '../../lib/socket';
@@ -15,6 +16,7 @@ import s from '../../styles/modules/Whiteboards.module.css';
 export default function ProjectWhiteboards() {
   const { workspaceId, projectId, project, canEdit } = useOutletContext();
   const { toast } = useUI();
+  const themeKind = useTheme(s => s.getActive().kind);
 
   const [whiteboards, setWhiteboards] = useState([]);
   const [activeWb, setActiveWb] = useState(null);
@@ -208,7 +210,7 @@ export default function ProjectWhiteboards() {
                   excalidrawAPI={(api) => setExcalidrawAPI(api)}
                   initialData={initialData ?? { elements: elementsRef.current, scrollToContent: false }}
                   onChange={onChange}
-                  theme="dark"
+                  theme={themeKind}
                   viewModeEnabled={!canEdit}
                   UIOptions={{
                     canvasActions: {

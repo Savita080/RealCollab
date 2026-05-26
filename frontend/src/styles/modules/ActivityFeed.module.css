@@ -4,7 +4,7 @@
 .title { font-family: var(--font-display); font-size: 24px; font-weight: 700; color: var(--text-1); }
 .projectBadge {
   font-size: 11px; font-family: var(--font-mono);
-  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   color: var(--indigo); padding: 3px 10px; border-radius: 12px;
 }
 
@@ -38,7 +38,7 @@
   cursor: pointer; font-family: var(--font-body); transition: all 0.2s;
 }
 .filter:hover { border-color: var(--indigo); color: var(--text-1); }
-.active { background: rgba(99,102,241,0.12); border-color: var(--indigo); color: var(--text-1); }
+.active { background: var(--accent-soft); border-color: var(--indigo); color: var(--text-1); }
 
 .feed {
   display: flex; flex-direction: column;
@@ -52,12 +52,12 @@
   border-bottom: 1px solid var(--border);
   transition: background 0.15s;
 }
-.item:hover { background: rgba(99,102,241,0.04); }
+.item:hover { background: var(--accent-soft); }
 .item:last-child { border-bottom: none; }
 
 .iconWrap {
   width: 32px; height: 32px; border-radius: var(--r-sm);
-  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }

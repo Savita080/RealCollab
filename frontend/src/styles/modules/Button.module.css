@@ -18,27 +18,27 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(255,255,255,0);
+  background: transparent;
   transition: background 0.2s;
 }
-.btn:hover::after { background: rgba(255,255,255,0.04); }
+.btn:hover::after { background: var(--bg-hover); }
 .btn:active { transform: scale(0.97); }
 
 /* Variants */
 .primary {
   background: linear-gradient(135deg, var(--indigo), var(--violet));
   color: #fff;
-  box-shadow: 0 0 20px rgba(99,102,241,0.3);
+  box-shadow: var(--glow-indigo);
 }
-.primary:hover { box-shadow: 0 0 32px rgba(99,102,241,0.5); }
+.primary:hover { box-shadow: 0 0 32px var(--focus-ring); }
 
 .cyan {
-  background: linear-gradient(135deg, #0099cc, var(--cyan));
+  background: linear-gradient(135deg, var(--violet), var(--cyan));
   color: var(--bg);
   font-weight: 600;
-  box-shadow: 0 0 20px rgba(0,212,255,0.25);
+  box-shadow: var(--glow-cyan);
 }
-.cyan:hover { box-shadow: 0 0 36px rgba(0,212,255,0.45); }
+.cyan:hover { box-shadow: 0 0 36px var(--focus-ring); }
 
 .ghost {
   background: transparent;
@@ -48,11 +48,11 @@
 .ghost:hover { border-color: var(--border-hover); color: var(--text-1); }
 
 .danger {
-  background: rgba(239,68,68,0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239,68,68,0.3);
+  background: var(--accent-soft);
+  color: var(--status-danger);
+  border: 1px solid var(--focus-ring);
 }
-.danger:hover { background: rgba(239,68,68,0.25); }
+.danger:hover { background: var(--bg-hover); }
 
 /* Sizes */
 .sm  { padding: 6px 12px;  font-size: 12px; }

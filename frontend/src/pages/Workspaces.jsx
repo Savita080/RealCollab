@@ -11,7 +11,7 @@ import { Input } from '../components/ui/Input';
 import NotificationDropdown from '../components/layout/NotificationDropdown';
 import s from '../styles/modules/Workspaces.module.css';
 
-const ROLE_COLORS = { OWNER: '#f59e0b', ADMIN: '#6366f1', MEMBER: '#10b981', VIEWER: '#6b7280' };
+const ROLE_COLORS = { OWNER: 'var(--amber)', ADMIN: 'var(--indigo)', MEMBER: 'var(--green)', VIEWER: 'var(--text-3)' };
 
 export default function Workspaces() {
   const { user, logout } = useAuth();

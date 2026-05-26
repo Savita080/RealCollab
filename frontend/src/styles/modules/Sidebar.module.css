@@ -3,8 +3,8 @@
 .sidebar {
   width: 220px;
   flex-shrink: 0;
-  background: #07071a;
-  border-right: 1px solid rgba(99,102,241,0.12);
+  background: var(--bg-2);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -20,13 +20,13 @@
   align-items: center;
   gap: 9px;
   padding: 18px 16px 14px;
-  border-bottom: 1px solid rgba(99,102,241,0.1);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .brandLogo {
   width: 26px; height: 26px;
   border-radius: 6px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-weight: 900; font-size: 11px; color: #fff;
   flex-shrink: 0;
@@ -45,7 +45,7 @@
 /* Workspace selector */
 .wsSection {
   padding: 14px 16px 10px;
-  border-bottom: 1px solid rgba(99,102,241,0.08);
+  border-bottom: 1px solid var(--border);
   position: relative;
   flex-shrink: 0;
 }
@@ -70,9 +70,9 @@
 /* Workspace dropdown */
 .wsDrop {
   position: absolute; left: 12px; right: 12px; top: calc(100% - 4px);
-  background: var(--bg-dropdown); border: 1px solid rgba(99,102,241,0.2);
+  background: var(--bg-dropdown); border: 1px solid var(--border-hover);
   border-radius: var(--r-md); overflow: hidden; z-index: 500;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-card);
   animation: popIn 0.12s ease;
 }
 @keyframes popIn { from { opacity: 0; transform: translateY(-4px) scale(0.97); } to { opacity: 1; transform: none; } }
@@ -83,19 +83,19 @@
   font-size: 12px; color: var(--text-2); font-family: var(--font-body);
   transition: background 0.12s;
 }
-.wsOpt:hover { background: rgba(99,102,241,0.08); color: var(--text-1); }
-.wsOptActive { color: var(--text-1); background: rgba(99,102,241,0.1); }
+.wsOpt:hover { background: var(--accent-soft); color: var(--text-1); }
+.wsOptActive { color: var(--text-1); background: var(--accent-soft); }
 .wsOptDot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--indigo); flex-shrink: 0;
 }
 .wsOptNew {
   display: block; width: 100%; padding: 9px 12px;
-  background: none; border: none; border-top: 1px solid rgba(99,102,241,0.1);
+  background: none; border: none; border-top: 1px solid var(--border);
   cursor: pointer; font-size: 12px; color: var(--indigo);
   font-family: var(--font-body); text-align: left; transition: background 0.12s;
 }
-.wsOptNew:hover { background: rgba(99,102,241,0.08); }
+.wsOptNew:hover { background: var(--accent-soft); }
 
 /* Nav sections */
 .navSection {
@@ -118,9 +118,9 @@
   text-decoration: none; transition: all 0.15s;
   cursor: pointer;
 }
-.link:hover { background: rgba(99,102,241,0.08); color: var(--text-1); }
+.link:hover { background: var(--accent-soft); color: var(--text-1); }
 .active {
-  background: rgba(99,102,241,0.14);
+  background: var(--accent-soft);
   color: var(--text-1);
   box-shadow: inset 2px 0 0 var(--indigo);
 }
@@ -134,7 +134,7 @@
 
 .badge {
   font-size: 9px; font-family: var(--font-mono); font-weight: 700;
-  background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.4);
+  background: var(--accent-soft); border: 1px solid var(--border);
   color: var(--violet); padding: 1px 6px; border-radius: 8px;
   letter-spacing: 0.05em;
 }
@@ -147,8 +147,8 @@
   cursor: pointer; font-family: var(--font-body); transition: all 0.15s;
   text-align: left;
 }
-.projBtn:hover { background: rgba(99,102,241,0.06); color: var(--text-1); }
-.projActive { background: rgba(99,102,241,0.1); color: var(--text-1); }
+.projBtn:hover { background: var(--bg-hover); color: var(--text-1); }
+.projActive { background: var(--accent-soft); color: var(--text-1); }
 .projDot {
   width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
 }
@@ -184,7 +184,7 @@
   transition: color 0.12s, background 0.12s;
 }
 .projActBtn:hover { color: var(--text-1); background: var(--bg-hover); }
-.projDelBtn:hover { color: #ef4444 !important; }
+.projDelBtn:hover { color: var(--status-danger) !important; }
 
 
 /* Spacer */
@@ -194,7 +194,7 @@
 .userFoot {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px;
-  border-top: 1px solid rgba(99,102,241,0.1);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 .userInfo {
@@ -217,7 +217,7 @@
   color: var(--text-3); padding: 4px; border-radius: 4px;
   display: flex; transition: color 0.15s;
 }
-.logoutBtn:hover { color: #ef4444; }
+.logoutBtn:hover { color: var(--status-danger); }
 
 /* Chevron animation */
 .chevron { display: flex; align-items: center; color: var(--text-3); transition: transform 0.2s; }
@@ -225,20 +225,20 @@
 
 /* Workspace option extras */
 .wsOptName { flex: 1; text-align: left; }
-.wsOptCheck { color: #6366f1; font-size: 12px; }
+.wsOptCheck { color: var(--indigo); font-size: 12px; }
 
 /* ── Mini modal (inline create forms) ── */
 .modalOverlay {
   position: fixed; inset: 0; z-index: 600;
-  background: rgba(0,0,0,0.6);
+  background: var(--bg-glass);
   display: flex; align-items: center; justify-content: center;
   backdrop-filter: blur(4px);
 }
 .miniModal {
-  background: #0d0d20; border: 1px solid rgba(99,102,241,0.2);
+  background: var(--bg-dropdown); border: 1px solid var(--border-hover);
   border-radius: 16px; padding: 28px;
   width: 360px; max-width: 90vw;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  box-shadow: var(--shadow-card);
   animation: popIn 0.18s ease;
 }
 .miniModalTitle {
@@ -249,18 +249,18 @@
 /* ── Workspace Detail Popup ── */
 .wsPopupOverlay {
   position: fixed; inset: 0; z-index: 700;
-  background: rgba(0,0,0,0.65);
+  background: var(--bg-glass);
   display: flex; align-items: center; justify-content: center;
   backdrop-filter: blur(6px);
   animation: fadeIn 0.15s ease;
 }
 
 .wsPopup {
-  background: #0c0c22;
-  border: 1px solid rgba(99,102,241,0.18);
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border);
   border-radius: 20px;
   width: 540px; max-width: 94vw;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(99,102,241,0.1);
+  box-shadow: var(--shadow-card);
   animation: popUpIn 0.2s cubic-bezier(0.22,1,0.36,1);
   overflow: hidden;
 }
@@ -274,7 +274,7 @@
 .wsPopupHead {
   display: flex; align-items: flex-start; justify-content: space-between;
   padding: 26px 26px 18px;
-  border-bottom: 1px solid rgba(99,102,241,0.1);
+  border-bottom: 1px solid var(--border);
 }
 .wsPopupName {
   font-family: var(--font-display); font-size: 22px; font-weight: 800;
@@ -285,13 +285,17 @@
   font-family: var(--font-mono);
 }
 .wsPopupClose {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  background: var(--bg-hover); border: 1px solid var(--border);
   color: var(--text-3); border-radius: 8px;
   width: 28px; height: 28px; font-size: 16px; line-height: 1;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: all 0.15s; flex-shrink: 0;
 }
-.wsPopupClose:hover { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.3); }
+.wsPopupClose:hover {
+  background: var(--accent-soft);
+  color: var(--status-danger);
+  border-color: var(--border-hover);
+}
 
 /* Popup body */
 .wsPopupBody { padding: 20px 26px; }
@@ -310,18 +314,18 @@
 
 /* Project card */
 .wsPopupCard {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(99,102,241,0.14);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 12px; padding: 14px 16px;
   text-align: left; cursor: pointer;
   transition: all 0.18s; display: flex; flex-direction: column; gap: 6px;
   position: relative; overflow: hidden;
 }
 .wsPopupCard:hover {
-  background: rgba(99,102,241,0.08);
-  border-color: rgba(99,102,241,0.3);
+  background: var(--accent-soft);
+  border-color: var(--border-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-card);
 }
 .wsPopupCardTitle {
   font-size: 14px; font-weight: 700; color: var(--text-1);
@@ -334,7 +338,7 @@
 
 /* Progress bar inside project card */
 .wsPopupProgress {
-  height: 3px; background: rgba(255,255,255,0.06);
+  height: 3px; background: var(--bg-hover);
   border-radius: 4px; overflow: hidden; margin-top: 4px;
 }
 .wsPopupProgressFill {
@@ -345,8 +349,8 @@
 
 /* New project card */
 .wsPopupNewCard {
-  background: rgba(99,102,241,0.04);
-  border: 1px dashed rgba(99,102,241,0.25);
+  background: var(--accent-soft);
+  border: 1px dashed var(--border-hover);
   border-radius: 12px; padding: 14px 16px;
   font-size: 13px; color: var(--text-3);
   cursor: pointer; text-align: left;
@@ -357,29 +361,29 @@
 }
 .wsPopupNewCard:hover {
   border-color: var(--indigo); color: var(--indigo);
-  background: rgba(99,102,241,0.08);
+  background: var(--accent-soft);
 }
 
 /* Popup footer */
 .wsPopupFooter {
   display: flex; justify-content: flex-end; gap: 10px;
   padding: 16px 26px 20px;
-  border-top: 1px solid rgba(99,102,241,0.1);
+  border-top: 1px solid var(--border);
 }
 .wsPopupCloseBtn {
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-hover); border: 1px solid var(--border);
   color: var(--text-2); border-radius: 10px;
   padding: 8px 20px; font-size: 13px; font-weight: 500;
   cursor: pointer; font-family: var(--font-body); transition: all 0.15s;
 }
-.wsPopupCloseBtn:hover { background: rgba(255,255,255,0.08); color: var(--text-1); }
+.wsPopupCloseBtn:hover { background: var(--bg-hover); color: var(--text-1); }
 
 .wsPopupSettingsBtn {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
   border: none; color: #fff; border-radius: 10px;
   padding: 8px 22px; font-size: 13px; font-weight: 600;
   cursor: pointer; font-family: var(--font-body);
   transition: opacity 0.15s, transform 0.1s;
-  box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+  box-shadow: var(--glow-indigo);
 }
 .wsPopupSettingsBtn:hover { opacity: 0.9; transform: translateY(-1px); }

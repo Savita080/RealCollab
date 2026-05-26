@@ -21,7 +21,7 @@
 .email { font-size: 12px; color: var(--text-3); font-family: var(--font-mono); }
 .youBadge {
   font-size: 9px; font-family: var(--font-mono);
-  background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   color: var(--indigo); padding: 1px 6px; border-radius: 8px;
 }
 
@@ -29,25 +29,25 @@
 .roleBadge {
   font-size: 10px; font-family: var(--font-mono); font-weight: 600;
   padding: 3px 10px; border-radius: 10px;
-  background: rgba(99,102,241,0.1);
-  border: 1px solid rgba(99,102,241,0.25);
+  background: var(--accent-soft);
+  border: 1px solid var(--focus-ring);
   color: var(--rc);
 }
 .roleSelect {
-  background: rgba(99,102,241,0.08);
-  border: 1px solid rgba(99,102,241,0.25);
+  background: var(--accent-soft);
+  border: 1px solid var(--focus-ring);
   color: var(--rc); font-size: 11px; font-family: var(--font-mono); font-weight: 600;
   padding: 4px 10px; border-radius: 10px; cursor: pointer; outline: none;
 }
 .roleSelect:hover { border-color: var(--rc); }
 
 .removeBtn {
-  background: none; border: 1px solid rgba(239,68,68,0.2);
-  color: #ef4444; font-size: 11px; border-radius: var(--r-sm);
+  background: none; border: 1px solid var(--border);
+  color: var(--status-danger); font-size: 11px; border-radius: var(--r-sm);
   padding: 4px 10px; cursor: pointer; transition: all 0.15s;
   font-family: var(--font-body);
 }
-.removeBtn:hover { background: rgba(239,68,68,0.1); border-color: #ef4444; }
+.removeBtn:hover { background: var(--bg-hover); border-color: var(--status-danger); }
 
 .skeleton {
   height: 72px; background: var(--bg-card); border: 1px solid var(--border);
@@ -66,17 +66,17 @@
 .linkRow { display: flex; align-items: center; gap: 8px; }
 .link {
   flex: 1; font-size: 11px; color: var(--cyan); font-family: var(--font-mono);
-  background: var(--bg); border: 1px solid rgba(0,212,255,0.2);
+  background: var(--bg); border: 1px solid var(--focus-ring);
   border-radius: 6px; padding: 6px 10px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .copyBtn {
-  background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   color: var(--cyan); border-radius: 6px; padding: 5px 12px;
   font-size: 11px; cursor: pointer; font-family: var(--font-body);
   transition: background 0.15s;
 }
-.copyBtn:hover { background: rgba(0,212,255,0.2); }
+.copyBtn:hover { background: var(--bg-hover); }
 
 .empty { display: flex; align-items: center; justify-content: center; min-height: 300px; color: var(--text-3); font-size: 14px; }
 
@@ -84,7 +84,7 @@
 .dangerZone {
   margin-top: 8px;
   background: var(--bg-card);
-  border: 1px solid rgba(239,68,68,0.18);
+  border: 1px solid var(--border);
   border-radius: var(--r-xl);
   padding: 24px 28px;
   display: flex; flex-direction: column; gap: 24px;

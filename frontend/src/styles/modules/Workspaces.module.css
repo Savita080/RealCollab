@@ -13,8 +13,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 32px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  background: rgba(10,14,26,0.72);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-glass);
   backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
@@ -25,7 +25,7 @@
 .brandLogo {
   width: 32px; height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
   display: flex; align-items: center; justify-content: center;
   color: #fff;
   font-size: 11px;
@@ -37,7 +37,7 @@
   font-size: 18px;
   font-weight: 900;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--text-1);
 }
 .brandReal {
   background: linear-gradient(135deg, var(--cyan), var(--indigo));
@@ -69,28 +69,28 @@
 .userName {
   font-size: 13px;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--text-1);
   line-height: 1.3;
 }
 .userEmail {
   font-size: 11px;
-  color: #475569;
+  color: var(--text-3);
   font-family: var(--font-mono);
 }
 .iconBtn {
   width: 30px; height: 30px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border);
   background: transparent;
-  color: #94a3b8;
+  color: var(--text-2);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
 }
 .iconBtn:hover {
-  background: rgba(239,68,68,0.1);
-  color: #ef4444;
-  border-color: rgba(239,68,68,0.3);
+  background: var(--accent-soft);
+  color: var(--status-danger);
+  border-color: var(--border-hover);
 }
 
 /* ─── Hero ───────────────────────────────────────────── */
@@ -111,7 +111,7 @@
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.22em;
-  color: #06b6d4;
+  color: var(--cyan);
   margin-bottom: 10px;
   font-family: var(--font-mono);
 }
@@ -121,14 +121,14 @@
   letter-spacing: -0.02em;
   line-height: 1.14;
   margin: 0 0 12px;
-  background: linear-gradient(130deg, #f0f4ff 30%, #94a3b8 100%);
+  background: linear-gradient(130deg, var(--text-1) 30%, var(--text-2) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-3);
   max-width: 460px;
   line-height: 1.65;
   margin: 0;
@@ -167,12 +167,12 @@
   transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
   border-radius: 20px;
   padding: 0;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-card);
 }
 
 .folderCard:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-card);
 }
 
 /* Folder Backing (holds the color gradient at the top) */
@@ -205,10 +205,10 @@
 
 /* Individual Paper Sheets */
 .paper1, .paper2, .paper3 {
-  background: #ffffff;
+  background: var(--bg);
   border-radius: 4px;
   padding: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -258,7 +258,7 @@
 /* Paper Details (text lines / watermark) */
 .paperLineShort, .paperLineLong {
   height: 2px;
-  background: #e2e8f0;
+  background: var(--border-hover);
   border-radius: 1px;
 }
 .paperLineShort { width: 40%; }
@@ -268,7 +268,7 @@
   font-family: var(--font-display);
   font-weight: 900;
   font-size: 24px;
-  color: rgba(99, 102, 241, 0.15);
+  color: var(--accent-soft);
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
@@ -280,7 +280,7 @@
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 120px;
-  background: #111322;
+  background: var(--bg-dropdown);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   clip-path: url(#folder-clip);
@@ -289,7 +289,7 @@
 }
 
 .folderCard:hover .folderFront {
-  background: #15172b;
+  background: var(--bg-card);
 }
 
 /* Folder Content Inside Cover */
@@ -343,7 +343,7 @@
   transition: all 0.15s;
 }
 .folderDots:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
   color: var(--text-1);
 }
 
@@ -353,7 +353,7 @@
   justify-content: space-between;
   font-size: 12px;
   color: var(--text-2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border);
   padding-top: 12px;
 }
 .folderStatsGroup {
@@ -375,9 +375,9 @@
   letter-spacing: 0.05em;
   padding: 2px 8px;
   border-radius: 9999px;
-  color: #ffffff;
+  color: var(--bg);
   text-transform: uppercase;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-card);
 }
 
 /* ─── New workspace card ─────────────────────────────── */
@@ -390,8 +390,8 @@
   gap: 10px;
   height: 200px;
   padding: 22px;
-  background: rgba(255,255,255,0.01);
-  border: 1.5px dashed rgba(255,255,255,0.08);
+  background: var(--bg-card);
+  border: 1.5px dashed var(--border);
   border-radius: 20px;
   cursor: pointer;
   color: var(--text-3);
@@ -400,9 +400,9 @@
   transition: all 0.2s;
 }
 .newCard:hover {
-  border-color: rgba(99,102,241,0.4);
+  border-color: var(--indigo);
   color: var(--indigo);
-  background: rgba(99,102,241,0.02);
+  background: var(--accent-soft);
   transform: translateY(-4px);
 }
 
@@ -411,35 +411,35 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 80px 32px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.07);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: 18px;
 }
 .emptyIcon {
   width: 64px; height: 64px;
   border-radius: 18px;
-  background: rgba(6,182,212,0.1);
-  color: #06b6d4;
-  border: 1px solid rgba(6,182,212,0.2);
+  background: var(--accent-soft);
+  color: var(--cyan);
+  border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 16px;
 }
 .empty h3 {
   font-size: 18px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-1);
   margin: 0 0 8px;
 }
 .empty p {
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-3);
   margin: 0 0 22px;
 }
 
 /* ─── Modal ──────────────────────────────────────────── */
 .modalOverlay {
   position: fixed; inset: 0;
-  background: rgba(5,8,20,0.75);
+  background: var(--bg-glass);
   backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
@@ -448,22 +448,22 @@
 .modal {
   width: 440px;
   max-width: 90vw;
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border);
   border-radius: 18px;
   padding: 32px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  box-shadow: var(--shadow-card);
   animation: pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
 }
 .modalTitle {
   font-size: 20px;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-1);
   margin: 0 0 6px;
 }
 .modalDesc {
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-3);
   line-height: 1.6;
   margin: 0 0 22px;
 }

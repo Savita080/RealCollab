@@ -53,17 +53,14 @@
 }
 
 .card {
-  background: linear-gradient(135deg, rgba(22, 32, 78, 0.75) 0%, rgba(10, 16, 42, 0.9) 100%);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: var(--r-xl);
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05),
-    0 0 30px rgba(99, 102, 241, 0.08);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(16px);
 }
 
@@ -79,7 +76,7 @@
   object-fit: cover;
   border: 2px solid var(--border);
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-card);
 }
 .avatarFallback {
   width: 64px;
@@ -93,7 +90,7 @@
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-card);
 }
 .avatarHint {
   font-size: 11px;
@@ -126,8 +123,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
   color: var(--indigo);
   font-size: 11px;
   padding: 2px 8px;
@@ -154,7 +151,7 @@
 }
 .saved {
   font-size: 12px;
-  color: var(--green);
+  color: var(--status-success);
   font-weight: 600;
 }
 
@@ -163,23 +160,23 @@
   font-weight: 600;
   padding: 2px 10px;
   border-radius: 99px;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  color: #10b981;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  color: var(--status-success);
 }
 
 /* Hanger / wall peg graphic section */
 .previewWrapper {
   width: 100%;
-  background: #090b16;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
   border-radius: var(--r-xl);
   padding: 36px 20px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-card);
 }
 
 .previewTitle {
@@ -195,20 +192,20 @@
 .wallHook {
   width: 18px;
   height: 18px;
-  background: radial-gradient(circle, #cbd5e1 30%, #475569 100%);
+  background: radial-gradient(circle, var(--text-3) 30%, var(--text-2) 100%);
   border-radius: 50%;
-  box-shadow: 
+  box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.6),
     inset 0 1px 2px rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 10;
-  margin-bottom: -4px; /* offset the lanyard start position slightly */
+  margin-bottom: -4px;
 }
 
 .hookPeg {
   width: 6px;
   height: 6px;
-  background: #334155;
+  background: var(--text-1);
   border-radius: 50%;
   position: absolute;
   top: 50%;
@@ -248,7 +245,7 @@
   border-radius: 50%;
   padding: 0;
   border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
@@ -259,16 +256,130 @@
 .presetBtn:hover {
   transform: scale(1.15);
   border-color: var(--cyan);
-  background: rgba(6, 182, 212, 0.1);
+  background: var(--accent-soft);
 }
 .activePreset {
   border-color: var(--indigo);
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--accent-soft);
   transform: scale(1.1);
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+  box-shadow: var(--glow-indigo);
 }
 .presetImg {
   width: 28px;
   height: 28px;
   object-fit: contain;
+}
+
+/* ── Theme picker section (sibling card after profile form) ──────────────── */
+.themeCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(16px);
+}
+
+.themeCardHead {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.themeCardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-family: var(--font-display);
+}
+.themeCardSub {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.themeCardItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-hover);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+.themeCardItem:hover {
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+.themeCardItemActive {
+  border-color: var(--indigo);
+  box-shadow: var(--glow-indigo);
+}
+
+.themePreview {
+  height: 64px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  display: flex;
+  position: relative;
+  border: 1px solid var(--border);
+}
+.themePreviewBlock {
+  flex: 1;
+  height: 100%;
+}
+
+.themeMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.themeName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
+  font-family: var(--font-display);
+}
+.themeKind {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  padding: 2px 6px;
+  border-radius: 99px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+}
+.themeDesc {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+.themeCheck {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--indigo);
+  color: var(--bg);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

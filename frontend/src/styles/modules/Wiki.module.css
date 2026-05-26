@@ -14,13 +14,13 @@
 }
 .sideTitle { font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
 .addBtn {
-  background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   color: var(--indigo); border-radius: var(--r-sm);
   width: 24px; height: 24px; cursor: pointer; font-size: 18px; line-height: 1;
   display: flex; align-items: center; justify-content: center;
   transition: background 0.2s;
 }
-.addBtn:hover { background: rgba(99,102,241,0.2); }
+.addBtn:hover { background: var(--bg-hover); }
 
 .pageList { display: flex; flex-direction: column; gap: 2px; padding: 8px; }
 .pageRow { display: flex; align-items: center; gap: 4px; border-radius: var(--r-sm); }
@@ -32,16 +32,16 @@
   cursor: pointer; font-family: var(--font-body);
   transition: all 0.15s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.pageItem:hover { background: rgba(99,102,241,0.08); color: var(--text-1); }
-.pageItem.active { background: rgba(99,102,241,0.14); color: var(--text-1); box-shadow: inset 2px 0 0 var(--indigo); }
-.activeRow { background: rgba(99,102,241,0.05); }
+.pageItem:hover { background: var(--accent-soft); color: var(--text-1); }
+.pageItem.active { background: var(--accent-soft); color: var(--text-1); box-shadow: inset 2px 0 0 var(--indigo); }
+.activeRow { background: var(--accent-soft); }
 .deletePageBtn {
   background: none; border: none; cursor: pointer; color: var(--text-3);
   font-size: 11px; padding: 4px 6px; border-radius: 4px;
   opacity: 0; transition: opacity 0.15s, color 0.15s;
   flex-shrink: 0;
 }
-.deletePageBtn:hover { color: #ef4444; }
+.deletePageBtn:hover { color: var(--status-danger); }
 .noPages { font-size: 12px; color: var(--text-3); padding: 12px 10px; }
 
 .editor { overflow-y: auto; display: flex; flex-direction: column; }
@@ -52,12 +52,12 @@
 }
 .pageTitle { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--text-1); }
 .historyBtn {
-  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+  background: var(--accent-soft); border: 1px solid var(--focus-ring);
   color: var(--indigo); border-radius: var(--r-sm);
   padding: 5px 14px; font-size: 12px; cursor: pointer;
   transition: background 0.2s; white-space: nowrap;
 }
-.historyBtn:hover { background: rgba(99,102,241,0.2); }
+.historyBtn:hover { background: var(--bg-hover); }
 .empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-3); font-size: 14px; }
 
 /* Rename title */
