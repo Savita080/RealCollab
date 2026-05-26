@@ -158,6 +158,7 @@ export const notifications = {
   create:  d  => api.post('/notifications', d),
   unread:  () => api.get('/notifications/unread'),
   markAll: () => api.patch('/notifications/mark-read'),  // marks ALL as seen:true
+  markOne: (id) => api.patch(`/notifications/${id}/read`),
 };
 
 // ── AI ────────────────────────────────────────────────

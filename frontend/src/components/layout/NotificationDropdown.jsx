@@ -16,26 +16,34 @@ export default function NotificationDropdown({ onClose }) {
   useClickOutside(ref, onClose);
 
   useEffect(() => {
-    // Load unread notifications
+    // Load unread notifications. Do NOT mark them as read here — notifications
+    // should only disappear when the user clicks one or hits "Mark all read".
     notifApi.unread().then(({ data }) => {
       setNotifications(data.notifications ?? data);
     }).catch(() => {});
-
-    // Mark all as seen when dropdown opens
-    notifApi.markAll().catch(() => {});
-    clearUnread();
     // Note: socket listener is bound globally in AppShell — do NOT re-bind here.
   }, []);
 
   const handleClick = (n) => {
+    // Mark this single notification as read on the server, then drop it from the list.
+    if (n._id) {
+      notifApi.markOne(n._id).catch(() => {});
+      setNotifications(notifications.filter(x => x._id !== n._id));
+    }
     if (n.link) { navigate(n.link); onClose(); }
+  };
+
+  const handleMarkAll = async () => {
+    try { await notifApi.markAll(); } catch {}
+    setNotifications([]);
+    clearUnread();
   };
 
   return (
     <div ref={ref} className={s.panel}>
       <div className={s.head}>
         <span>Notifications</span>
-        <button className={s.all} onClick={() => notifApi.markAll().catch(() => {})}>Mark all read</button>
+        <button className={s.all} onClick={handleMarkAll}>Mark all read</button>
       </div>
       <div className={s.list}>
         {notifications.length === 0 && (
