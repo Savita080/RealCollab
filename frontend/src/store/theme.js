@@ -39,6 +39,27 @@ export const THEMES = [
     description: 'Monochrome graphite with platinum accents.',
     swatch: ['#1e1f22', '#4c4e51', '#C5CDD6'],
   },
+  {
+    id: 'pastel',
+    name: 'Pastel Drift',
+    kind: 'light',
+    description: 'Misty rainbow — sky, peach, mint, blush.',
+    swatch: ['#FDE8D3', '#99CDD8', '#F3C3B2'],
+  },
+  {
+    id: 'linen',
+    name: 'Linen',
+    kind: 'light',
+    description: 'Soft cream paper with stone neutrals.',
+    swatch: ['#F2EFE5', '#C7C8CC', '#B4B4B8'],
+  },
+  {
+    id: 'marine',
+    name: 'Marine',
+    kind: 'dark',
+    description: 'Deep ocean navy with sky-blue accents.',
+    swatch: ['#021024', '#5483B3', '#C1E8FF'],
+  },
 ];
 
 const THEME_STORAGE_KEY = 'rc:theme';

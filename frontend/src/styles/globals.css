@@ -131,6 +131,158 @@
   color-scheme: dark;
 }
 
+/* ── Marine (deep ocean navy — premium dark blue) ─────────────────────────── */
+[data-theme="marine"] {
+  --bg:          #021024;                     /* deepest navy — page */
+  --bg-2:        rgba(2, 16, 36, 0.4);
+  --bg-card:     #07193D;                     /* lifted navy card */
+  --bg-hover:    rgba(193, 232, 255, 0.06);
+  --bg-glass:    rgba(2, 16, 36, 0.75);
+  --bg-dropdown: #052659;
+  --border:      rgba(193, 232, 255, 0.08);
+  --border-hover:rgba(193, 232, 255, 0.20);
+
+  --bg-card-premium: rgba(5, 38, 89, 0.55);
+  --border-premium:  rgba(193, 232, 255, 0.10);
+  --card-shadow-premium: 0 8px 24px rgba(2, 16, 36, 0.55);
+
+  /* Accents — drawn from palette + minimal warm tints for status hierarchy.
+     Names retain their semantic role. */
+  --cyan:   #7DA0CA;   /* secondary → mid blue */
+  --indigo: #5483B3;   /* primary → steel blue */
+  --violet: #8F9BD0;   /* tertiary → derived periwinkle */
+  --pink:   #D89784;   /* highlight → muted coral against navy */
+  --green:  #7AB39A;   /* success-tinted → muted sea-green */
+  --amber:  #D4A864;   /* warning-tinted → muted gold */
+
+  --accent-soft: rgba(125, 160, 202, 0.12);
+  --focus-ring:  rgba(193, 232, 255, 0.32);
+
+  --status-success: #7AB39A;   /* sea-green */
+  --status-warning: #D4A864;   /* muted gold */
+  --status-danger:  #D89784;   /* muted coral */
+  --status-info:    #7DA0CA;   /* mid blue */
+
+  --bubble-me:   linear-gradient(135deg, #5483B3, #7DA0CA);
+  --bubble-them: rgba(193, 232, 255, 0.06);
+  --scrollbar-thumb: #5483B3;
+
+  /* Sky-blue ambient orbs — bright accent against deep navy */
+  --orb-1: rgba(193, 232, 255, 0.10);
+  --orb-2: rgba(125, 160, 202, 0.14);
+
+  --text-1: #E8F2FF;   /* near-white sky */
+  --text-2: #A5BCD8;   /* soft mid blue */
+  --text-3: #6F8AAB;   /* muted steel */
+
+  --glow-cyan:   0 0 40px rgba(193, 232, 255, 0.20);
+  --glow-indigo: 0 0 40px rgba(125, 160, 202, 0.25);
+  --shadow-card: 0 4px 32px rgba(2, 16, 36, 0.60);
+
+  color-scheme: dark;
+}
+
+/* ── Linen (paper & stone — neutral monochrome light) ────────────────────── */
+[data-theme="linen"] {
+  --bg:          #F2EFE5;                     /* lightest cream paper */
+  --bg-2:        rgba(242, 239, 229, 0.7);
+  --bg-card:     #FAF8F1;                     /* derived lighter for card lift */
+  --bg-hover:    rgba(75, 75, 80, 0.05);
+  --bg-glass:    rgba(242, 239, 229, 0.85);
+  --bg-dropdown: #EDEAE0;
+  --border:      rgba(75, 75, 80, 0.12);
+  --border-hover:rgba(75, 75, 80, 0.22);
+
+  --bg-card-premium: rgba(227, 225, 217, 0.55);
+  --border-premium:  rgba(75, 75, 80, 0.14);
+  --card-shadow-premium: 0 8px 24px rgba(75, 75, 80, 0.10);
+
+  /* Accents — desaturated stone + minimal warm/cool tints to keep status legible.
+     Names retain semantic role, values stay quiet. */
+  --cyan:   #8A98A8;   /* secondary → cool slate */
+  --indigo: #6E747D;   /* primary → graphite */
+  --violet: #9A91A6;   /* tertiary → muted lilac-grey */
+  --pink:   #B58575;   /* highlight → soft terracotta */
+  --green:  #8FA08C;   /* success-tinted → muted moss */
+  --amber:  #C2A06C;   /* warning-tinted → wheat */
+
+  --accent-soft: rgba(110, 116, 125, 0.10);
+  --focus-ring:  rgba(110, 116, 125, 0.32);
+
+  --status-success: #8FA08C;   /* muted moss */
+  --status-warning: #C2A06C;   /* wheat */
+  --status-danger:  #B58575;   /* soft terracotta */
+  --status-info:    #8A98A8;   /* cool slate */
+
+  --bubble-me:   linear-gradient(135deg, #C7C8CC, #B4B4B8);
+  --bubble-them: #E3E1D9;
+  --scrollbar-thumb: #B4B4B8;
+
+  /* Whisper-soft orbs — keep ambient mood without color noise */
+  --orb-1: rgba(199, 200, 204, 0.32);
+  --orb-2: rgba(180, 180, 184, 0.22);
+
+  --text-1: #2D2D32;   /* deep ink */
+  --text-2: #5A5A60;   /* mid ink */
+  --text-3: #8A8A8F;   /* muted stone */
+
+  --glow-cyan:   0 0 40px rgba(138, 152, 168, 0.18);
+  --glow-indigo: 0 0 40px rgba(180, 180, 184, 0.30);
+  --shadow-card: 0 4px 24px rgba(75, 75, 80, 0.10);
+
+  color-scheme: light;
+}
+
+/* ── Pastel Drift (soft rainbow — sky, peach, mint, blush) ────────────────── */
+[data-theme="pastel"] {
+  --bg:          #FDE8D3;                     /* cream peach — page */
+  --bg-2:        rgba(253, 232, 211, 0.7);
+  --bg-card:     #FFF3E5;                     /* lighter peach card */
+  --bg-hover:    rgba(101, 113, 102, 0.06);
+  --bg-glass:    rgba(253, 232, 211, 0.85);
+  --bg-dropdown: #F8E2CE;
+  --border:      rgba(101, 113, 102, 0.14);
+  --border-hover:rgba(101, 113, 102, 0.26);
+
+  --bg-card-premium: rgba(218, 235, 227, 0.55);
+  --border-premium:  rgba(101, 113, 102, 0.16);
+  --card-shadow-premium: 0 8px 24px rgba(101, 113, 102, 0.12);
+
+  /* Accents — drawn directly from palette + a few derived siblings */
+  --cyan:   #99CDD8;   /* secondary accent → sky blue */
+  --indigo: #6FA9B8;   /* primary accent → deeper sky derivative */
+  --violet: #C8B8D4;   /* tertiary → soft lavender derivative */
+  --pink:   #F3C3B2;   /* highlight → peach blush */
+  --green:  #A8C4A2;   /* sage cream derivative */
+  --amber:  #E8B884;   /* warm honey derivative */
+
+  --accent-soft: rgba(153, 205, 216, 0.18);
+  --focus-ring:  rgba(111, 169, 184, 0.40);
+
+  --status-success: #A8C4A2;   /* mint sage */
+  --status-warning: #E8B884;   /* honey */
+  --status-danger:  #E89684;   /* warm coral derived from blush */
+  --status-info:    #99CDD8;   /* sky */
+
+  --bubble-me:   linear-gradient(135deg, #99CDD8, #6FA9B8);
+  --bubble-them: #DAEBE3;
+  --scrollbar-thumb: #6FA9B8;
+
+  /* Misty pastel orbs — visible but soft */
+  --orb-1: rgba(153, 205, 216, 0.35);
+  --orb-2: rgba(243, 195, 178, 0.30);
+
+  --text-1: #3D4A3F;   /* deeper moss for primary text */
+  --text-2: #657166;   /* moss from palette */
+  --text-3: #8A958B;   /* muted sage */
+
+  --glow-cyan:   0 0 40px rgba(153, 205, 216, 0.30);
+  --glow-indigo: 0 0 40px rgba(243, 195, 178, 0.28);
+  --shadow-card: 0 4px 24px rgba(101, 113, 102, 0.14);
+
+  color-scheme: light;
+}
+
 /* ── Royal Charcoal (monochromatic graphite — premium dark) ───────────────── */
 [data-theme="charcoal"] {
   --bg:          #1e1f22;                     /* darkest — page */
