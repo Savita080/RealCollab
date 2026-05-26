@@ -57,7 +57,7 @@ export function runPreflight(code, language) {
 
   try {
     const stdout = execSync(
-      `npx @biomejs/biome lint --reporter=json "${tmpFile}"`,
+      `./node_modules/.bin/biome lint --reporter=json "${tmpFile}"`,
       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }
     );
     parseBiome(stdout);

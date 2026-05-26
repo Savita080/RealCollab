@@ -96,7 +96,7 @@ app.post("/review/stream", async (req, res) => {
   const preflight = runPreflight(code, language);
 
   if (preflight.has_fatal_syntax_error) {
-    res.write(`data: ${JSON.stringify({ done: true, fatal_syntax_error: preflight.errors })}\\n\\n`);
+    res.write(`data: ${JSON.stringify({ done: true, fatal_syntax_error: preflight.errors })}\n\n`);
     return res.end();
   }
 
@@ -109,7 +109,7 @@ app.post("/review/stream", async (req, res) => {
       const result = await agent.review(reviewInput);
       results.push(result);
       rawScores[result.criteria] = result.score;
-      res.write(`data: ${JSON.stringify({ done: false, result })}\\n\\n`);
+      res.write(`data: ${JSON.stringify({ done: false, result })}\n\n`);
     } catch (e) {
       const errRes = {
         criteria: agent.criteriaName,
@@ -120,7 +120,7 @@ app.post("/review/stream", async (req, res) => {
       };
       results.push(errRes);
       rawScores[errRes.criteria] = errRes.score;
-      res.write(`data: ${JSON.stringify({ done: false, result: errRes })}\\n\\n`);
+      res.write(`data: ${JSON.stringify({ done: false, result: errRes })}\n\n`);
     }
   }
 
@@ -146,7 +146,7 @@ app.post("/review/stream", async (req, res) => {
     weighted_score: weightedScore,
     duration_ms: Date.now() - t0
   };
-  res.write(`data: ${JSON.stringify(final)}\\n\\n`);
+  res.write(`data: ${JSON.stringify(final)}\n\n`);
   res.end();
 });
 
