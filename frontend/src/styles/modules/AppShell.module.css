@@ -2,7 +2,6 @@
 .shell {
   display: flex;
   min-height: 100vh;
-  background: var(--bg);
 }
 
 .right {
@@ -16,7 +15,7 @@
 .main {
   flex: 1;
   overflow-y: auto;
-  background: var(--bg);
+  background: transparent;
 }
 
 .content {

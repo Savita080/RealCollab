@@ -29,11 +29,12 @@
   position: relative;
   width: 100%;
   max-width: 420px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: var(--bg-card-premium);
+  border: 1px solid var(--border-premium);
   border-radius: var(--r-xl);
   padding: 40px;
-  box-shadow: var(--shadow-card), var(--glow-indigo);
+  box-shadow: var(--card-shadow-premium), var(--glow-indigo);
+  backdrop-filter: blur(14px);
   display: flex;
   flex-direction: column;
   gap: 28px;

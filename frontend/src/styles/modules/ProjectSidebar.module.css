@@ -2,8 +2,9 @@
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #07071a 0%, #050510 100%);
-  border-right: 1px solid rgba(99,102,241,0.12);
+  background: rgba(10, 14, 26, 0.5);
+  backdrop-filter: blur(24px);
+  border-right: 1px solid var(--border-premium);
   display: flex;
   flex-direction: column;
   height: 100vh;

@@ -27,8 +27,8 @@
   gap: 14px;
 }
 .statCard {
-  background: var(--bg-card);
-  border: 1px solid rgba(99,102,241,0.18);
+  background: var(--bg-card-premium);
+  border: 1px solid var(--border-premium);
   border-radius: var(--r-lg); padding: 20px;
   display: flex; flex-direction: column; gap: 4px;
   position: relative; overflow: hidden;
@@ -71,7 +71,7 @@
 
 /* ── Card base ── */
 .card {
-  background: var(--bg-card); border: 1px solid rgba(99,102,241,0.12);
+  background: var(--bg-card-premium); border: 1px solid var(--border-premium);
   border-radius: var(--r-lg); padding: 18px 20px;
   display: flex; flex-direction: column; gap: 14px;
 }

@@ -2,7 +2,6 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background: var(--bg);
   color: var(--text-1);
 }
 .right {
@@ -15,7 +14,7 @@
 .main {
   flex: 1;
   overflow-y: auto;
-  background: var(--bg);
+  background: transparent;
 }
 .content {
   padding: 24px 28px 48px;

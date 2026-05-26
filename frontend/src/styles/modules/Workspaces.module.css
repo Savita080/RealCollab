@@ -1,70 +1,67 @@
 /* pages/workspace/Workspaces.module.css */
+
 .page {
   min-height: 100vh;
-  background: radial-gradient(ellipse at top, rgba(99,102,241,0.08), transparent 50%), var(--bg);
-  color: var(--text-1);
   padding: 0;
+  position: relative;
+  overflow-x: hidden;
 }
 
+/* ─── Topbar ─────────────────────────────────────────── */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(10,10,26,0.7);
-  backdrop-filter: blur(12px);
+  padding: 14px 32px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(10,14,26,0.72);
+  backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
   z-index: 50;
 }
+
 .brand { display: flex; align-items: center; gap: 10px; }
 .brandLogo {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
   display: flex; align-items: center; justify-content: center;
   color: #fff;
-  font-family: var(--font-display);
-  font-weight: 900;
   font-size: 11px;
-  box-shadow: 0 2px 12px rgba(99,102,241,0.4);
+  font-weight: 900;
+  letter-spacing: 0.04em;
 }
 .brandName {
-  font-family: var(--font-display);
   font-size: 13px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  color: var(--text-1);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #fff;
 }
 
 .userBox {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 12px 6px 6px;
-  border-radius: var(--r-md);
-  border: 1px solid var(--border);
-  background: rgba(99,102,241,0.04);
+  gap: 10px;
 }
-.userText { display: flex; flex-direction: column; line-height: 1.2; }
+.userText { text-align: right; }
 .userName {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-1);
-  font-family: var(--font-body);
+  font-weight: 500;
+  color: #e2e8f0;
+  line-height: 1.3;
 }
 .userEmail {
   font-size: 11px;
-  color: var(--text-3);
+  color: #475569;
   font-family: var(--font-mono);
 }
 .iconBtn {
-  width: 32px; height: 32px;
-  border-radius: var(--r-sm);
-  background: rgba(99,102,241,0.05);
-  border: 1px solid var(--border);
-  color: var(--text-2);
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: #94a3b8;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
@@ -75,212 +72,245 @@
   border-color: rgba(239,68,68,0.3);
 }
 
+/* ─── Hero ───────────────────────────────────────────── */
 .hero {
+  position: relative;
+  z-index: 5;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 56px 32px 32px;
+  padding: 52px 32px 28px;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
 }
-.heroLeft { flex: 1; min-width: 320px; }
+.heroLeft { flex: 1; min-width: 300px; }
 .eyebrow {
   font-size: 11px;
-  font-family: var(--font-mono);
-  letter-spacing: 0.16em;
-  color: var(--cyan);
   font-weight: 700;
-  margin-bottom: 12px;
+  letter-spacing: 0.22em;
+  color: #06b6d4;
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
 }
 .title {
-  font-family: var(--font-display);
   font-size: 38px;
   font-weight: 800;
   letter-spacing: -0.02em;
+  line-height: 1.14;
   margin: 0 0 12px;
-  background: linear-gradient(135deg, #f0f0ff 30%, #9494b8 100%);
+  background: linear-gradient(130deg, #f0f4ff 30%, #94a3b8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  line-height: 1.15;
 }
 .subtitle {
-  font-size: 15px;
-  color: var(--text-2);
+  font-size: 14px;
+  color: #64748b;
+  max-width: 460px;
+  line-height: 1.65;
   margin: 0;
-  max-width: 560px;
-  line-height: 1.6;
 }
 
+
+
+/* ─── Grid ───────────────────────────────────────────── */
 .grid {
+  position: relative;
+  z-index: 5;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 24px 32px 80px;
+  padding: 8px 32px 80px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px 20px;
+  /* extra top gap so pins have breathing room */
+  row-gap: 36px;
 }
+
+/* ─── Workspace card ────────────────────────── */
 
 .card {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 22px;
+  gap: 0;
+  padding: 20px;
   text-align: left;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   font-family: var(--font-body);
   color: var(--text-1);
+  transition:
+    transform 0.28s cubic-bezier(0.34,1.56,0.64,1),
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.25s;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
 }
+
+/* Top accent line */
 .card::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, var(--accent-1, #6366f1), var(--accent-2, #8b5cf6));
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
   opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-  mix-blend-mode: overlay;
+  transition: opacity 0.22s;
 }
+
 .card:hover {
-  transform: translateY(-4px);
-  border-color: var(--border-hover);
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.07);
   box-shadow:
-    0 12px 32px rgba(0,0,0,0.4),
-    0 0 0 1px rgba(99,102,241,0.2);
+    0 20px 40px rgba(0,0,0,0.4),
+    0 0 0 1px rgba(var(--accent-rgb, 99,102,241),0.25);
 }
-.card:hover::before { opacity: 0.06; }
-.card:hover .cardArrow {
-  background: var(--indigo);
-  color: #fff;
-  transform: translateX(4px);
-}
+.card:hover::before { opacity: 1; }
+
 .cardHead {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  margin-bottom: 14px;
 }
 .cardAvatar {
   width: 44px; height: 44px;
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   color: #fff;
-  font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
 }
 .cardArrow {
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: 50%;
-  background: rgba(99,102,241,0.08);
-  color: var(--text-2);
+  border: 1px solid rgba(255,255,255,0.12);
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.25s;
+  color: #64748b;
+  transition: all 0.22s;
 }
+.card:hover .cardArrow {
+  border-color: rgba(255,255,255,0.3);
+  color: #fff;
+  transform: translateX(3px);
+}
+
 .cardName {
-  font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -0.01em;
-  color: var(--text-1);
-  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 8px;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .cardStats {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-2);
   font-size: 12px;
-  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 14px;
 }
 .stat {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
-.statDot { color: var(--text-3); }
+.statDot { color: #1e293b; }
 .cardFooter {
-  margin-top: auto;
-  padding-top: 4px;
-  border-top: 1px solid rgba(99,102,241,0.08);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 11px;
 }
 .cardMeta {
   font-size: 11px;
-  color: var(--text-3);
   font-family: var(--font-mono);
-  letter-spacing: 0.06em;
+  color: #475569;
+  letter-spacing: 0.04em;
 }
 
+/* ─── New workspace card ─────────────────────────────── */
 .newCard {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   min-height: 170px;
   padding: 22px;
-  background: rgba(99,102,241,0.04);
-  border: 1.5px dashed rgba(99,102,241,0.25);
-  border-radius: var(--r-lg);
+  background: transparent;
+  border: 1.5px dashed rgba(255,255,255,0.1);
+  border-radius: 18px;
   cursor: pointer;
-  color: var(--text-2);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-top: 18px; /* align with pinned cards */
+}
+.newCardIcon {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px dashed #475569;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  font-weight: 300;
   transition: all 0.2s;
 }
 .newCard:hover {
-  background: rgba(99,102,241,0.08);
-  border-color: rgba(99,102,241,0.5);
-  color: var(--indigo);
-  transform: translateY(-2px);
+  border-color: rgba(6,182,212,0.5);
+  color: #06b6d4;
+  background: rgba(6,182,212,0.04);
+  transform: translateY(-3px);
+}
+.newCard:hover .newCardIcon {
+  border-color: #06b6d4;
+  background: rgba(6,182,212,0.1);
 }
 
+/* ─── Empty state ────────────────────────────────────── */
 .empty {
   grid-column: 1 / -1;
   text-align: center;
   padding: 80px 32px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
 }
 .emptyIcon {
-  width: 72px; height: 72px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
-  border: 1px solid rgba(99,102,241,0.25);
-  color: var(--indigo);
+  width: 64px; height: 64px;
+  border-radius: 18px;
+  background: rgba(6,182,212,0.1);
+  color: #06b6d4;
+  border: 1px solid rgba(6,182,212,0.2);
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 18px;
+  margin: 0 auto 16px;
 }
 .empty h3 {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0 0 6px;
-  color: var(--text-1);
+  font-size: 18px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 8px;
 }
 .empty p {
-  color: var(--text-2);
-  margin: 0 0 22px;
   font-size: 14px;
+  color: #64748b;
+  margin: 0 0 22px;
 }
 
-/* Modal */
+/* ─── Modal ──────────────────────────────────────────── */
 .modalOverlay {
   position: fixed; inset: 0;
-  background: rgba(5,5,15,0.78);
+  background: rgba(5,8,20,0.75);
   backdrop-filter: blur(10px);
   display: flex; align-items: center; justify-content: center;
   z-index: 1000;
@@ -289,34 +319,36 @@
 .modal {
   width: 440px;
   max-width: 90vw;
-  background: var(--bg-card);
-  border: 1px solid rgba(99,102,241,0.25);
-  border-radius: var(--r-lg);
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
   padding: 32px;
   box-shadow: 0 24px 80px rgba(0,0,0,0.7);
-  animation: pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: pop 0.22s cubic-bezier(0.34,1.56,0.64,1);
 }
 .modalTitle {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
   margin: 0 0 6px;
-  color: var(--text-1);
-  letter-spacing: -0.01em;
 }
 .modalDesc {
-  font-size: 13.5px;
-  color: var(--text-2);
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
   margin: 0 0 22px;
-  line-height: 1.55;
 }
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
 }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 @keyframes pop {
-  from { opacity: 0; transform: scale(0.92) translateY(12px); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: scale(0.93) translateY(14px); }
+  to   { opacity: 1; transform: none; }
 }
