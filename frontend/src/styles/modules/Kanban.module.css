@@ -60,7 +60,34 @@
 .card:active { cursor: grabbing; }
 .card.dragging { opacity: 0.4; transform: scale(0.97); }
 
-.taskTitle { font-size: 13px; font-weight: 500; color: var(--text-1); line-height: 1.4; }
+.cardHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; width: 100%; }
+.cardActions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; margin-top: -2px; }
+.card:hover .cardActions { opacity: 1; }
+.actionBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: 13px;
+  border-radius: var(--r-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+.actionBtn:hover {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.actionBtn.deleteBtn:hover {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.15);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+.taskTitle { font-size: 13px; font-weight: 500; color: var(--text-1); line-height: 1.4; flex: 1; }
 .taskDesc { font-size: 11px; color: var(--text-3); line-height: 1.5; }
 .cardMeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .due { font-size: 10px; color: var(--text-3); font-family: var(--font-mono); margin-left: auto; }

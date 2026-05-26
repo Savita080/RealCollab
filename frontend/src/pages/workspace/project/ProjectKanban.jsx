@@ -18,7 +18,7 @@ import s from '../../../styles/modules/Kanban.module.css';
 export default function ProjectKanban() {
   const ctx = useOutletContext();
   const { workspaceId, projectId, project, canEdit, wsMembers, projectMembers } = ctx;
-  const { tasks, fetch, create, move, loading } = useTasks();
+  const { tasks, fetch, create, move, loading, delete: deleteTaskStore } = useTasks();
   const { toast } = useUI();
   const { user } = useAuth();
   const online = usePresence(projectId);
@@ -27,6 +27,18 @@ export default function ProjectKanban() {
   const [dragOver, setDragOver] = useState(null);
   const [createModal, setCreateModal] = useState(false);
   const [detailTask, setDetailTask] = useState(null);
+  const [detailEditMode, setDetailEditMode] = useState(false);
+
+  const handleDeleteTask = async (task) => {
+    if (!confirm('Delete this task?')) return;
+    try {
+      await deleteTaskStore(workspaceId, projectId, task._id);
+      toast('Task deleted', 'info');
+    } catch {
+      toast('Failed to delete task', 'error');
+    }
+  };
+
   const [form, setForm] = useState({
     title: '', description: '', priority: 'P1',
     dueDate: '', labels: '', assignee: '', status: 'To Do',
@@ -114,9 +126,39 @@ export default function ProjectKanban() {
                     draggable={canEdit}
                     onDragStart={() => handleDragStart(task)}
                     onDragEnd={handleDragEnd}
-                    onClick={() => setDetailTask(task)}
+                    onClick={() => {
+                      setDetailEditMode(false);
+                      setDetailTask(task);
+                    }}
                   >
-                    <div className={s.cardTitle}>{task.title}</div>
+                    <div className={s.cardHeader}>
+                      <div className={s.cardTitle}>{task.title}</div>
+                      {canEdit && (
+                        <div className={s.cardActions}>
+                          <button
+                            className={s.actionBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailEditMode(true);
+                              setDetailTask(task);
+                            }}
+                            title="Edit Task"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            className={`${s.actionBtn} ${s.deleteBtn}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTask(task);
+                            }}
+                            title="Delete Task"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <div className={s.cardMeta}>
                       <PriorityChip priority={task.priority} />
                       {task.assignee && <Avatar name={task.assignee?.name} size={20} />}
@@ -175,6 +217,7 @@ export default function ProjectKanban() {
           wsMembers={wsMembers || []}
           mentionMembers={projectMembers || []}
           canEdit={canEdit}
+          initialEditing={detailEditMode}
           onClose={() => setDetailTask(null)}
           onUpdate={(updated) => {
             setDetailTask(updated);

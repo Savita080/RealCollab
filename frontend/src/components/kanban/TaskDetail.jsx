@@ -17,6 +17,9 @@ import { fmtDate, fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/TaskDetail.module.css';
 
 export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembers, canEdit = true }) {
+  const storeTasks = useTasks(state => state.tasks);
+  const currentTask = storeTasks.find(t => t._id === task._id) || task;
+
   // Mentions in task comments are scoped to project members only — fall back to
   // wsMembers if a project-scoped list wasn't provided (legacy callers).
   const mentionPool = mentionMembers ?? wsMembers;
@@ -26,35 +29,47 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
   const { toast } = useUI();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
-    title: task.title,
-    description: task.description || '',
-    priority: task.priority || 'P1',
-    status: task.status || 'To Do',
-    assignee: task.assignee?._id || task.assignee || '',
-    dueDate: task.dueDate ? task.dueDate.slice(0, 10) : '',
+    title: currentTask.title,
+    description: currentTask.description || '',
+    priority: currentTask.priority || 'P1',
+    status: currentTask.status || 'To Do',
+    assignee: currentTask.assignee?._id || currentTask.assignee || '',
+    dueDate: currentTask.dueDate ? currentTask.dueDate.slice(0, 10) : '',
   });
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(true);
   const commentsEndRef = useRef(null);
 
+  // Sync form state when the current task updates in store (e.g. edited elsewhere or saved)
+  useEffect(() => {
+    setForm({
+      title: currentTask.title,
+      description: currentTask.description || '',
+      priority: currentTask.priority || 'P1',
+      status: currentTask.status || 'To Do',
+      assignee: currentTask.assignee?._id || currentTask.assignee || '',
+      dueDate: currentTask.dueDate ? currentTask.dueDate.slice(0, 10) : '',
+    });
+  }, [currentTask]);
+
   // Load existing comments on mount
   useEffect(() => {
-    tasksApi.comments(task._id)
+    tasksApi.comments(currentTask._id)
       .then(({ data }) => setComments(data.comments ?? data))
       .catch(() => setComments([]))
       .finally(() => setLoadingComments(false));
-  }, [task._id]);
+  }, [currentTask._id]);
 
   // Live: listen for comments added/deleted in this project room
   useEffect(() => {
     const onAdded = (c) => {
-      if (c.task === task._id || c.task?._id === task._id) {
+      if (c.task === currentTask._id || c.task?._id === currentTask._id) {
         setComments(prev => [...prev, c]);
       }
     };
     const onDeleted = ({ commentId, taskId }) => {
-      if (taskId === task._id || taskId?.toString() === task._id) {
+      if (taskId === currentTask._id || taskId?.toString() === currentTask._id) {
         setComments(prev => prev.filter(c => c._id !== commentId));
       }
     };
@@ -69,7 +84,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
       socket.off('task_comment_deleted', onDeleted);
       socket.off('comment_reaction_updated', onReaction);
     };
-  }, [task._id]);
+  }, [currentTask._id]);
 
   // Scroll to bottom when comments update
   useEffect(() => {
@@ -78,7 +93,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
 
   const handleSave = async () => {
     try {
-      await update(ws._id, currentProject._id, task._id, form);
+      await update(ws._id, currentProject._id, currentTask._id, form);
       toast('Task updated', 'success');
       setEditing(false);
     } catch {
@@ -88,7 +103,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
 
   const handleDelete = async () => {
     if (!confirm('Delete this task?')) return;
-    await deleteTask(ws._id, currentProject._id, task._id);
+    await deleteTask(ws._id, currentProject._id, currentTask._id);
     toast('Task deleted', 'info');
     onClose();
   };
@@ -101,7 +116,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
     e.preventDefault();
     if (!comment.trim()) return;
     try {
-      const { data } = await tasksApi.comment(task._id, {
+      const { data } = await tasksApi.comment(currentTask._id, {
         content: comment,
         projectId: currentProject._id,
       });
@@ -120,7 +135,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
 
   const handleDeleteComment = async (commentId) => {
     try {
-      await tasksApi.deleteComment(task._id, commentId);
+      await tasksApi.deleteComment(currentTask._id, commentId);
       setComments(prev => prev.filter(c => c._id !== commentId));
     } catch {
       toast('Failed to delete comment', 'error');
@@ -144,7 +159,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
       }
       return { ...c, reactions };
     }));
-    try { await tasksApi.reactComment(task._id, commentId, emoji, currentProject?._id); }
+    try { await tasksApi.reactComment(currentTask._id, commentId, emoji, currentProject?._id); }
     catch { toast('Failed to react', 'error'); }
   };
 
@@ -155,17 +170,17 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
         {editing && canEdit ? (
           <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
         ) : (
-          <h2 className={s.title}>{task.title}</h2>
+          <h2 className={s.title}>{currentTask.title}</h2>
         )}
 
         {/* Meta row */}
         <div className={s.meta}>
-          <PriorityChip priority={task.priority} />
-          <span className={s.status}>{task.status}</span>
-          {task.dueDate && <span className={s.due}>Due {fmtDate(task.dueDate)}</span>}
-          {task.labels?.length > 0 && (
+          <PriorityChip priority={currentTask.priority} />
+          <span className={s.status}>{currentTask.status}</span>
+          {currentTask.dueDate && <span className={s.due}>Due {fmtDate(currentTask.dueDate)}</span>}
+          {currentTask.labels?.length > 0 && (
             <div className={s.labels}>
-              {task.labels.map(l => <span key={l} className={s.label}>{l}</span>)}
+              {currentTask.labels.map(l => <span key={l} className={s.label}>{l}</span>)}
             </div>
           )}
         </div>
@@ -176,7 +191,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
           {editing && canEdit ? (
             <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           ) : (
-            <p className={s.desc}>{task.description || <em>No description</em>}</p>
+            <p className={s.desc}>{currentTask.description || <em>No description</em>}</p>
           )}
         </div>
 

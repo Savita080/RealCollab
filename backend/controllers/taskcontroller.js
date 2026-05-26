@@ -41,6 +41,8 @@ export const createTask = async (req, res) => {
             }).catch(err => console.error('[task-assign notify] failed:', err.message));
         }
 
+        req.io.to(projectId).emit('task_created', newTask);
+
         res.status(201).json({
             message: "Task created successfully",
             task: newTask
@@ -94,6 +96,8 @@ export const updateTask = async (req, res) => {
             }).catch(err => console.error('[task-reassign notify] failed:', err.message));
         }
 
+        req.io.to(req.params.projectId).emit('task_updated', updatedTask);
+
         res.status(200).json({
             message: "Task updated successfully",
             task: updatedTask
@@ -112,6 +116,8 @@ export const deleteTask = async (req, res) => {
         if (!deletedTask) {
             return res.status(404).json({ message: "Task not found" });
         }
+
+        req.io.to(req.params.projectId).emit('task_deleted', taskId);
 
         res.status(200).json({ message: "Task deleted successfully" });
     } catch (error) {

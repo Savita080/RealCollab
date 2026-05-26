@@ -19,7 +19,7 @@ import s from '../styles/modules/Kanban.module.css';
 
 export default function Kanban({ canEdit = true, workspaceRole } = {}) {
   const { current: ws, currentProject } = useWorkspace();
-  const { tasks, fetch, create, move, loading, bindSocket, unbindSocket, setMoveRejectHandler } = useTasks();
+  const { tasks, fetch, create, move, loading, bindSocket, unbindSocket, setMoveRejectHandler, delete: deleteTaskStore } = useTasks();
   const { toast } = useUI();
   const { user } = useAuth();
   const online = usePresence(currentProject?._id);
@@ -29,6 +29,17 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
   const [createModal, setCreateModal] = useState(false);
   const [membersModal, setMembersModal] = useState(false);
   const [detailTask, setDetailTask] = useState(null);
+  const [detailEditMode, setDetailEditMode] = useState(false);
+
+  const handleDeleteTask = async (task) => {
+    if (!confirm('Delete this task?')) return;
+    try {
+      await deleteTaskStore(ws._id, currentProject._id, task._id);
+      toast('Task deleted', 'info');
+    } catch {
+      toast('Failed to delete task', 'error');
+    }
+  };
   const [wsMembers, setWsMembers] = useState([]);
   const [projMembers, setProjMembers] = useState([]);
   const [form, setForm] = useState({
@@ -146,9 +157,39 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
                     draggable={canEdit}
                     onDragStart={canEdit ? () => setDragging(task) : undefined}
                     onDragEnd={canEdit ? () => setDragging(null) : undefined}
-                    onClick={() => setDetailTask(task)}
+                    onClick={() => {
+                      setDetailEditMode(false);
+                      setDetailTask(task);
+                    }}
                   >
-                    <p className={s.taskTitle}>{task.title}</p>
+                    <div className={s.cardHeader}>
+                      <p className={s.taskTitle}>{task.title}</p>
+                      {canEdit && (
+                        <div className={s.cardActions}>
+                          <button
+                            className={s.actionBtn}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailEditMode(true);
+                              setDetailTask(task);
+                            }}
+                            title="Edit Task"
+                          >
+                            ✎
+                          </button>
+                          <button
+                            className={`${s.actionBtn} ${s.deleteBtn}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTask(task);
+                            }}
+                            title="Delete Task"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     {task.description && (
                       <p className={s.taskDesc}>{task.description.slice(0, 80)}{task.description.length > 80 ? '…' : ''}</p>
                     )}
@@ -224,6 +265,7 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
           wsMembers={wsMembers}
           mentionMembers={projMembers}
           canEdit={canEdit}
+          initialEditing={detailEditMode}
           onClose={() => setDetailTask(null)}
         />
       )}
