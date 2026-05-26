@@ -53,6 +53,13 @@ export const THEMES = [
     description: 'Soft cream paper with stone neutrals.',
     swatch: ['#F2EFE5', '#C7C8CC', '#B4B4B8'],
   },
+  {
+    id: 'aurora',
+    name: 'Aurora',
+    kind: 'dark',
+    description: 'Cosmic black with electric violet, sky, and magenta nebula.',
+    swatch: ['#07091a', '#6B4DE6', '#E94BC6'],
+  },
 ];
 
 const THEME_STORAGE_KEY = 'rc:theme';

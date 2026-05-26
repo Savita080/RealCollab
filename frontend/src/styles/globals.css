@@ -333,6 +333,56 @@
   color-scheme: light;
 }
 
+/* ── Aurora (cosmic dark — electric violet + sky blue + magenta nebula) ──── */
+[data-theme="aurora"] {
+  --bg:          #07091a;                     /* near-black cosmic */
+  --bg-2:        rgba(7, 9, 26, 0.4);
+  --bg-card:     rgba(255, 255, 255, 0.05);
+  --bg-hover:    rgba(255, 255, 255, 0.08);
+  --bg-glass:    rgba(12, 14, 36, 0.72);
+  --bg-dropdown: #0f1130;
+  --border:      rgba(180, 160, 255, 0.12);
+  --border-hover:rgba(180, 160, 255, 0.24);
+
+  --bg-card-premium: rgba(107, 77, 230, 0.08);
+  --border-premium:  rgba(180, 160, 255, 0.14);
+  --card-shadow-premium: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* Accents — vivid nebula spectrum, names retain semantic role */
+  --cyan:   #4DC4F5;   /* secondary → sky blue */
+  --indigo: #6B4DE6;   /* primary → electric violet */
+  --violet: #A855F7;   /* tertiary → hot purple */
+  --pink:   #E94BC6;   /* highlight → magenta */
+  --green:  #4DD8E6;   /* aqua mint — on-theme cool */
+  --amber:  #F5B84D;   /* warm amber for warnings */
+
+  --accent-soft: rgba(107, 77, 230, 0.16);
+  --focus-ring:  rgba(107, 77, 230, 0.42);
+
+  --status-success: #4DD8E6;   /* aqua mint */
+  --status-warning: #F5B84D;   /* amber */
+  --status-danger:  #FF5DA0;   /* hot pink danger */
+  --status-info:    #4DC4F5;   /* sky blue */
+
+  --bubble-me:   linear-gradient(135deg, #6B4DE6, #4DC4F5);
+  --bubble-them: rgba(255, 255, 255, 0.05);
+  --scrollbar-thumb: #6B4DE6;
+
+  /* Vivid nebula orbs — the signature look */
+  --orb-1: rgba(107, 77, 230, 0.35);
+  --orb-2: rgba(233, 75, 198, 0.28);
+
+  --text-1: #F4F0FF;   /* violet-tinted white */
+  --text-2: #A6A4D6;
+  --text-3: #6C6A9C;
+
+  --glow-cyan:   0 0 40px rgba(77, 196, 245, 0.30);
+  --glow-indigo: 0 0 40px rgba(107, 77, 230, 0.40);
+  --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
 /* ── Caramel (warm light theme — coffee + cream palette) ──────────────────── */
 [data-theme="caramel"] {
   --bg:          #FFF2DF;                     /* lightest cream */
