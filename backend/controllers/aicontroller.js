@@ -299,7 +299,7 @@ export const generateTasks = async (req, res) => {
             context: {
                 project_name: project.name,
                 project_description: project.description || '',
-                existing_tasks: tasks.map(t => ({ title: t.title, status: t.status }))
+                existing_tasks: tasks.map(t => t.title)
             }
         };
 
