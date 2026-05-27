@@ -8,7 +8,7 @@ import { useUI } from '../../store/ui';
 import { tasks as tasksApi, projects as projectsApi } from '../../lib/api';
 import { Skeleton } from '../../components/ui/Skeleton';
 import Button from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import { Input, Textarea } from '../../components/ui/Input';
 import ProjectMembersModal from '../../components/ProjectMembersModal';
 import s from '../../styles/modules/WorkspaceProjects.module.css';
 
@@ -25,6 +25,7 @@ export default function WorkspaceProjects() {
   const [stats, setStats] = useState({});
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [description, setDescription] = useState('');
   const [nameError, setNameError] = useState('');
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState(params.get('q') || '');
@@ -60,8 +61,9 @@ export default function WorkspaceProjects() {
     setCreating(true);
     setNameError('');
     try {
-      const proj = await createProject({ name: newName.trim() });
+      const proj = await createProject({ name: newName.trim(), description: description.trim() });
       setNewName('');
+      setDescription('');
       setCreateOpen(false);
       toast('Project created!', 'success');
       navigate(`/workspaces/${workspaceId}/projects/${proj.slug || proj._id}`);
@@ -75,7 +77,7 @@ export default function WorkspaceProjects() {
     } finally { setCreating(false); }
   };
 
-  const closeCreate = () => { setCreateOpen(false); setNameError(''); setNewName(''); };
+  const closeCreate = () => { setCreateOpen(false); setNameError(''); setNewName(''); setDescription(''); };
 
   const handleRename = async (e) => {
     e.preventDefault();
@@ -231,6 +233,8 @@ export default function WorkspaceProjects() {
               <Input label="Project name" placeholder="e.g. Auth System" value={newName}
                 onChange={e => { setNewName(e.target.value); if (nameError) setNameError(''); }}
                 error={nameError} required autoFocus />
+              <Textarea label="Description" placeholder="Describe your project (optional)" value={description}
+                onChange={e => setDescription(e.target.value)} rows={3} />
               <div className={s.modalActions}>
                 <Button type="button" variant="ghost" onClick={closeCreate}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={creating}>Create</Button>

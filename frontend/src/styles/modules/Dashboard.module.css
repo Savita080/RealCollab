@@ -212,3 +212,10 @@
   transition: all 0.15s;
 }
 .membersBtn:hover { border-color: var(--indigo); color: var(--indigo); }
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

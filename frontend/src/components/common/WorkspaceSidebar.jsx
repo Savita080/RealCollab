@@ -8,7 +8,7 @@ import {
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
 import { Avatar } from '../ui/Badge';
-import { Input } from '../ui/Input';
+import { Input, Textarea } from '../ui/Input';
 import Button from '../ui/Button';
 import { useClickOutside } from '../../lib/hooks';
 import { useUI } from '../../store/ui';
@@ -24,6 +24,7 @@ export default function WorkspaceSidebar({ role }) {
   const [wsDropOpen, setWsDropOpen] = useState(false);
   const [wsModal, setWsModal] = useState(false);
   const [wsName, setWsName] = useState('');
+  const [wsDesc, setWsDesc] = useState('');
   const [wsNameError, setWsNameError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -52,8 +53,9 @@ export default function WorkspaceSidebar({ role }) {
     setBusy(true);
     setWsNameError('');
     try {
-      const ws = await createWorkspace({ name: wsName.trim() });
+      const ws = await createWorkspace({ name: wsName.trim(), description: wsDesc.trim() });
       setWsName('');
+      setWsDesc('');
       setWsModal(false);
       navigate(`/workspaces/${ws.slug || ws._id}`);
     } catch (err) {
@@ -66,7 +68,7 @@ export default function WorkspaceSidebar({ role }) {
     } finally { setBusy(false); }
   };
 
-  const closeWsModal = () => { setWsModal(false); setWsNameError(''); setWsName(''); };
+  const closeWsModal = () => { setWsModal(false); setWsNameError(''); setWsName(''); setWsDesc(''); };
 
   const wsName_ = current?.name || 'Loading…';
   const firstName = user?.name?.split(' ')[0] || 'User';
@@ -178,7 +180,12 @@ export default function WorkspaceSidebar({ role }) {
               <Input label="Workspace name" placeholder="DevFusion Team" value={wsName}
                 onChange={e => { setWsName(e.target.value); if (wsNameError) setWsNameError(''); }}
                 error={wsNameError} required />
-              <Button type="submit" variant="cyan" size="md" loading={busy}>Create Workspace</Button>
+              <Textarea label="Description" placeholder="Describe your workspace (optional)" value={wsDesc}
+                onChange={e => setWsDesc(e.target.value)} rows={3} />
+              <div className={s.modalActions}>
+                <Button type="button" variant="ghost" onClick={closeWsModal}>Cancel</Button>
+                <Button type="submit" variant="cyan" size="md" loading={busy}>Create Workspace</Button>
+              </div>
             </form>
           </div>
         </div>

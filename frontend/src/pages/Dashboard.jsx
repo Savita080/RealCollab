@@ -13,7 +13,7 @@ import { fmtRelative } from '../lib/utils';
 import { Avatar } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
+import { Input, Textarea } from '../components/ui/Input';
 import ProjectMembersModal from '../components/ProjectMembersModal';
 import s from '../styles/modules/Dashboard.module.css';
 
@@ -38,7 +38,9 @@ export default function Dashboard() {
   const [projModal, setProjModal] = useState(false);
   const [membersModal, setMembersModal] = useState(false);
   const [wsName, setWsName] = useState('');
+  const [wsDesc, setWsDesc] = useState('');
   const [projName, setProjName] = useState('');
+  const [projDesc, setProjDesc] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -77,14 +79,14 @@ export default function Dashboard() {
 
   const handleCreateWs = async (e) => {
     e.preventDefault(); setLoading(true);
-    try { await createWorkspace({ name: wsName }); setWsName(''); setWsModal(false); toast('Workspace created!', 'success'); }
+    try { await createWorkspace({ name: wsName, description: wsDesc }); setWsName(''); setWsDesc(''); setWsModal(false); toast('Workspace created!', 'success'); }
     catch (err) { toast(err?.response?.data?.message || 'Failed', 'error'); }
     finally { setLoading(false); }
   };
 
   const handleCreateProj = async (e) => {
     e.preventDefault(); setLoading(true);
-    try { await createProject({ name: projName }); setProjName(''); setProjModal(false); toast('Project created!', 'success'); }
+    try { await createProject({ name: projName, description: projDesc }); setProjName(''); setProjDesc(''); setProjModal(false); toast('Project created!', 'success'); }
     catch (err) { toast(err?.response?.data?.message || 'Failed', 'error'); }
     finally { setLoading(false); }
   };
@@ -362,20 +364,30 @@ export default function Dashboard() {
       </div>
 
       {/* Workspace modal */}
-      <Modal open={wsModal} onClose={() => setWsModal(false)} title="Create Workspace" size="sm">
+      <Modal open={wsModal} onClose={() => { setWsModal(false); setWsName(''); setWsDesc(''); }} title="Create Workspace" size="sm">
         <form onSubmit={handleCreateWs} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <Input label="Workspace name" placeholder="DevFusion Team" value={wsName}
             onChange={e => setWsName(e.target.value)} required />
-          <Button type="submit" variant="cyan" size="md" loading={loading}>Create Workspace</Button>
+          <Textarea label="Description" placeholder="Describe your workspace (optional)" value={wsDesc}
+            onChange={e => setWsDesc(e.target.value)} rows={3} />
+          <div className={s.modalActions}>
+            <Button type="button" variant="ghost" onClick={() => { setWsModal(false); setWsName(''); setWsDesc(''); }}>Cancel</Button>
+            <Button type="submit" variant="cyan" size="md" loading={loading}>Create Workspace</Button>
+          </div>
         </form>
       </Modal>
 
       {/* Project modal */}
-      <Modal open={projModal} onClose={() => setProjModal(false)} title="Create Project" size="sm">
+      <Modal open={projModal} onClose={() => { setProjModal(false); setProjName(''); setProjDesc(''); }} title="Create Project" size="sm">
         <form onSubmit={handleCreateProj} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <Input label="Project name" placeholder="Auth System" value={projName}
             onChange={e => setProjName(e.target.value)} required />
-          <Button type="submit" variant="primary" size="md" loading={loading}>Create Project</Button>
+          <Textarea label="Description" placeholder="Describe your project (optional)" value={projDesc}
+            onChange={e => setProjDesc(e.target.value)} rows={3} />
+          <div className={s.modalActions}>
+            <Button type="button" variant="ghost" onClick={() => { setProjModal(false); setProjName(''); setProjDesc(''); }}>Cancel</Button>
+            <Button type="submit" variant="primary" size="md" loading={loading}>Create Project</Button>
+          </div>
         </form>
       </Modal>
 

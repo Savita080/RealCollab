@@ -11,7 +11,7 @@ import { workspaces as wsApi, projects as projApi, activity as actApi } from '..
 import { Avatar } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import Button from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+import { Input, Textarea } from '../../components/ui/Input';
 import { fmtRelative } from '../../lib/utils';
 import s from '../../styles/modules/WorkspaceOverview.module.css';
 
@@ -28,6 +28,7 @@ export default function WorkspaceOverview() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [description, setDescription] = useState('');
   const [nameError, setNameError] = useState('');
   const [creating, setCreating] = useState(false);
 
@@ -60,8 +61,9 @@ export default function WorkspaceOverview() {
     setCreating(true);
     setNameError('');
     try {
-      const proj = await createProject({ name: newName.trim() });
+      const proj = await createProject({ name: newName.trim(), description: description.trim() });
       setNewName('');
+      setDescription('');
       setCreateOpen(false);
       toast('Project created!', 'success');
       navigate(`/workspaces/${workspaceId}/projects/${proj.slug || proj._id}`);
@@ -77,7 +79,7 @@ export default function WorkspaceOverview() {
     }
   };
 
-  const closeCreate = () => { setCreateOpen(false); setNameError(''); setNewName(''); };
+  const closeCreate = () => { setCreateOpen(false); setNameError(''); setNewName(''); setDescription(''); };
 
   const greeting = getGreeting();
   const firstName = user?.name?.split(' ')[0] || 'there';
@@ -245,6 +247,8 @@ export default function WorkspaceOverview() {
               <Input label="Project name" placeholder="e.g. Auth System" value={newName}
                 onChange={e => { setNewName(e.target.value); if (nameError) setNameError(''); }}
                 error={nameError} required autoFocus />
+              <Textarea label="Description" placeholder="Describe your project (optional)" value={description}
+                onChange={e => setDescription(e.target.value)} rows={3} />
               <div className={s.modalActions}>
                 <Button type="button" variant="ghost" onClick={closeCreate}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={creating}>Create</Button>
