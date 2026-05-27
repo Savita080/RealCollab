@@ -1,6 +1,6 @@
 import React from "react";
 import CustomCursor from "../components/ui/CustomCursor";
-// import Background3D from "../components/landing/Background3D";
+import Background3D from "../components/landing/Background3D";
 import Navbar from "../components/landing/Navbar";
 import Hero from "../components/landing/Hero";
 import Features from "../components/landing/Features";
@@ -36,7 +36,7 @@ export default function LandingPage() {
 
       <CustomCursor />
 
-      {/* <Background3D /> */}
+      <Background3D />
 
       <Navbar />
 
