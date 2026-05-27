@@ -38,6 +38,10 @@ export const resolveSlugUrl = async (req, res, next) => {
         const projToken = m[4];
         const rest = m[5];
 
+        // Reserved path segments that are not workspace slugs/ids — skip resolution.
+        const RESERVED = new Set(['invite', 'me', 'search']);
+        if (RESERVED.has(wsToken.toLowerCase())) return next();
+
         // No-op fast path: both already ObjectIds (or only workspace present + ObjectId).
         if (isObjectId(wsToken) && (!projToken || isObjectId(projToken))) {
             return next();

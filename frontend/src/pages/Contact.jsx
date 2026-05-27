@@ -18,8 +18,8 @@ const TEAM = [
   {
     name: 'Savita',
     role: 'Frontend & UI/UX',
-    email: '',
-    linkedin: '',
+    email: 'svtdkd@gmail.com',
+    linkedin: 'https://www.linkedin.com/in/savita-chaudhary219',
     initials: 'SV',
     color: '#06b6d4',
   },
@@ -27,7 +27,7 @@ const TEAM = [
     name: 'Suhani Sharma',
     role: 'AI Services',
     email: 'suhanisharma150708@gmail.com',
-    linkedin: '',
+    linkedin: 'https://www.linkedin.com/in/suhani-sharma-775945381',
     initials: 'SS',
     color: '#8b5cf6',
   },
@@ -41,10 +41,13 @@ export default function Contact() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Opens default mail client with pre-filled body as a simple no-backend approach
     const body = encodeURIComponent(`Name: ${form.firstName} ${form.lastName}\nEmail: ${form.email}\n\n${form.message}`);
     const subject = encodeURIComponent(form.subject || 'RealCollab Inquiry');
-    window.location.href = `mailto:adityaalba27@gmail.com?subject=${subject}&body=${body}`;
+    const a = document.createElement('a');
+    a.href = `mailto:adityaalba27@gmail.com?subject=${subject}&body=${body}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     setSent(true);
   };
 
