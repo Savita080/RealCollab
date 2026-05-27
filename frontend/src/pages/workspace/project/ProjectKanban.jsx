@@ -163,7 +163,7 @@ export default function ProjectKanban() {
                     </div>
                     <div className={s.cardMeta}>
                       <PriorityChip priority={task.priority} />
-                      {task.assignee && <Avatar name={task.assignee?.name} size={20} />}
+                      {task.assignee && <Avatar name={task.assignee?.name} src={task.assignee?.avatar} size={20} />}
                       {task.dueDate && <span className={s.dueDate}>{fmtDate(task.dueDate)}</span>}
                     </div>
                     {task.labels?.length > 0 && (

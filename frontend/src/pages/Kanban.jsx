@@ -150,6 +150,8 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
               {(columns[col.key] || []).map(task => {
                 const assigneeName = task.assignee?.name ||
                   wsMembers.find(m => m.user?._id === task.assignee)?.user?.name;
+                const assigneeAvatar = task.assignee?.avatar ||
+                  wsMembers.find(m => m.user?._id === task.assignee)?.user?.avatar;
                 return (
                   <div
                     key={task._id}
@@ -209,7 +211,7 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
                     {/* Assignee avatar */}
                     {assigneeName && (
                       <div className={s.cardAssignee}>
-                        <Avatar name={assigneeName} size={20} />
+                        <Avatar name={assigneeName} src={assigneeAvatar} size={20} />
                         <span className={s.assigneeName}>{assigneeName}</span>
                       </div>
                     )}

@@ -74,7 +74,7 @@ export default function ProjectOverview() {
         ) : (
           activities.map((a, i) => (
             <div key={a._id ?? i} className={s.activityItem}>
-              <Avatar name={a.user?.name} size={24} />
+              <Avatar name={a.user?.name} src={a.user?.avatar} size={24} />
               <span><strong>{a.user?.name}</strong> {a.action?.replace(/_/g, ' ').toLowerCase()} — {a.targetName}</span>
               <span style={{ marginLeft: 'auto', color: 'var(--text-3)', fontSize: 12 }}>{fmtRelative(a.createdAt)}</span>
             </div>

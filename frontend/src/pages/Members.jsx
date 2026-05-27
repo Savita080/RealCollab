@@ -169,7 +169,7 @@ export default function Members() {
           const isOwner = m.role === 'OWNER';
           return (
             <div key={uid} className={s.memberCard}>
-              <Avatar name={m.user?.name || '?'} size={40} />
+              <Avatar name={m.user?.name || '?'} src={m.user?.avatar} size={40} />
               <div className={s.memberInfo}>
                 <div className={s.nameRow}>
                   <strong className={s.name}>{m.user?.name || 'Unknown'}</strong>
@@ -256,7 +256,7 @@ export default function Members() {
                     textAlign: 'left',
                   }}
                 >
-                  <Avatar name={m.user?.name || '?'} size={28} />
+                  <Avatar name={m.user?.name || '?'} src={m.user?.avatar} size={28} />
                   <div>
                     <strong>{m.user?.name}</strong>
                     <span style={{ display: 'block', fontSize: 11, color: 'var(--text-3)' }}>{m.role}</span>

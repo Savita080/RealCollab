@@ -162,7 +162,7 @@ export default function ProjectChat() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {online.slice(0, 5).map(u => (
-            <Avatar key={u._id || u.userId} name={u.name} online size={26} />
+            <Avatar key={u._id || u.userId} name={u.name} src={u.avatar} online size={26} />
           ))}
           <span className={s.livePill}>● LIVE</span>
         </div>
@@ -185,7 +185,7 @@ export default function ProjectChat() {
             >
               {showName && (
                 <div className={s.senderMeta}>
-                  <Avatar name={senderName} size={20} />
+                  <Avatar name={senderName} src={m.sender?.avatar} size={20} />
                   <span className={s.senderName}>{senderName}</span>
                 </div>
               )}

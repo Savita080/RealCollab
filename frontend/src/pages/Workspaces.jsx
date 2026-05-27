@@ -76,7 +76,7 @@ export default function Workspaces() {
         <div className={s.topRight}>
           <NotificationDropdown />
           <Link to="/profile" style={{ textDecoration: 'none' }}>
-            <Avatar name={user?.name} size={32} />
+            <Avatar name={user?.name} src={user?.avatar} size={32} />
           </Link>
           <button onClick={handleLogout} className={s.topRight} style={{
             background: 'none', border: 'none', color: 'var(--text-3)', cursor: 'pointer', fontSize: 13

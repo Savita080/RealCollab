@@ -84,7 +84,7 @@ export default function ProjectMembers() {
             return (
               <div key={memberId} className={s.member}>
                 <div className={s.memberInfo}>
-                  <Avatar name={name} size={36} />
+                  <Avatar name={name} src={m.user?.avatar} size={36} />
                   <div>
                     <div className={s.memberName}>
                       {name} {memberId === uid && <span style={{ color: 'var(--text-3)', fontSize: 12 }}>(you)</span>}

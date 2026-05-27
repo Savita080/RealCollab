@@ -137,7 +137,7 @@ export default function ProjectMembersModal({ open, onClose, workspace, project,
             const isCreator = !!(creatorId && uid && uid.toString() === creatorId.toString());
             return (
               <div key={uid} className={s.row}>
-                <Avatar name={pm.user?.name || '?'} size={34} />
+                <Avatar name={pm.user?.name || '?'} src={pm.user?.avatar} size={34} />
                 <div className={s.info}>
                   <span className={s.name}>
                     {pm.user?.name || 'Unknown'}
@@ -206,7 +206,7 @@ export default function ProjectMembersModal({ open, onClose, workspace, project,
               const selectedRole = addRole[uid] || 'VIEWER';
               return (
                 <div key={uid} className={s.row}>
-                  <Avatar name={wsm.user?.name || '?'} size={34} />
+                  <Avatar name={wsm.user?.name || '?'} src={wsm.user?.avatar} size={34} />
                   <div className={s.info}>
                     <span className={s.name}>{wsm.user?.name || 'Unknown'}</span>
                     <span className={s.wsBadge} style={{ '--c': WS_ROLE_COLORS[wsm.role] || 'var(--text-3)' }}>

@@ -118,7 +118,7 @@ export default function ProjectMembers() {
               const wsRole = wsMembers.find(w => w.user?._id === uid)?.role;
               return (
                 <div key={uid} className={s.memberCard}>
-                  <Avatar name={m.user?.name || '?'} size={38} />
+                  <Avatar name={m.user?.name || '?'} src={m.user?.avatar} size={38} />
                   <div className={s.memberInfo}>
                     <div className={s.nameRow}>
                       <strong>{m.user?.name || 'Unknown'}</strong>
@@ -170,7 +170,7 @@ export default function ProjectMembers() {
               const uid = m.user?._id;
               return (
                 <div key={uid} className={s.memberCard}>
-                  <Avatar name={m.user?.name || '?'} size={38} />
+                  <Avatar name={m.user?.name || '?'} src={m.user?.avatar} size={38} />
                   <div className={s.memberInfo}>
                     <strong>{m.user?.name || 'Unknown'}</strong>
                     <span className={s.email}>{m.user?.email || ''}</span>

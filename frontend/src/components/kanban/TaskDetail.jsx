@@ -280,7 +280,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
                 ref={el => { if (c._id) commentRefs.current[c._id] = el; }}
                 className={s.comment}
               >
-                <Avatar name={c.author?.name || 'U'} size={26} />
+                <Avatar name={c.author?.name || 'U'} src={c.author?.avatar} size={26} />
                 <div className={s.commentBody}>
                   <div className={s.commentHeader}>
                     <strong className={s.commenter}>{c.author?.name || 'Someone'}</strong>

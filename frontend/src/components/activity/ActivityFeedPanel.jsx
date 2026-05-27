@@ -259,7 +259,7 @@ export default function ActivityFeedPanel({
               <p className={s.msg}>{formatActivity(item, scope)}</p>
               <span className={s.time}>{fmtRelative(item.createdAt)}</span>
             </div>
-            <Avatar name={item.user?.name || '?'} size={28} />
+            <Avatar name={item.user?.name || '?'} src={item.user?.avatar} size={28} />
           </div>
         ))}
       </div>

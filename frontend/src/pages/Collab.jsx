@@ -384,7 +384,7 @@ export default function Collab() {
                   <div key={m._id ?? i} className={`${s.msgGroup} ${mine ? s.mine : ''}`}>
                     {showName && (
                       <div className={s.senderMeta}>
-                        <Avatar name={senderName} size={20} />
+                        <Avatar name={senderName} src={m.sender?.avatar} size={20} />
                         <span className={s.senderName}>{senderName}</span>
                       </div>
                     )}

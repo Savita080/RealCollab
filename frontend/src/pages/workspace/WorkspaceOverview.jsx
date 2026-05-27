@@ -193,7 +193,7 @@ export default function WorkspaceOverview() {
             <div className={s.memberList}>
               {members.slice(0, 6).map((m, i) => (
                 <div key={m.user?._id || i} className={s.memberRow}>
-                  <Avatar name={m.user?.name || '?'} size={30} />
+                  <Avatar name={m.user?.name || '?'} src={m.user?.avatar} size={30} />
                   <div className={s.memberInfo}>
                     <strong className={s.memberName}>{m.user?.name || 'Unknown'}</strong>
                     <span className={s.memberRole}>{m.role}</span>
@@ -219,7 +219,7 @@ export default function WorkspaceOverview() {
               )}
               {!loading && recentActivity.map((item, i) => (
                 <div key={item._id || i} className={s.feedItem}>
-                  <Avatar name={item.user?.name || '?'} size={26} />
+                  <Avatar name={item.user?.name || '?'} src={item.user?.avatar} size={26} />
                   <div className={s.feedBody}>
                     <p className={s.feedMsg}>
                       <strong>{item.user?.name || 'Someone'}</strong>{' '}

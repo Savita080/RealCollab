@@ -182,7 +182,7 @@ export default function Dashboard() {
             )}
             {feed.map((item, i) => (
               <div key={item._id || i} className={s.feedItem}>
-                <Avatar name={item.user?.name || '?'} size={30} />
+                <Avatar name={item.user?.name || '?'} src={item.user?.avatar} size={30} />
                 <div className={s.feedContent}>
                   <p className={s.feedMsg}>
                     <strong>{item.user?.name || 'Someone'}</strong>
@@ -215,7 +215,7 @@ export default function Dashboard() {
                     className={s.onlineDot}
                     style={{ background: isOnline ? 'var(--green)' : 'var(--text-3)', opacity: isOnline ? 1 : 0.4 }}
                   />
-                  <Avatar name={m.user?.name || '?'} size={28} online={isOnline} />
+                  <Avatar name={m.user?.name || '?'} src={m.user?.avatar} size={28} online={isOnline} />
                   <div className={s.onlineInfo}>
                     <strong className={s.onlineName}>
                       {m.user?.name || 'Unknown'}{isMe ? ' (You)' : ''}
