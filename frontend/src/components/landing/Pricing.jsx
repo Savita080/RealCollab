@@ -1,6 +1,5 @@
 import React from "react";
 import { motion } from "framer-motion";
-<<<<<<< Updated upstream
 import { Check, Sparkles } from "lucide-react";
 
 const PLANS = [
@@ -14,6 +13,7 @@ const PLANS = [
     checkIcon: "✓",
     cta: "Get Started",
     ctaStyle: "outline",
+    ctaHref: "/register",
     features: [
       "2 workspaces",
       "3 projects per workspace",
@@ -34,6 +34,7 @@ const PLANS = [
     checkIcon: "✦",
     cta: "Upgrade to Pro",
     ctaStyle: "gradient",
+    ctaHref: "/subscribe",
     badge: "Best Value",
     features: [
       "Unlimited workspaces",
@@ -45,10 +46,6 @@ const PLANS = [
     ],
   },
 ];
-=======
-import { Check } from "lucide-react";
-import { Link } from "react-router-dom";
->>>>>>> Stashed changes
 
 export default function Pricing() {
   return (
@@ -62,8 +59,6 @@ export default function Pricing() {
       <div className="max-w-5xl mx-auto px-6 relative">
         {/* Heading */}
         <div className="text-center max-w-xl mx-auto mb-8">
-
-
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -74,14 +69,11 @@ export default function Pricing() {
             <span className="block">Two Plans.</span>
             <span
               className="block bg-clip-text text-transparent whitespace-nowrap"
-              style={{
-                backgroundImage: "linear-gradient(to right, var(--indigo), var(--cyan))",
-              }}
+              style={{ backgroundImage: "linear-gradient(to right, var(--indigo), var(--cyan))" }}
             >
               Zero Confusion.
             </span>
           </motion.h2>
-
 
           <motion.p
             initial={{ opacity: 0 }}
@@ -133,33 +125,20 @@ export default function Pricing() {
                   {plan.label}
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span
-                    className="text-5xl font-black"
-                    style={{ color: "var(--text-1)" }}
-                  >
+                  <span className="text-5xl font-black" style={{ color: "var(--text-1)" }}>
                     {plan.price}
                   </span>
-                  <span
-                    className="text-sm font-medium"
-                    style={{ color: "var(--text-3)" }}
-                  >
+                  <span className="text-sm font-medium" style={{ color: "var(--text-3)" }}>
                     {plan.period}
                   </span>
                 </div>
-                <p
-                  className="text-sm mt-2"
-                  style={{ color: "var(--text-3)" }}
-                >
+                <p className="text-sm mt-2" style={{ color: "var(--text-3)" }}>
                   {plan.tagline}
                 </p>
               </div>
 
               {/* Divider */}
-              <div
-<<<<<<< Updated upstream
-                className="mb-6"
-                style={{ height: "1px", background: "var(--border)" }}
-              />
+              <div className="mb-6" style={{ height: "1px", background: "var(--border)" }} />
 
               {/* Features */}
               <ul className="space-y-2.5 flex-1 mb-5">
@@ -168,31 +147,6 @@ export default function Pricing() {
                     <span
                       className="flex-shrink-0 mt-px font-bold text-base leading-none"
                       style={{ color: plan.accentColor }}
-=======
-                className="text-sm font-bold uppercase tracking-wider"
-                style={{ color: 'var(--text-3)' }}
-              >
-                Free Tier
-              </div>
-              <div className="flex items-baseline" style={{ color: 'var(--text-1)' }}>
-                <span className="text-5xl font-black">₹0</span>
-                <span className="text-sm font-medium ml-1" style={{ color: 'var(--text-3)' }}>/month</span>
-              </div>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>Ideal for bootstrapping devs</p>
-              <hr style={{ borderColor: 'var(--border)' }} />
-              <ul className="space-y-3.5 text-sm" style={{ color: 'var(--text-2)' }}>
-                {[
-                  "2 workspaces · 4 members each",
-                  "Kanban, Wiki, Whiteboard, Snippets",
-                  "3 projects per workspace",
-                  "Real-time chat & @mentions",
-                  "10 AI requests / month",
-                ].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'var(--accent-soft)' }}
->>>>>>> Stashed changes
                     >
                       {plan.checkIcon}
                     </span>
@@ -200,12 +154,11 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-<<<<<<< Updated upstream
 
               {/* CTA */}
               {plan.ctaStyle === "gradient" ? (
                 <motion.a
-                  href="/register"
+                  href={plan.ctaHref}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.97 }}
                   className="w-full py-3 rounded-xl font-bold text-sm text-center block transition-all"
@@ -219,12 +172,9 @@ export default function Pricing() {
                 </motion.a>
               ) : (
                 <a
-                  href="/register"
+                  href={plan.ctaHref}
                   className="w-full py-3 rounded-xl font-bold text-sm text-center block transition-all"
-                  style={{
-                    background: "var(--bg-hover)",
-                    color: "var(--text-1)",
-                  }}
+                  style={{ background: "var(--bg-hover)", color: "var(--text-1)" }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "var(--accent-soft)";
                     e.currentTarget.style.color = "var(--cyan)";
@@ -239,105 +189,6 @@ export default function Pricing() {
               )}
             </motion.div>
           ))}
-=======
-            </div>
-            <Link
-              to="/register"
-              className="w-full py-3.5 rounded-xl font-bold transition-all duration-300 mt-8 block text-center"
-              style={{
-                border: '1px solid var(--border-hover)',
-                color: 'var(--text-1)',
-                background: 'transparent',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = 'var(--indigo)';
-                e.currentTarget.style.background = 'var(--accent-soft)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--border-hover)';
-                e.currentTarget.style.background = 'transparent';
-              }}
-            >
-              Get Started Free
-            </Link>
-          </motion.div>
-
-          {/* Pro Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="rounded-3xl p-8 space-y-6 flex flex-col justify-between backdrop-blur-xl md:scale-[1.03] transition-all duration-300 relative group overflow-hidden"
-            style={{
-              background: 'var(--bg-card)',
-              border: '2px solid var(--indigo)',
-              boxShadow: 'var(--glow-indigo)',
-            }}
-          >
-            {/* Holographic Glowing Ribbon */}
-            <div
-              className="absolute top-4 right-4 text-[9px] uppercase font-black px-3 py-1 rounded-full tracking-wider"
-              style={{
-                backgroundImage: 'linear-gradient(to right, var(--indigo), var(--cyan))',
-                color: 'var(--bg)',
-                boxShadow: 'var(--glow-indigo)',
-              }}
-            >
-              Most Popular
-            </div>
-
-            <div className="space-y-4">
-              <div
-                className="text-sm font-bold uppercase tracking-wider"
-                style={{ color: 'var(--cyan)' }}
-              >
-                PRO
-              </div>
-              <div className="flex items-baseline" style={{ color: 'var(--text-1)' }}>
-                <span className="text-5xl font-black">₹499</span>
-                <span className="text-sm font-medium ml-1" style={{ color: 'var(--text-3)' }}>/year</span>
-              </div>
-              <p className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>Everything your team needs to ship</p>
-              <hr style={{ borderColor: 'var(--border)' }} />
-              <ul className="space-y-3.5 text-sm" style={{ color: 'var(--text-2)' }}>
-                {[
-                  "Unlimited workspaces & projects",
-                  "Up to 50 members per workspace",
-                  "200 AI requests / month",
-                  "Unlimited tasks, wikis, snippets",
-                  "Priority email support",
-                  "Everything in FREE",
-                ].map((f, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <div
-                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'var(--accent-soft)' }}
-                    >
-                      <Check size={12} style={{ color: 'var(--cyan)' }} />
-                    </div>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <Link to="/subscribe">
-              <motion.span
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 rounded-xl font-bold transition-all duration-300 mt-8 block text-center"
-                style={{
-                  backgroundImage: 'linear-gradient(to right, var(--indigo), var(--cyan))',
-                  color: 'var(--bg)',
-                  boxShadow: 'var(--glow-indigo)',
-                }}
-              >
-                Upgrade to PRO →
-              </motion.span>
-            </Link>
-          </motion.div>
->>>>>>> Stashed changes
         </div>
 
         {/* Footer note */}
