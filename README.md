@@ -445,13 +445,13 @@ Built by a 3-person hackathon squad in 10 days for **DevFusion 2.0**:
 🟢 **Backend**
 <br /><sub>Aditya</sub>
 <br /><br />
-REST API · Real-time<br />RBAC · Billing · Infra · Frontend
+REST API · Real-time<br />RBAC · Billing · Infra
 
 </td>
 <td align="center" width="33%">
 
 🔵 **Frontend**
-<br /><sub>Aditya &amp; Anubhav</sub>
+<br /><sub>Savita</sub>
 <br /><br />
 React SPA · Kanban UI<br />Whiteboard · Wiki Editor
 
