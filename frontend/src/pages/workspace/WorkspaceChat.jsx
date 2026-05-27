@@ -32,10 +32,12 @@ export default function WorkspaceChat() {
   const bottomRef = useRef(null);
   const messageRefs = useRef({});
 
-  // Join workspace socket room + load history
+  // Join workspace socket room + load history. Socket rooms are keyed by
+  // canonical _id, so use workspace?._id (slug from URL won't match the room).
   useEffect(() => {
     if (!workspaceId) return;
-    joinWorkspace(workspaceId);
+    const roomId = workspace?._id;
+    if (roomId) joinWorkspace(roomId);
     setLoading(true);
     chatApi.workspaceMessages(workspaceId)
       .then(({ data }) => setMessages(data.messages ?? data ?? []))
@@ -46,12 +48,13 @@ export default function WorkspaceChat() {
       .then(({ data }) => setMembers(data.members ?? []))
       .catch(() => setMembers([]));
 
-    return () => leaveWorkspace(workspaceId);
-  }, [workspaceId]);
+    return () => { if (roomId) leaveWorkspace(roomId); };
+  }, [workspaceId, workspace?._id]);
 
   // Realtime new messages + typing
   useEffect(() => {
     if (!workspaceId) return;
+    const canonicalId = workspace?._id;
     const onNew = (msg) => {
       setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
     };
@@ -60,7 +63,8 @@ export default function WorkspaceChat() {
       setMessages(prev => prev.map(m => m._id === messageId ? { ...m, reactions } : m));
     };
     const onTyping = ({ workspaceId: wsId, userName }) => {
-      if (wsId === workspaceId && userName !== user?.name) {
+      // Payload carries canonical _id; URL token may be slug — accept both.
+      if ((wsId === canonicalId || wsId === workspaceId) && userName !== user?.name) {
         setTypingUser(userName);
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 2500);
@@ -75,7 +79,7 @@ export default function WorkspaceChat() {
       socket.off('workspace_user_typing', onTyping);
       clearTimeout(typingTimeoutRef.current);
     };
-  }, [workspaceId, user?.name]);
+  }, [workspaceId, workspace?._id, user?.name]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -212,8 +216,9 @@ export default function WorkspaceChat() {
           members={members}
           onChange={e => {
             setInput(e.target.value);
-            if (workspaceId && user?.name && !typingEmitRef.current) {
-              socket.emit('workspace_typing', { workspaceId, userName: user.name });
+            const emitId = workspace?._id || workspaceId;
+            if (emitId && user?.name && !typingEmitRef.current) {
+              socket.emit('workspace_typing', { workspaceId: emitId, userName: user.name });
               typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
             }
           }}

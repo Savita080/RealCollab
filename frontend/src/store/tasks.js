@@ -70,7 +70,11 @@ export const useTasks = create((set, get) => ({
     if (payload.status) payload.status = toBackendStatus(payload.status);
     const { data } = await tasksApi.create(wid, pid, payload);
     const task = normalise(data.task ?? data);
-    set(s => ({ tasks: [task, ...s.tasks] }));
+    // The socket also broadcasts task_created, so dedupe by _id to avoid the
+    // creator seeing the task twice (optimistic insert + socket echo).
+    set(s => s.tasks.some(t => t._id === task._id)
+      ? s
+      : { tasks: [task, ...s.tasks] });
     return task;
   },
 
@@ -107,7 +111,9 @@ export const useTasks = create((set, get) => ({
       set(s => ({ tasks: s.tasks.map(t => t._id === updated._id ? normalise(updated) : t) }))
     );
     socket.on('task_created', (task) =>
-      set(s => ({ tasks: [normalise(task), ...s.tasks] }))
+      set(s => s.tasks.some(t => t._id === task._id)
+        ? s
+        : { tasks: [normalise(task), ...s.tasks] })
     );
     socket.on('task_deleted', (taskId) =>
       set(s => ({ tasks: s.tasks.filter(t => t._id !== taskId) }))
