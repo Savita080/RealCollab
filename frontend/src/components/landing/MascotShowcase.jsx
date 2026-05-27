@@ -6,19 +6,21 @@ export default function MascotShowcase() {
   return (
     <section
       className="py-24 relative overflow-hidden bg-transparent"
-      style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}
     >
-      {/* Background Neon Orbs */}
-      <div
-        className="absolute w-[500px] h-[300px] blur-[120px] rounded-full top-1/2 left-1/3 -translate-y-1/2 pointer-events-none"
-        style={{ background: 'var(--accent-soft)' }}
-      />
-      <div
-        className="absolute w-[400px] h-[250px] blur-[120px] rounded-full top-1/2 right-1/4 -translate-y-1/2 pointer-events-none"
-        style={{ background: 'var(--accent-soft)' }}
-      />
-
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+      <div className="max-w-7xl mx-auto px-6">
+        <div 
+          className="relative rounded-[3rem] overflow-hidden p-8 md:p-16 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center"
+          style={{ background: 'var(--bg-card)' }}
+        >
+          {/* Background Neon Orbs inside the box */}
+          <div
+            className="absolute w-[500px] h-[400px] blur-[120px] rounded-full top-1/2 left-0 -translate-y-1/2 pointer-events-none"
+            style={{ background: 'var(--accent-soft)', opacity: 0.6 }}
+          />
+          <div
+            className="absolute w-[400px] h-[300px] blur-[120px] rounded-full top-1/2 right-0 -translate-y-1/2 pointer-events-none"
+            style={{ background: 'var(--accent-soft)', opacity: 0.4 }}
+          />
         {/* Left Column: Mascot Chamber */}
         <div className="lg:col-span-6 flex justify-center items-center relative min-h-[400px]">
           {/* Holographic Chamber Circles */}
@@ -78,9 +80,9 @@ export default function MascotShowcase() {
               color: 'var(--text-2)',
             }}
           >
-            <div className="font-bold mb-1" style={{ color: 'var(--text-1)' }}>Telemetry Status</div>
-            <div>CPU Load: <span style={{ color: 'var(--cyan)' }}>2.4%</span></div>
-            <div>Sync Latency: <span style={{ color: 'var(--status-success)' }}>12ms</span></div>
+            <div className="font-bold mb-1" style={{ color: 'var(--text-1)' }}>Octo AI Status</div>
+            <div>Code Scanned: <span style={{ color: 'var(--status-success)' }}>24k LOC</span></div>
+            <div>Issues Found: <span style={{ color: 'var(--cyan)' }}>0</span></div>
           </motion.div>
         </div>
 
@@ -90,7 +92,7 @@ export default function MascotShowcase() {
             className="text-xs font-bold tracking-widest uppercase px-3.5 py-1.5"
             style={{ color: 'var(--indigo)' }}
           >
-            Meet Your Companion
+            Meet Your AI Companion
           </span>
           <h2
             className="text-4xl md:text-5xl font-black tracking-tight leading-tight"
@@ -102,23 +104,23 @@ export default function MascotShowcase() {
             className="text-base leading-relaxed max-w-xl"
             style={{ color: 'var(--text-2)' }}
           >
-            Octo integrates directly into your workspace pipelines. Monitoring git checkins, triggering smart sprint reports, and analyzing code snippets.
+            Octo is your dedicated AI code reviewer. It instantly analyzes your code snippets and tells you exactly how good your code is, catching potential bugs before they ever reach production.
           </p>
 
           <div className="grid grid-cols-2 gap-6 w-full pt-4">
             <div
               className="p-5 rounded-2xl flex flex-col justify-between"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+              style={{ background: 'var(--accent-soft)' }}
             >
-              <div className="text-2xl font-black" style={{ color: 'var(--cyan)' }}>Automated</div>
-              <div className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>Standups, task summaries & reports compiled automatically.</div>
+              <div className="text-2xl font-black" style={{ color: 'var(--cyan)' }}>Smart Review</div>
+              <div className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>Instantly analyzes code snippets for bugs, security issues, and performance.</div>
             </div>
             <div
               className="p-5 rounded-2xl flex flex-col justify-between"
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+              style={{ background: 'var(--accent-soft)' }}
             >
-              <div className="text-2xl font-black" style={{ color: 'var(--indigo)' }}>Interactive</div>
-              <div className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>Gamified project milestones and team achievements.</div>
+              <div className="text-2xl font-black" style={{ color: 'var(--indigo)' }}>Optimization</div>
+              <div className="text-xs mt-2" style={{ color: 'var(--text-2)' }}>Suggests cleaner, more efficient ways to write your logic.</div>
             </div>
           </div>
 
@@ -137,6 +139,7 @@ export default function MascotShowcase() {
               Try Octo Free
             </motion.a>
           </div>
+        </div>
         </div>
       </div>
     </section>

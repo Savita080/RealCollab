@@ -78,12 +78,9 @@ const PILLS = [
   { icon: FileText,        label: "Project Wiki" },
   { icon: Zap,             label: "Octo AI" },
   { icon: Users,           label: "Live Presence" },
-  { icon: LayoutDashboard, label: "Sprint Planning" },
   { icon: Code2,           label: "Code Review" },
-  { icon: MessageSquare,   label: "Video Calls" },
-  { icon: FileText,        label: "Meeting Notes" },
+  { icon: FileText,        label: "Notes" },
   { icon: Zap,             label: "AI Standups" },
-  { icon: Users,           label: "Real-time Cursor" },
 ];
 
 export default function Hero() {

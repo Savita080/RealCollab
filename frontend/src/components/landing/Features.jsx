@@ -59,10 +59,10 @@ function OctoVisual() {
         <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e" }}/>
       </div>
       <div style={{ fontFamily: "monospace", fontSize: 8, lineHeight: 1.6 }}>
-        <div style={{ color: w+"0.5)" }}>&gt; Octo analyzing...</div>
-        <div style={{ color: "#34d399" }}>✓ Sprint on track</div>
-        <div style={{ color: "#38bdf8" }}>→ 2 PRs pending</div>
-        <div style={{ color: "#c084fc" }}>★ 0 Blockers</div>
+        <div style={{ color: w+"0.5)" }}>&gt; Reviewing snippet...</div>
+        <div style={{ color: "#34d399" }}>✓ Logic looks solid</div>
+        <div style={{ color: "#38bdf8" }}>→ Suggesting refactor</div>
+        <div style={{ color: "#c084fc" }}>★ 0 Bugs found</div>
       </div>
     </div>
   );
@@ -209,8 +209,8 @@ const features = [
   {
     icon: Sparkles,
     title: "Octo AI",
-    sub: "Auto standups & blockers",
-    desc: "Octo AI reads your sprint activity and auto-generates daily standups, flags blockers and summarises the whole workspace in seconds.",
+    sub: "Smart Code Reviewer",
+    desc: "Octo AI instantly reviews your code snippets, catches potential bugs, and suggests optimizations before you ship.",
     rating: "4.9",
     bg: "linear-gradient(160deg, #db2777, #831843)",
     glow: "rgba(219,39,119,0.45)",
