@@ -52,12 +52,12 @@ function CriteriaCard({ item }) {
 
       {/* Tags */}
       {(item.issues?.length > 0 || item.suggestions?.length > 0) ? (
-        <div>
-          {item.issues?.slice(0, 2).map((iss, i) => (
-            <span key={i} style={bgIssue}>⚠ {iss.length > 38 ? iss.slice(0, 36) + '…' : iss}</span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {item.issues?.map((iss, i) => (
+            <span key={i} style={{ ...bgIssue, whiteSpace: 'normal', display: 'block', marginRight: 0 }}>⚠ {iss}</span>
           ))}
-          {item.suggestions?.slice(0, 1).map((sug, i) => (
-            <span key={i} style={bgSuggest}>💡 {sug.length > 38 ? sug.slice(0, 36) + '…' : sug}</span>
+          {item.suggestions?.map((sug, i) => (
+            <span key={i} style={{ ...bgSuggest, whiteSpace: 'normal', display: 'block', marginRight: 0 }}>💡 {sug}</span>
           ))}
         </div>
       ) : (
@@ -125,7 +125,7 @@ export default function AiReviewResult({ data }) {
       </div>
 
       {/* Criteria grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
         {parsed.agent_results.map(item => (
           <CriteriaCard key={item.criteria} item={item} />
         ))}
