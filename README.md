@@ -30,6 +30,14 @@
 
 [**🌐 Live Demo**](https://real-collab-frontend.vercel.app/) · [**📖 Documentation**](docs/api/backend_api.md) · [**🚀 Quick Start**](#-quick-start) · [**🧠 Architecture**](#%EF%B8%8F-architecture) · [**💎 Pricing**](#-pricing) · [**🗺️ Roadmap**](#%EF%B8%8F-roadmap)
 
+---
+### Test Account
+- Email: `test@test.com`
+- Password: `test1234`
+- Workspace role in **test workspace**: **Member** (viewer permissions)
+- In **DevCollab** workspace: workspace-level **Viewer**
+- Project-level role in **ADD Ons** and **BUGS** projects: **Viewer**
+
 <br />
 
 ---
