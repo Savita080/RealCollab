@@ -28,7 +28,7 @@
 
 <br />
 
-[**🌐 Live Demo**](#) · [**📖 Documentation**](docs/api/backend_api.md) · [**🚀 Quick Start**](#-quick-start) · [**🧠 Architecture**](#%EF%B8%8F-architecture) · [**💎 Pricing**](#-pricing) · [**🗺️ Roadmap**](#%EF%B8%8F-roadmap)
+[**🌐 Live Demo**](https://real-collab-frontend.vercel.app/) · [**📖 Documentation**](docs/api/backend_api.md) · [**🚀 Quick Start**](#-quick-start) · [**🧠 Architecture**](#%EF%B8%8F-architecture) · [**💎 Pricing**](#-pricing) · [**🗺️ Roadmap**](#%EF%B8%8F-roadmap)
 
 <br />
 
