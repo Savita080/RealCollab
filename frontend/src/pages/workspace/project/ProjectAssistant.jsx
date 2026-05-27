@@ -5,6 +5,7 @@ import { ai as aiApi } from '../../../lib/api';
 import { useUI } from '../../../store/ui';
 import Button from '../../../components/ui/Button';
 import { Textarea, Select } from '../../../components/ui/Input';
+import AiReviewResult from '../../../components/ai/AiReviewResult';
 import s from '../../../styles/modules/AIPanel.module.css';
 
 const LANGUAGES = ['python', 'java', 'javascript', 'c++', 'go'];
@@ -140,9 +141,15 @@ export default function ProjectAssistant() {
               📋 Copy
             </button>
           </div>
-          <pre className={s.resultContent}>
-            {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
-          </pre>
+          {activeAction === 'review' ? (
+            <div style={{ marginTop: 16 }}>
+              <AiReviewResult data={result} />
+            </div>
+          ) : (
+            <pre className={s.resultContent}>
+              {typeof result === 'string' ? result : JSON.stringify(result, null, 2)}
+            </pre>
+          )}
         </div>
       )}
     </div>

@@ -12,6 +12,9 @@ import s from '../styles/modules/Snippets.module.css';
 
 const LANGS = ['python', 'java', 'javascript', 'c++', 'go'];
 
+import AiReviewResult from '../components/ai/AiReviewResult';
+
+// ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function Snippets() {
   const { current: ws, currentProject } = useWorkspace();
@@ -20,9 +23,9 @@ export default function Snippets() {
   const [search, setSearch] = useState('');
   const [filterTag, setFilterTag] = useState('');
   const [modal, setModal] = useState(false);
-  const [editSnippet, setEditSnippet] = useState(null); // snippet being edited
-  const [aiModal, setAiModal] = useState(null);        // snippet for AI review
-  const [aiResult, setAiResult] = useState('');
+  const [editSnippet, setEditSnippet] = useState(null);
+  const [aiModal, setAiModal] = useState(null);
+  const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [form, setForm] = useState({ title: '', language: 'javascript', code: '', tags: '', description: '' });
   const debouncedSearch = useDebounce(search);
@@ -84,13 +87,20 @@ export default function Snippets() {
   const runAiReview = async () => {
     if (!aiModal) return;
     setAiLoading(true);
-    setAiResult('');
+    setAiResult(null);
     try {
-      const { data } = await aiApi.review({ code: aiModal.code, language: aiModal.language, snippetId: aiModal._id, projectId: currentProject._id });
-      setAiResult(typeof data === 'string' ? data : JSON.stringify(data, null, 2));
+      const { data } = await aiApi.review({
+        code: aiModal.code,
+        language: aiModal.language,
+        snippetId: aiModal._id,
+        projectId: currentProject._id,
+      });
+      setAiResult(data);
     } catch (err) {
       setAiResult('Error: ' + (err.response?.data?.message || err.message));
-    } finally { setAiLoading(false); }
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (!currentProject) return <div className={s.empty}>Select a project to view snippets.</div>;
@@ -122,7 +132,7 @@ export default function Snippets() {
             snippet={sn}
             onDelete={() => handleDelete(sn)}
             onEdit={() => openEdit(sn)}
-            onAiReview={() => { setAiModal(sn); setAiResult(''); }}
+            onAiReview={() => { setAiModal(sn); setAiResult(null); }}
           />
         ))}
       </div>
@@ -149,17 +159,40 @@ export default function Snippets() {
       {/* AI Review modal */}
       <Modal open={!!aiModal} onClose={() => setAiModal(null)} title="AI Code Review" size="lg">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ background: 'var(--bg-2)', borderRadius: 8, padding: '12px 16px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-2)', maxHeight: 200, overflow: 'auto' }}>
+
+          {/* Code preview */}
+          <div style={{
+            background: 'var(--bg-2)', borderRadius: 8, padding: '12px 16px',
+            fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-2)',
+            maxHeight: 180, overflow: 'auto',
+          }}>
             <pre style={{ margin: 0 }}>{aiModal?.code}</pre>
           </div>
+
+          {/* States */}
           {!aiResult && !aiLoading && (
             <Button variant="primary" size="md" onClick={runAiReview}>Run AI Review</Button>
           )}
-          {aiLoading && <p style={{ color: 'var(--text-3)', textAlign: 'center' }}>🤖 Reviewing code…</p>}
-          {aiResult && (
-            <pre style={{ background: 'var(--bg-2)', padding: 16, borderRadius: 8, fontSize: 12, color: 'var(--text-1)', whiteSpace: 'pre-wrap', maxHeight: 300, overflow: 'auto' }}>{aiResult}</pre>
+
+          {aiLoading && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: '20px 0' }}>
+              <div style={{
+                width: 36, height: 36, border: '3px solid var(--bg-3)',
+                borderTop: '3px solid var(--accent, #6c63ff)',
+                borderRadius: '50%', animation: 'spin 0.8s linear infinite',
+              }} />
+              <p style={{ color: 'var(--text-3)', fontSize: 13, margin: 0 }}>Reviewing your code…</p>
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
           )}
-          {aiResult && <Button variant="ghost" size="sm" onClick={runAiReview}>Re-run</Button>}
+
+          {/* Beautiful review result */}
+          {aiResult && !aiLoading && (
+            <>
+              <AiReviewResult data={aiResult} />
+              <Button variant="ghost" size="sm" onClick={runAiReview}>Re-run review</Button>
+            </>
+          )}
         </div>
       </Modal>
     </div>
