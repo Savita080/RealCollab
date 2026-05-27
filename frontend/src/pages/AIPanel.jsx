@@ -19,42 +19,75 @@ const PANELS = [
 const CODE_LANGS = ['javascript', 'typescript', 'python', 'go', 'java', 'c++', 'rust', 'php', 'ruby', 'swift'];
 
 // ── Structured result renderers per panel type ─────────────────────────────
+const toSafeArray = (value) => (Array.isArray(value) ? value : []);
+
+const toPercent = (value, min = 0, max = 100) => {
+  const numeric = Number(value);
+  if (Number.isNaN(numeric)) return 0;
+  return Math.max(min, Math.min(max, numeric));
+};
+
 function StandupResult({ data }) {
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
-  const { done, today, blockers, summary } = data;
+  const { greeting, report_type, duration_ms } = data;
+  const contributorReports = toSafeArray(data.contributor_reports);
   return (
     <div className={s.structured}>
-      {done && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-success)' }}>✓ DONE</span>
-          <p className={s.sText}>{done}</p>
+      {greeting && <h3 className={s.greeting}>{greeting}</h3>}
+      {report_type && <span className={s.reportType}>{report_type} report</span>}
+      <div className={s.reportGrid}>
+        {contributorReports.map((r, i) => {
+          const pulseScore = toPercent(r.activity_pulse?.score);
+          return (
+        <div key={i} className={s.contribCard}>
+          <h4 className={s.contribProject}>{r.project_name || r.contributor_name || `Contributor ${i + 1}`}</h4>
+          {r.tasks_summary && (
+            <div className={s.section}>
+              <span className={s.sLabel}>📋 Tasks</span>
+              <p className={s.markdownBlock}>{r.tasks_summary}</p>
+            </div>
+          )}
+          {r.chat_summary && (
+            <div className={s.section}>
+              <span className={s.sLabel}>💬 Chat</span>
+              <p className={s.markdownBlock}>{r.chat_summary}</p>
+            </div>
+          )}
+          {r.wiki_summary && (
+            <div className={s.section}>
+              <span className={s.sLabel}>📄 Wiki</span>
+              <p className={s.markdownBlock}>{r.wiki_summary}</p>
+            </div>
+          )}
+          {r.activity_pulse && (
+            <div className={s.pulseRow}>
+              <span className={s.pulseScore}>{Math.round(pulseScore)}</span>
+              <div className={s.pulseMeta}>
+                <span className={s.sLabel}>Activity Pulse</span>
+                <div className={s.pulseTrack}>
+                  <div className={s.pulseFill} style={{ width: `${pulseScore}%` }} />
+                </div>
+                <div className={s.pulseChips}>
+                  <span className={s.pulseMini}>💬 {r.activity_pulse.chat_count ?? 0}</span>
+                  <span className={s.pulseMini}>📋 {r.activity_pulse.task_count ?? 0}</span>
+                  <span className={s.pulseMini}>📄 {r.activity_pulse.wiki_count ?? 0}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-      {today && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--indigo)' }}>→ TODAY</span>
-          <p className={s.sText}>{today}</p>
-        </div>
-      )}
-      {blockers && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-warning)' }}>⚠ BLOCKERS</span>
-          <p className={s.sText}>{blockers}</p>
-        </div>
-      )}
-      {summary && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-info)' }}>◎ SUMMARY</span>
-          <p className={s.sText}>{summary}</p>
-        </div>
-      )}
+          );
+        })}
+      </div>
+      {contributorReports.length === 0 && <p className={s.emptyResult}>No contributor reports in the latest standup payload.</p>}
+      {duration_ms != null && <span className={s.durationBadge}>⏱ {duration_ms}ms</span>}
     </div>
   );
 }
 
 function BlockersResult({ data }) {
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
-  const results = data.results ?? data.bottlenecks ?? [];
+  const results = toSafeArray(data.results);
   const message = data.message;
   const total = data.total_active_tasks ?? 0;
   const stalled = data.stalled_tasks_count ?? results.length;
@@ -62,15 +95,41 @@ function BlockersResult({ data }) {
     <div className={s.structured}>
       <div className={s.statRow}>
         <span className={s.statChip}>{total} IN PROGRESS</span>
-        <span className={s.statChip} style={{ '--cc': 'var(--status-warning)' }}>{stalled} STALLED</span>
+        <span className={s.statChip}>{stalled} STALLED</span>
       </div>
       {message && <p className={s.sText} style={{ marginTop: 8 }}>{message}</p>}
       {results.map((item, i) => (
         <div key={i} className={s.blockerCard}>
-          <div className={s.blockerTitle}>{item.task_title || item.title}</div>
-          {item.assignee && <span className={s.blockerMeta}>Assignee: {item.assignee}</span>}
-          {item.reason && <p className={s.sText}>{item.reason}</p>}
-          {item.suggestion && <p className={s.suggestion}>{item.suggestion}</p>}
+          <div className={s.blockerTitle}>{item.task_title || item.title || `Blocked task ${i + 1}`}</div>
+          {item.ai_diagnosis && <p className={s.diagnosisText}>{item.ai_diagnosis}</p>}
+          <div className={s.metaGrid}>
+            {(item.duration_hours != null || item.stalled_duration_hours != null) && (
+              <div className={s.metaItem}>
+                <span className={s.metaKey}>Stalled</span>
+                <span className={s.metaVal}>{item.duration_hours ?? item.stalled_duration_hours}h</span>
+              </div>
+            )}
+            {item.assignee && (
+              <div className={s.metaItem}>
+                <span className={s.metaKey}>Assignee</span>
+                <span className={s.metaVal}>{item.assignee}</span>
+              </div>
+            )}
+          </div>
+          {toSafeArray(item.blocker_categories).length > 0 && (
+            <div className={s.statRow}>
+              {item.blocker_categories.map((cat) => (
+                <span key={cat} className={`${s.categoryChip} ${s.catBlocked}`}>{cat}</span>
+              ))}
+            </div>
+          )}
+          {toSafeArray(item.mentioned_users).length > 0 && (
+            <div className={s.statRow}>
+              {item.mentioned_users.map((user) => (
+                <span key={user} className={s.mentionChip}>@{user}</span>
+              ))}
+            </div>
+          )}
         </div>
       ))}
       {results.length === 0 && !message && <p className={s.emptyResult}>No bottlenecks detected 🎉</p>}
@@ -79,9 +138,6 @@ function BlockersResult({ data }) {
 }
 
 function SummaryResult({ data }) {
-  // #region agent log
-  fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:SummaryResult',message:'SummaryResult render',data:{dataType:typeof data,keys:data&&typeof data==='object'?Object.keys(data):null,healthScoreType:data?.health_score!=null?typeof data.health_score:null,taskBreakdownType:data?.task_breakdown!=null?typeof data.task_breakdown:null,taskBreakdownValueTypes:data?.task_breakdown&&typeof data.task_breakdown==='object'?Object.fromEntries(Object.entries(data.task_breakdown).map(([k,v])=>[k,typeof v])):null},timestamp:Date.now(),hypothesisId:'A',runId:'post-fix'})}).catch(()=>{});
-  // #endregion
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
 
   const project_name = data.project_name;
@@ -96,6 +152,10 @@ function SummaryResult({ data }) {
       : null;
   const breakdown = data.task_breakdown;
   const insights = data.key_insights ?? data.recommendations ?? [];
+  const dailyCompletions = toSafeArray(data.velocity?.daily_completions);
+  const upcomingDeadlines = toSafeArray(data.upcoming_deadlines);
+  const memberContributions = toSafeArray(data.member_contributions);
+  const maxVelocity = Math.max(...dailyCompletions.map((v) => Number(v.count ?? v.value ?? 0)), 1);
 
   const statusChips = breakdown?.by_status
     ? Object.entries(breakdown.by_status).map(([status, info]) => (
@@ -159,6 +219,66 @@ function SummaryResult({ data }) {
           </ul>
         </div>
       )}
+      {dailyCompletions.length > 0 && (
+        <div className={s.section}>
+          <span className={s.sLabel}>Velocity</span>
+          <div className={s.velocityRow}>
+            {dailyCompletions.map((entry, i) => {
+              const value = Number(entry.count ?? entry.value ?? 0);
+              const heightPct = Math.max(8, Math.round((value / maxVelocity) * 100));
+              return (
+                <div
+                  key={`${entry.date ?? i}`}
+                  className={s.velocityBar}
+                  style={{ height: `${heightPct}%` }}
+                  title={`${entry.date ?? `Day ${i + 1}`}: ${value}`}
+                />
+              );
+            })}
+          </div>
+          <div className={s.velocityLabels}>
+            {dailyCompletions.map((entry, i) => (
+              <span key={`${entry.date ?? i}-label`}>{entry.date ? entry.date.slice(5) : i + 1}</span>
+            ))}
+          </div>
+        </div>
+      )}
+      {upcomingDeadlines.length > 0 && (
+        <div className={s.section}>
+          <span className={s.sLabel}>Upcoming Deadlines</span>
+          {upcomingDeadlines.map((deadline, i) => {
+            const days = Number(deadline.days_remaining ?? deadline.days ?? 0);
+            const urgencyClass = days < 0 ? s.overdue : days <= 3 ? s.dueSoon : s.dueSafe;
+            return (
+              <div key={`${deadline.title ?? deadline.task ?? i}`} className={s.deadlineItem}>
+                <span className={s.deadlineTitle}>{deadline.title ?? deadline.task ?? `Deadline ${i + 1}`}</span>
+                <span className={`${s.deadlineDays} ${urgencyClass}`}>
+                  {days < 0 ? `${Math.abs(days)}d overdue` : `${days}d left`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {memberContributions.length > 0 && (
+        <div className={s.section}>
+          <span className={s.sLabel}>Member Contributions</span>
+          {memberContributions.map((member, i) => {
+            const completed = Number(member.completed_tasks ?? member.completed ?? 0);
+            const touched = Number(member.touched_tasks ?? member.total_tasks ?? completed);
+            const ratio = touched > 0 ? Math.round((completed / touched) * 100) : 0;
+            return (
+              <div key={`${member.name ?? member.user ?? i}`} className={s.memberRow}>
+                <span className={s.memberName}>{member.name ?? member.user ?? `Member ${i + 1}`}</span>
+                <span className={s.memberStat}>{completed}/{touched} tasks</span>
+                <div className={s.memberBar}>
+                  <div className={s.memberBarFill} style={{ width: `${ratio}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {!summaryText && !project_name && healthScore == null && (
         <pre className={s.result}>{JSON.stringify(data, null, 2)}</pre>
       )}
@@ -168,58 +288,72 @@ function SummaryResult({ data }) {
 
 function ReviewResult({ data }) {
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
-  const { bugs, performance, readability, suggestions, overall } = data;
+  const weightedScore = data.weighted_score ?? data.overall_score;
+  const agentResults = toSafeArray(data.agent_results);
   return (
     <div className={s.structured}>
-      {overall && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-info)' }}>Overall</span>
-          <p className={s.sText}>{overall}</p>
+      {weightedScore != null && (
+        <div className={s.scoreHeader}>
+          <span className={s.sLabel}>Weighted Score</span>
+          <span className={s.bigScore}>{Number(weightedScore).toFixed(1)}</span>
         </div>
       )}
-      {bugs && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-danger)' }}>🐛 Bugs</span>
-          <p className={s.sText}>{typeof bugs === 'string' ? bugs : JSON.stringify(bugs)}</p>
-        </div>
-      )}
-      {performance && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-warning)' }}>⚡ Performance</span>
-          <p className={s.sText}>{typeof performance === 'string' ? performance : JSON.stringify(performance)}</p>
-        </div>
-      )}
-      {readability && (
-        <div className={s.section}>
-          <span className={s.sLabel} style={{ color: 'var(--status-success)' }}>📖 Readability</span>
-          <p className={s.sText}>{typeof readability === 'string' ? readability : JSON.stringify(readability)}</p>
-        </div>
-      )}
-      {suggestions?.length > 0 && (
-        <div className={s.section}>
-          <span className={s.sLabel}>💡 Suggestions</span>
-          <ul className={s.recList}>
-            {suggestions.map((s, i) => <li key={i}>{s}</li>)}
-          </ul>
-        </div>
-      )}
-      {!overall && !bugs && !performance && <pre className={s.result}>{JSON.stringify(data, null, 2)}</pre>}
+      <div className={s.agentGrid}>
+        {agentResults.map((agent, i) => {
+          const score = Number(agent.score ?? agent.weighted_score ?? 0);
+          const scoreClass = score >= 80 ? s.agentScoreGood : score >= 60 ? s.agentScoreWarn : s.agentScoreBad;
+          return (
+            <div key={`${agent.criteria ?? agent.name ?? i}`} className={s.agentCard}>
+              <div className={s.agentHeader}>
+                <span className={s.agentCriteria}>{agent.criteria ?? agent.name ?? `Criteria ${i + 1}`}</span>
+                {agent.score != null && <span className={`${s.agentScore} ${scoreClass}`}>{score.toFixed(1)}</span>}
+              </div>
+              {toSafeArray(agent.issues).length > 0 && (
+                <div className={s.section}>
+                  <span className={s.sLabel}>Issues</span>
+                  <ul className={s.issueList}>
+                    {agent.issues.map((issue, idx) => <li key={idx}>{issue}</li>)}
+                  </ul>
+                </div>
+              )}
+              {toSafeArray(agent.suggestions).length > 0 && (
+                <div className={s.section}>
+                  <span className={s.sLabel}>Suggestions</span>
+                  <ul className={s.suggList}>
+                    {agent.suggestions.map((suggestion, idx) => <li key={idx}>{suggestion}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {weightedScore == null && agentResults.length === 0 && <pre className={s.result}>{JSON.stringify(data, null, 2)}</pre>}
     </div>
   );
 }
 
 function PlanResult({ data }) {
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
+  const featureTitle = data.feature_title ?? data.title;
   const tasks = data.tasks ?? data.subtasks ?? (Array.isArray(data) ? data : []);
   if (tasks.length === 0) return <pre className={s.result}>{JSON.stringify(data, null, 2)}</pre>;
   return (
     <div className={s.structured}>
+      {featureTitle && <h3 className={s.featureTitle}>{featureTitle}</h3>}
       <ol className={s.planList}>
         {tasks.map((t, i) => (
           <li key={i} className={s.planItem}>
             <strong>{t.title || t.name || t}</strong>
             {t.description && <p className={s.sText}>{t.description}</p>}
-            {t.priority && <span className={s.statChip}>{t.priority}</span>}
+            {(t.priority || toSafeArray(t.labels).length > 0) && (
+              <div className={s.planMeta}>
+                {t.priority && <span className={s.statChip}>{t.priority}</span>}
+                {toSafeArray(t.labels).map((label) => (
+                  <span key={`${t.title}-${label}`} className={s.labelChip}>{label}</span>
+                ))}
+              </div>
+            )}
           </li>
         ))}
       </ol>

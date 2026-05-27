@@ -86,6 +86,11 @@
 
 /* Structured output styles */
 .structured { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.reportGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
 
 .section { display: flex; flex-direction: column; gap: 6px; }
 .sLabel {
@@ -139,6 +144,163 @@
   font-size: 12px; font-weight: 600; color: var(--text-2);
   background: var(--bg-2); border: 1px solid var(--border);
   padding: 4px 12px; border-radius: 99px; margin-top: 10px;
+}
+
+/* ── Standup ─────────────────────────────────────────────────── */
+.greeting { font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0 0 4px; }
+.reportType { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); font-family: var(--font-mono); }
+.contribCard {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.contribProject { font-size: 14px; font-weight: 700; color: var(--text-1); margin: 0; }
+.markdownBlock {
+  font-size: 13px; color: var(--text-2); line-height: 1.65; margin: 0;
+  white-space: pre-wrap; word-break: break-word;
+}
+.pulseRow {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 12px; background: var(--accent-soft); border-radius: var(--r-sm);
+}
+.pulseScore {
+  font-size: 20px; font-weight: 800; color: var(--indigo);
+  font-family: var(--font-mono); min-width: 48px;
+}
+.pulseMini { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
+.pulseMeta { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+.pulseTrack { width: 100%; height: 6px; background: var(--bg-2); border-radius: 99px; overflow: hidden; }
+.pulseFill { height: 100%; background: var(--indigo); border-radius: 99px; transition: width 0.35s ease; }
+.pulseChips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Code Review ─────────────────────────────────────────────── */
+.scoreHeader { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.agentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+.bigScore {
+  font-size: 28px; font-weight: 800; color: var(--indigo);
+  font-family: var(--font-mono); line-height: 1;
+}
+.langBadge {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 3px 10px; border-radius: 99px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--text-2); font-family: var(--font-mono); text-transform: uppercase;
+}
+.agentCard {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.agentHeader { display: flex; align-items: center; justify-content: space-between; }
+.agentCriteria { font-size: 13px; font-weight: 700; color: var(--text-1); text-transform: capitalize; }
+.agentScore { font-size: 13px; font-weight: 800; font-family: var(--font-mono); }
+.agentScoreGood { color: var(--status-success); }
+.agentScoreWarn { color: var(--status-warning); }
+.agentScoreBad { color: var(--status-danger); }
+.agentSummary { font-size: 12px; color: var(--text-3); margin: 0; font-style: italic; }
+.issueList, .suggList { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.issueList li { font-size: 12px; color: var(--status-danger); line-height: 1.5; }
+.suggList li { font-size: 12px; color: var(--status-success); line-height: 1.5; }
+
+/* ── Blockers ────────────────────────────────────────────────── */
+.diagnosisText {
+  font-size: 13px; color: var(--text-1); line-height: 1.6; margin: 0;
+  padding: 8px 12px; background: var(--accent-soft); border-radius: var(--r-sm);
+  border-left: 3px solid var(--indigo);
+}
+.metaGrid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+}
+.metaItem {
+  display: flex; flex-direction: column; gap: 2px;
+  font-size: 11px; font-family: var(--font-mono);
+}
+.metaKey { color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-size: 9px; font-weight: 700; }
+.metaVal { color: var(--text-1); font-weight: 600; }
+.categoryChip {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 99px; font-family: var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.catBlocked { background: rgba(239,68,68,0.12); color: var(--status-danger); border: 1px solid rgba(239,68,68,0.25); }
+.catSafe { background: rgba(34,197,94,0.12); color: var(--status-success); border: 1px solid rgba(34,197,94,0.25); }
+.mentionChip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: 600; padding: 3px 10px;
+  border-radius: 99px; background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--text-2); font-family: var(--font-mono);
+}
+.urgencyBar {
+  height: 4px; border-radius: 99px; background: var(--bg-2); overflow: hidden; width: 100%; max-width: 160px;
+}
+.urgencyFill { height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+
+/* ── Summary extras: velocity, deadlines, members ────────────── */
+.velocityRow { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
+.velocityBar {
+  flex: 1; min-width: 16px; background: var(--indigo); border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease; opacity: 0.7;
+}
+.velocityBar:hover { opacity: 1; }
+.velocityLabels { display: flex; gap: 3px; }
+.velocityLabels span {
+  flex: 1; min-width: 16px; text-align: center;
+  font-size: 9px; color: var(--text-3); font-family: var(--font-mono);
+}
+.trendBadge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 99px; font-family: var(--font-mono);
+}
+.trendUp { background: rgba(34,197,94,0.12); color: var(--status-success); }
+.trendDown { background: rgba(239,68,68,0.12); color: var(--status-danger); }
+.trendFlat { background: var(--bg-2); color: var(--text-3); }
+
+.deadlineItem {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.deadlineItem:last-child { border-bottom: none; }
+.deadlineTitle { flex: 1; color: var(--text-1); font-weight: 500; }
+.deadlineDays { font-weight: 700; font-family: var(--font-mono); font-size: 11px; }
+.overdue { color: var(--status-danger); }
+.dueSoon { color: var(--status-warning); }
+.dueSafe { color: var(--status-success); }
+
+.memberRow {
+  display: flex; align-items: center; gap: 10px; padding: 6px 0;
+  border-bottom: 1px solid var(--border); font-size: 12px;
+}
+.memberRow:last-child { border-bottom: none; }
+.memberAvatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.memberName { flex: 1; color: var(--text-1); font-weight: 500; }
+.memberStat { font-family: var(--font-mono); color: var(--text-3); font-size: 11px; }
+.memberBar { width: 60px; height: 4px; border-radius: 99px; background: var(--bg-2); overflow: hidden; }
+.memberBarFill { height: 100%; border-radius: 99px; background: var(--status-success); transition: width 0.3s; }
+
+/* ── Plan labels ─────────────────────────────────────────────── */
+.labelChip {
+  font-size: 9px; font-weight: 700; padding: 1px 7px;
+  border-radius: 99px; background: var(--bg-2); border: 1px solid var(--border);
+  color: var(--text-3); font-family: var(--font-mono); text-transform: lowercase;
+}
+.planMeta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.featureTitle { font-size: 15px; font-weight: 700; color: var(--indigo); margin: 0; }
+
+/* ── Duration badge ──────────────────────────────────────────── */
+.durationBadge {
+  font-size: 10px; color: var(--text-3); font-family: var(--font-mono);
+  text-align: right; margin-top: 4px;
 }
 
 @media (max-width: 900px) { .body { grid-template-columns: 1fr; } }
