@@ -43,7 +43,6 @@
 .output {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--r-lg); display: flex; flex-direction: column; overflow: hidden;
-  height: calc(100vh - 150px); min-height: 500px;
 }
 .outputHeader {
   display: flex; align-items: center; justify-content: space-between;
