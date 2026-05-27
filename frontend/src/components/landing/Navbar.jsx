@@ -31,22 +31,45 @@ export default function Navbar() {
 
         {/* Mid Navigation Links */}
         <div className="hidden md:flex items-right gap-9 font-bold text-lg">
-          {["Features", "Pricing", "About"].map((link) => (
-            <a
-              key={link}
-              href={`/#${link.toLowerCase()}`}
-              className="relative transition-colors duration-300 group"
-              style={{ color: 'var(--text-2)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-1)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-2)')}
-            >
-              {link}
+          {/* Hash anchors use <a> so the browser handles scroll; routes use <Link> */}
+          {[
+            { label: 'Features', href: '/#features',  isHash: true },
+            { label: 'Pricing',  href: '/#pricing',   isHash: true },
+            { label: 'About',    href: '/about',       isHash: false },
+            { label: 'Contact',  href: '/contact',     isHash: false },
+          ].map((n) => {
+            const cls = "relative transition-colors duration-300 group";
+            const style = { color: 'var(--text-2)' };
+            const underline = (
               <span
                 className="absolute bottom-[-4px] left-0 w-0 h-[2px] transition-all duration-300 group-hover:w-full"
                 style={{ backgroundImage: 'linear-gradient(to right, var(--indigo), var(--cyan))' }}
               />
-            </a>
-          ))}
+            );
+            return n.isHash ? (
+              <a
+                key={n.label}
+                href={n.href}
+                className={cls}
+                style={style}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-2)')}
+              >
+                {n.label}{underline}
+              </a>
+            ) : (
+              <Link
+                key={n.label}
+                to={n.href}
+                className={cls}
+                style={style}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-1)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-2)')}
+              >
+                {n.label}{underline}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Action Buttons */}

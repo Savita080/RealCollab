@@ -13,6 +13,8 @@ import Register     from './pages/Register';
 import AcceptInvite from './pages/AcceptInvite';
 import Profile      from './pages/Profile';
 import Subscribe    from './pages/Subscribe';
+import About        from './pages/About';
+import Contact      from './pages/Contact';
 
 // Workspace tier
 import Workspaces        from './pages/workspace/Workspaces';
@@ -65,6 +67,8 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/"         element={<LandingPage />} />
+        <Route path="/about"    element={<About />} />
+        <Route path="/contact"  element={<Contact />} />
         <Route path="/login"    element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/invite/accept/:token" element={<AcceptInvite />} />
