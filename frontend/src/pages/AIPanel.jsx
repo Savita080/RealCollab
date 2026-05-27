@@ -27,6 +27,17 @@ const toPercent = (value, min = 0, max = 100) => {
   return Math.max(min, Math.min(max, numeric));
 };
 
+const displayText = (value, keys = ['name', 'title', 'label', 'category', 'user_name']) => {
+  if (value == null) return '';
+  if (typeof value === 'string' || typeof value === 'number') return String(value);
+  if (typeof value === 'object') {
+    for (const key of keys) {
+      if (value[key] != null) return String(value[key]);
+    }
+  }
+  return '';
+};
+
 function StandupResult({ data }) {
   if (typeof data === 'string') return <pre className={s.result}>{data}</pre>;
   const { greeting, report_type, duration_ms } = data;
@@ -109,25 +120,33 @@ function BlockersResult({ data }) {
                 <span className={s.metaVal}>{item.duration_hours ?? item.stalled_duration_hours}h</span>
               </div>
             )}
-            {item.assignee && (
+            {(item.assignee_name || item.assignee) && (
               <div className={s.metaItem}>
                 <span className={s.metaKey}>Assignee</span>
-                <span className={s.metaVal}>{item.assignee}</span>
+                <span className={s.metaVal}>
+                  {displayText(item.assignee, ['name', 'user_name']) || item.assignee_name}
+                </span>
               </div>
             )}
           </div>
           {toSafeArray(item.blocker_categories).length > 0 && (
             <div className={s.statRow}>
-              {item.blocker_categories.map((cat) => (
-                <span key={cat} className={`${s.categoryChip} ${s.catBlocked}`}>{cat}</span>
-              ))}
+              {item.blocker_categories.map((cat, idx) => {
+                const label = displayText(cat, ['category', 'name', 'label']) || `Category ${idx + 1}`;
+                return (
+                  <span key={`${label}-${idx}`} className={`${s.categoryChip} ${s.catBlocked}`}>{label}</span>
+                );
+              })}
             </div>
           )}
           {toSafeArray(item.mentioned_users).length > 0 && (
             <div className={s.statRow}>
-              {item.mentioned_users.map((user) => (
-                <span key={user} className={s.mentionChip}>@{user}</span>
-              ))}
+              {item.mentioned_users.map((user, idx) => {
+                const name = displayText(user, ['user_name', 'name', 'user_id']) || `user-${idx + 1}`;
+                return (
+                  <span key={`${name}-${idx}`} className={s.mentionChip}>@{name}</span>
+                );
+              })}
             </div>
           )}
         </div>
