@@ -36,6 +36,30 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String,
         default: null
+    },
+    // Per-user subscription. Applies to every workspace the user owns.
+    subscription: {
+        plan: {
+            type: String,
+            enum: ['FREE', 'PRO'],
+            default: 'FREE'
+        },
+        razorpayPaymentId: {
+            type: String,
+            default: null
+        },
+        currentPeriodEnd: {
+            type: Date,
+            default: null
+        },
+        aiRequestsUsed: {
+            type: Number,
+            default: 0
+        },
+        aiRequestsResetAt: {
+            type: Date,
+            default: () => new Date(new Date().setMonth(new Date().getMonth() + 1))
+        }
     }
 }, {
     timestamps: true

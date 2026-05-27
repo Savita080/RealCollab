@@ -1,5 +1,33 @@
 /* pages/Subscribe.module.css */
-.page { display: flex; flex-direction: column; gap: 28px; max-width: 720px; }
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 32px 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.backBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-2); border-radius: var(--r-md);
+  padding: 7px 12px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: var(--font-body);
+  transition: all 0.15s;
+}
+.backBtn:hover {
+  background: var(--accent-soft);
+  color: var(--text-1);
+  border-color: var(--border-hover);
+}
 
 .header {}
 .title { font-size: 22px; font-weight: 700; color: var(--text-1); margin: 0; font-family: var(--font-display); }
@@ -30,7 +58,7 @@
 .barVal { font-size: 12px; color: var(--text-2); margin-top: 2px; }
 
 /* Plans comparison grid */
-.plansGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.plansGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 .planCard {
   background: var(--bg-card); border: 1px solid var(--border);

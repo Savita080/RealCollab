@@ -212,7 +212,7 @@ export default function ProjectSidebar({ project, canEdit, role }) {
 
       {/* User footer */}
       <div className={wsStyles.userFoot}>
-        <Avatar name={user?.name || 'U'} size={32} />
+        <Avatar name={user?.name || 'U'} src={user?.avatar} size={32} />
         <div className={wsStyles.userInfo}>
           <button className={wsStyles.userNameBtn} onClick={() => navigate('/profile')} title="Edit profile">
             {firstName}

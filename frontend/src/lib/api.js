@@ -180,12 +180,12 @@ export const ai = {
   review:    d              => api.post('/ai/review-code', d),
 };
 
-// ── Subscriptions (Razorpay) ──────────────────────────
+// ── Subscriptions (Razorpay) — per-user, no workspace context ─────────
 export const subscriptions = {
-  subscribe: (wid)    => api.post(`/subscriptions/${wid}/subscribe`),
-  verify:    (wid, d) => api.post(`/subscriptions/${wid}/verify`, d),
-  cancel:    (wid)    => api.post(`/subscriptions/${wid}/cancel`),
-  getStatus: (wid)    => api.get(`/subscriptions/${wid}/subscription`),
+  subscribe: ()  => api.post(`/subscriptions/subscribe`),
+  verify:    (d) => api.post(`/subscriptions/verify`, d),
+  cancel:    ()  => api.post(`/subscriptions/cancel`),
+  getStatus: ()  => api.get(`/subscriptions/status`),
 };
 
 // ============================================================================

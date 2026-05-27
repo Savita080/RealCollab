@@ -127,6 +127,19 @@ export default function WorkspaceTopBar({ workspace, role }) {
 
       {/* Right controls */}
       <div className={s.right}>
+        {(() => {
+          const isPro = user?.subscription?.plan === 'PRO';
+          return (
+            <Link
+              to="/subscribe"
+              className={`${s.planPill} ${isPro ? s.planPillPro : s.planPillFree}`}
+              title={isPro ? 'PRO plan — manage subscription' : 'FREE plan — upgrade to PRO'}
+            >
+              {isPro ? '✦ PRO' : 'FREE'}
+            </Link>
+          );
+        })()}
+
         <div className={s.notifWrap} ref={notifRef}>
           <button
             className={s.iconBtn}

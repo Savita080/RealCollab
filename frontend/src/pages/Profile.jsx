@@ -1,8 +1,11 @@
 // pages/Profile.jsx — User profile editor
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import { useAuth } from '../store/auth';
 import { useUI } from '../store/ui';
 import { useTheme } from '../store/theme';
+import { subscriptions as subApi } from '../lib/api';
 import Button from '../components/ui/Button';
 import { Input, Textarea } from '../components/ui/Input';
 import ProfileCardBadge from '../components/layout/ProfileCardBadge';
@@ -21,6 +24,7 @@ export default function Profile() {
   const { user, updateProfile } = useAuth();
   const { toast } = useUI();
   const { themes, current: currentTheme, setTheme } = useTheme();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     name:      user?.name      || '',
@@ -32,6 +36,18 @@ export default function Profile() {
   const [skillInput, setSkillInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [subStatus, setSubStatus] = useState(null);
+
+  useEffect(() => {
+    subApi.getStatus()
+      .then(({ data }) => setSubStatus(data))
+      .catch(() => setSubStatus({ plan: user?.subscription?.plan || 'FREE', aiRequestsUsed: 0 }));
+  }, []);
+
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/workspaces');
+  };
 
   const set = (key) => (e) => {
     setForm(f => ({ ...f, [key]: e.target.value }));
@@ -68,9 +84,21 @@ export default function Profile() {
     skills: skills,
   };
 
+  const isPro = (subStatus?.plan || user?.subscription?.plan) === 'PRO';
+  const aiUsed = subStatus?.aiRequestsUsed ?? 0;
+  const aiLimit = isPro ? 200 : 10;
+  const aiPct = Math.min(100, Math.round((aiUsed / aiLimit) * 100));
+  const periodEnd = subStatus?.currentPeriodEnd ? new Date(subStatus.currentPeriodEnd) : null;
+
   return (
     <div className={s.container}>
       <div className={s.leftColumn}>
+        <div className={s.topBar}>
+          <button type="button" className={s.backBtn} onClick={goBack}>
+            <ArrowLeft size={14} /> Back
+          </button>
+        </div>
+
         <div className={s.header}>
           <h1 className={s.title}>My Profile</h1>
           <p className={s.subtitle}>Manage your personal information and preferences</p>
@@ -153,6 +181,45 @@ export default function Profile() {
             <span className={s.badge}>{user?.role || 'Member'}</span>
           </div>
         </form>
+
+        {/* Subscription summary */}
+        <div className={s.subCard}>
+          <div className={s.subCardHead}>
+            <div>
+              <span className={s.subCardTitle}>Subscription</span>
+              <span className={s.subCardSub}>Your account-wide plan and AI quota.</span>
+            </div>
+            <span className={`${s.planTag} ${isPro ? s.planTagPro : s.planTagFree}`}>
+              {isPro ? <><Sparkles size={11} /> PRO</> : 'FREE'}
+            </span>
+          </div>
+
+          <div className={s.subUsage}>
+            <div className={s.subUsageRow}>
+              <span className={s.subUsageLabel}>AI requests this month</span>
+              <span className={s.subUsageVal}>{aiUsed} / {aiLimit}</span>
+            </div>
+            <div className={s.subBarTrack}>
+              <div
+                className={s.subBarFill}
+                style={{
+                  width: `${aiPct}%`,
+                  background: `var(${aiPct > 80 ? '--status-danger' : aiPct > 50 ? '--status-warning' : '--status-success'})`,
+                }}
+              />
+            </div>
+          </div>
+
+          {isPro && periodEnd && (
+            <div className={s.subMeta}>
+              Renews on <strong>{periodEnd.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</strong>
+            </div>
+          )}
+
+          <Link to="/subscribe" className={s.subManageBtn}>
+            {isPro ? 'Manage subscription' : 'Upgrade to PRO'} <ArrowRight size={14} />
+          </Link>
+        </div>
 
         {/* Appearance / Theme picker */}
         <div className={s.themeCard}>
