@@ -5,8 +5,10 @@ import { useAuth } from '../store/auth';
 import { useWorkspace } from '../store/workspace';
 import { useTasks } from '../store/tasks';
 import { useUI } from '../store/ui';
-import { activity as activityApi, workspaces as wsApi, ai as aiApi } from '../lib/api';
+import { activity as activityApi, workspaces as wsApi, projects as projApi, ai as aiApi } from '../lib/api';
 import { useWorkspaceRole } from '../lib/useWorkspaceRole';
+import { usePresence } from '../lib/hooks';
+import { joinProject, leaveProject } from '../lib/socket';
 import { fmtRelative } from '../lib/utils';
 import { Avatar } from '../components/ui/Badge';
 import Button from '../components/ui/Button';
@@ -28,6 +30,7 @@ export default function Dashboard() {
 
   const [feed, setFeed] = useState([]);
   const [members, setMembers] = useState([]);
+  const [projectMembers, setProjectMembers] = useState([]);
   const [standup, setStandup] = useState(null);
   const [loadingStandup, setLoadingStandup] = useState(false);
   const [taskModal, setTaskModal] = useState(false);
@@ -47,7 +50,20 @@ export default function Dashboard() {
     wsApi.members(ws._id)
       .then(({ data }) => setMembers(data.members ?? []))
       .catch(() => {});
+    projApi.members(ws._id, currentProject._id)
+      .then(({ data }) => setProjectMembers(data.members ?? []))
+      .catch(() => setProjectMembers([]));
   }, [ws?._id, currentProject?._id]);
+
+  // Join project room so presence:update broadcasts reach the dashboard.
+  useEffect(() => {
+    const pid = currentProject?._id;
+    if (!pid) return;
+    joinProject(pid);
+    return () => leaveProject(pid);
+  }, [currentProject?._id]);
+
+  const onlineUsers = usePresence(currentProject?._id);
 
   const fetchStandup = useCallback(async () => {
     if (!ws || !currentProject) return;
@@ -77,7 +93,6 @@ export default function Dashboard() {
   const activeTasks  = tasks.filter(t => t.status !== 'Done').length;
   const doneTasks    = tasks.filter(t => t.status === 'Done').length;
   const blockers     = tasks.filter(t => t.priority === 'P0' && t.status !== 'Done').length;
-  const onlineCount  = members.length; // approximation; real presence from Redis
   const myTasks      = tasks.filter(t => t.assignee === user?.id || t.assignee?._id === user?.id || !t.assignee).slice(0, 5);
 
   // Sprint progress per project
@@ -179,21 +194,26 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Who's Online */}
+        {/* Who's Online — scoped to project members, with real presence */}
         <div className={s.card}>
           <div className={s.cardHeader}>
             <span className={s.cardTitle}>WHO'S ONLINE</span>
-            <span className={s.onlinePill}>{members.length} Active</span>
+            <span className={s.onlinePill}>{onlineUsers.length} Active</span>
           </div>
           <div className={s.onlineList}>
-            {members.length === 0 && <p className={s.emptyFeed}>No members loaded.</p>}
-            {members.slice(0, 6).map((m, i) => {
-              const isMe = m.user?._id === user?.id || m.user?._id === user?._id;
-              const colors = ['var(--green)','var(--indigo)','var(--cyan)','var(--amber)','var(--violet)','var(--pink)'];
+            {!currentProject && <p className={s.emptyFeed}>Select a project to see who's online.</p>}
+            {currentProject && projectMembers.length === 0 && <p className={s.emptyFeed}>No project members.</p>}
+            {currentProject && projectMembers.slice(0, 6).map((m, i) => {
+              const memberId = m.user?._id || m.user;
+              const isMe = memberId === user?.id || memberId === user?._id;
+              const isOnline = onlineUsers.some(u => u._id === memberId);
               return (
-                <div key={m.user?._id || i} className={s.onlineMember}>
-                  <span className={s.onlineDot} style={{ background: colors[i % colors.length] }} />
-                  <Avatar name={m.user?.name || '?'} size={28} />
+                <div key={memberId || i} className={s.onlineMember}>
+                  <span
+                    className={s.onlineDot}
+                    style={{ background: isOnline ? 'var(--green)' : 'var(--text-3)', opacity: isOnline ? 1 : 0.4 }}
+                  />
+                  <Avatar name={m.user?.name || '?'} size={28} online={isOnline} />
                   <div className={s.onlineInfo}>
                     <strong className={s.onlineName}>
                       {m.user?.name || 'Unknown'}{isMe ? ' (You)' : ''}
