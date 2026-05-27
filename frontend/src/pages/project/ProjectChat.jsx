@@ -49,11 +49,14 @@ export default function ProjectChat() {
       .catch(() => setMembers([]));
   }, [workspaceId, projectId]);
 
-  // Realtime new messages
+  // Realtime new messages. Socket events use the project's canonical _id, but
+  // projectId from useParams may be a slug — compare against project._id.
   useEffect(() => {
     if (!projectId) return;
+    const canonicalId = project?._id;
     const onNew = (msg) => {
-      if (msg.project === projectId || msg.project?._id === projectId) {
+      const msgProj = msg.project?._id || msg.project;
+      if (msgProj === canonicalId || msgProj === projectId) {
         setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
       }
     };
@@ -62,7 +65,7 @@ export default function ProjectChat() {
       setMessages(prev => prev.map(m => m._id === messageId ? { ...m, reactions } : m));
     };
     const onTyping = ({ projectId: pid, userName }) => {
-      if (pid === projectId && userName !== user?.name) {
+      if ((pid === canonicalId || pid === projectId) && userName !== user?.name) {
         setTypingUser(userName);
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 2500);
@@ -77,7 +80,7 @@ export default function ProjectChat() {
       socket.off('user_typing', onTyping);
       clearTimeout(typingTimeoutRef.current);
     };
-  }, [projectId, user?.name]);
+  }, [projectId, project?._id, user?.name]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -222,8 +225,8 @@ export default function ProjectChat() {
           members={members}
           onChange={e => {
             setInput(e.target.value);
-            if (projectId && user?.name && !typingEmitRef.current) {
-              emitTyping(projectId, user.name);
+            if (project?._id && user?.name && !typingEmitRef.current) {
+              emitTyping(project._id, user.name);
               typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
             }
           }}

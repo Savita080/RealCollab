@@ -6,8 +6,12 @@ import {
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole, requireProjectRole, requireProjectCreator } from '../middleware/rbac.js';
 import { checkLimit } from '../middleware/planLimits.js';
+import { resolveWorkspace } from '../middleware/resolveWorkspace.js';
+import { resolveProject } from '../middleware/resolveProject.js';
 
 const router = express.Router({ mergeParams: true });
+router.param('workspaceId', resolveWorkspace);
+router.param('projectId', resolveProject);
 
 router.post('/', protectRoute, requireRole('MEMBER'), checkLimit('projects'), createProject);
 router.get('/', protectRoute, requireRole('VIEWER'), getWorkspaceProjects);

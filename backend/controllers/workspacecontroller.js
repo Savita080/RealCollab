@@ -5,25 +5,38 @@ import { sendEmail } from '../utils/email.js';
 import { notifyUser } from '../utils/notify.js';
 import { logWorkspaceActivity } from '../utils/activityLogger.js';
 import { WS_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
+import { generateUniqueSlug, normalizeName } from '../utils/slug.js';
 
 
 export const createWorkspace = async (req, res) => {
     try {
         const { name } = req.body;
-        
-        if (!name) {
+
+        if (!name || !name.trim()) {
             return res.status(400).json({ message: "Workspace name is required" });
         }
 
-        // 1. Generate a basic slug (convert to lowercase, replace spaces with hyphens)
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const normalized = normalizeName(name);
 
-        // 2. Create the workspace and assign the current user as the OWNER
+        // Per-owner duplicate check — same user can't own two "Acme"s.
+        const existing = await Workspace.findOne({ owner: req.userId, normalizedName: normalized });
+        if (existing) {
+            return res.status(409).json({
+                message: `You already have a workspace named "${existing.name}".`,
+                code: 'DUPLICATE_NAME'
+            });
+        }
+
+        // Slug is globally unique. Auto-suffix with random base36 on collision.
+        const slug = await generateUniqueSlug(Workspace, name);
+
         const newWorkspace = await Workspace.create({
-            name,
+            name: name.trim(),
+            normalizedName: normalized,
             slug,
+            owner: req.userId,
             members: [{
-                user: req.userId, // We get this from our protectRoute middleware!
+                user: req.userId,
                 role: 'OWNER'
             }]
         });
@@ -45,9 +58,18 @@ export const createWorkspace = async (req, res) => {
         });
 
     } catch (error) {
-        // If the slug is already taken, MongoDB will throw an E11000 duplicate key error
+        // E11000 with our compound (owner, normalizedName) index → race that slipped past the
+        // pre-check. Surface as the same 409 the controller would have returned.
         if (error.code === 11000) {
-            return res.status(400).json({ message: "A workspace with a similar name already exists" });
+            const key = error.keyPattern || {};
+            if (key.owner && key.normalizedName) {
+                return res.status(409).json({
+                    message: "You already have a workspace with this name.",
+                    code: 'DUPLICATE_NAME'
+                });
+            }
+            // Slug collision shouldn't happen now that generateUniqueSlug retries, but be safe.
+            return res.status(500).json({ message: "Slug collision — please try again." });
         }
         console.error("Error creating workspace:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -74,15 +96,33 @@ export const getUserWorkspaces = async (req, res) => {
 export const updateWorkspace = async (req, res) => {
     try {
         const { name } = req.body;
-        
-        if (!name) {
+
+        if (!name || !name.trim()) {
             return res.status(400).json({ message: "Workspace name is required" });
         }
 
-        // Update the name and regenerate the slug
-        req.workspace.name = name;
-        req.workspace.slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        
+        const normalized = normalizeName(name);
+
+        // Per-owner duplicate check — exclude self so renaming to the same name is a no-op, not an error.
+        const collision = await Workspace.findOne({
+            owner: req.workspace.owner,
+            normalizedName: normalized,
+            _id: { $ne: req.workspace._id }
+        });
+        if (collision) {
+            return res.status(409).json({
+                message: `You already have a workspace named "${collision.name}".`,
+                code: 'DUPLICATE_NAME'
+            });
+        }
+
+        req.workspace.name = name.trim();
+        req.workspace.normalizedName = normalized;
+        // Regenerate slug only if normalized name changed — preserves URLs through cosmetic edits.
+        if (req.workspace.normalizedName !== normalizeName(req.workspace.name) || !req.workspace.slug) {
+            req.workspace.slug = await generateUniqueSlug(Workspace, name, { excludeId: req.workspace._id });
+        }
+
         await req.workspace.save();
 
         res.status(200).json({
@@ -92,7 +132,13 @@ export const updateWorkspace = async (req, res) => {
 
     } catch (error) {
         if (error.code === 11000) {
-            return res.status(400).json({ message: "A workspace with a similar name already exists" });
+            const key = error.keyPattern || {};
+            if (key.owner && key.normalizedName) {
+                return res.status(409).json({
+                    message: "You already have a workspace with this name.",
+                    code: 'DUPLICATE_NAME'
+                });
+            }
         }
         console.error("Error updating workspace:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -340,9 +386,24 @@ export const transferOwnership = async (req, res) => {
             return res.status(403).json({ message: "Only the current owner can transfer ownership" });
         }
 
+        // Block transfer if the new owner already has a workspace with this name —
+        // would violate the (owner, normalizedName) compound unique index.
+        const collision = await Workspace.findOne({
+            owner: newOwnerId,
+            normalizedName: req.workspace.normalizedName,
+            _id: { $ne: req.workspace._id }
+        });
+        if (collision) {
+            return res.status(409).json({
+                message: `Transfer blocked — the new owner already has a workspace named "${collision.name}". Rename one first.`,
+                code: 'DUPLICATE_NAME'
+            });
+        }
+
         // Transfer the title
         req.workspace.members[currentOwnerIndex].role = 'ADMIN'; // Demote current owner to ADMIN
         req.workspace.members[newOwnerIndex].role = 'OWNER'; // Promote new user to OWNER
+        req.workspace.owner = newOwnerId; // Top-level owner pointer drives the uniqueness index
 
         await req.workspace.save();
 

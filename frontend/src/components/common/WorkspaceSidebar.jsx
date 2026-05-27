@@ -24,6 +24,7 @@ export default function WorkspaceSidebar({ role }) {
   const [wsDropOpen, setWsDropOpen] = useState(false);
   const [wsModal, setWsModal] = useState(false);
   const [wsName, setWsName] = useState('');
+  const [wsNameError, setWsNameError] = useState('');
   const [busy, setBusy] = useState(false);
 
   const dropRef = useRef(null);
@@ -49,13 +50,23 @@ export default function WorkspaceSidebar({ role }) {
     e.preventDefault();
     if (!wsName.trim()) return;
     setBusy(true);
+    setWsNameError('');
     try {
       const ws = await createWorkspace({ name: wsName.trim() });
       setWsName('');
       setWsModal(false);
-      navigate(`/workspaces/${ws._id}`);
+      navigate(`/workspaces/${ws.slug || ws._id}`);
+    } catch (err) {
+      const data = err?.response?.data;
+      if (data?.code === 'DUPLICATE_NAME') {
+        setWsNameError(data.message || 'You already have a workspace with this name.');
+      } else {
+        setWsNameError(data?.message || 'Failed to create workspace.');
+      }
     } finally { setBusy(false); }
   };
+
+  const closeWsModal = () => { setWsModal(false); setWsNameError(''); setWsName(''); };
 
   const wsName_ = current?.name || 'Loading…';
   const firstName = user?.name?.split(' ')[0] || 'User';
@@ -82,12 +93,12 @@ export default function WorkspaceSidebar({ role }) {
           {wsDropOpen && (
             <div className={s.wsDrop}>
               {wsList.map(w => {
-                const active = workspaceId === w._id;
+                const active = workspaceId === w._id || workspaceId === w.slug;
                 return (
                   <button
                     key={w._id}
                     className={`${s.wsOpt} ${active ? s.wsOptActive : ''}`}
-                    onClick={() => { setWsDropOpen(false); navigate(`/workspaces/${w._id}`); }}
+                    onClick={() => { setWsDropOpen(false); navigate(`/workspaces/${w.slug || w._id}`); }}
                   >
                     <span className={s.wsAvatarSm}>{w.name[0]?.toUpperCase()}</span>
                     <span className={s.wsOptName}>{w.name}</span>
@@ -160,12 +171,13 @@ export default function WorkspaceSidebar({ role }) {
       </aside>
 
       {wsModal && (
-        <div className={s.modalOverlay} onClick={() => setWsModal(false)}>
+        <div className={s.modalOverlay} onClick={closeWsModal}>
           <div className={s.miniModal} onClick={e => e.stopPropagation()}>
             <h3 className={s.miniModalTitle}>Create Workspace</h3>
             <form onSubmit={handleCreateWs} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <Input label="Workspace name" placeholder="DevFusion Team" value={wsName}
-                onChange={e => setWsName(e.target.value)} required />
+                onChange={e => { setWsName(e.target.value); if (wsNameError) setWsNameError(''); }}
+                error={wsNameError} required />
               <Button type="submit" variant="cyan" size="md" loading={busy}>Create Workspace</Button>
             </form>
           </div>

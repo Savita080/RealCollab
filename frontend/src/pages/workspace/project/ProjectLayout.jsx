@@ -30,16 +30,18 @@ export default function ProjectLayout() {
       .finally(() => setProjLoading(false));
   }, [workspaceId, projectId]);
 
-  // Join project socket room
+  // Join project socket room. Backend rooms are keyed by canonical _id, not the
+  // URL token (which may be a slug).
   useEffect(() => {
-    if (!projectId) return;
-    joinProject(projectId);
+    const roomId = project?._id;
+    if (!roomId) return;
+    joinProject(roomId);
     bindSocket();
     return () => {
-      leaveProject(projectId);
+      leaveProject(roomId);
       unbindSocket();
     };
-  }, [projectId]);
+  }, [project?._id]);
 
   if (loading || projLoading) {
     return (

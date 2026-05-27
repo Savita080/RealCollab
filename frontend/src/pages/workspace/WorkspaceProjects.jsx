@@ -25,6 +25,7 @@ export default function WorkspaceProjects() {
   const [stats, setStats] = useState({});
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [creating, setCreating] = useState(false);
   const [search, setSearch] = useState(params.get('q') || '');
   const [renameProj, setRenameProj] = useState(null);
@@ -57,16 +58,24 @@ export default function WorkspaceProjects() {
     e.preventDefault();
     if (!newName.trim()) return;
     setCreating(true);
+    setNameError('');
     try {
       const proj = await createProject({ name: newName.trim() });
       setNewName('');
       setCreateOpen(false);
       toast('Project created!', 'success');
-      navigate(`/workspaces/${workspaceId}/projects/${proj._id}`);
+      navigate(`/workspaces/${workspaceId}/projects/${proj.slug || proj._id}`);
     } catch (err) {
-      toast(err?.response?.data?.message || 'Failed', 'error');
+      const data = err?.response?.data;
+      if (data?.code === 'DUPLICATE_NAME') {
+        setNameError(data.message || 'A project with this name already exists in this workspace.');
+      } else {
+        setNameError(data?.message || 'Failed to create project.');
+      }
     } finally { setCreating(false); }
   };
+
+  const closeCreate = () => { setCreateOpen(false); setNameError(''); setNewName(''); };
 
   const handleRename = async (e) => {
     e.preventDefault();
@@ -155,7 +164,7 @@ export default function WorkspaceProjects() {
               <div key={p._id} className={s.card} style={{ '--c': color, opacity: locked ? 0.7 : 1 }}>
                 <button
                   className={s.cardBody}
-                  onClick={() => navigate(`/workspaces/${workspaceId}/projects/${p._id}`)}
+                  onClick={() => navigate(`/workspaces/${workspaceId}/projects/${p.slug || p._id}`)}
                   title={locked ? 'You don\'t have access to this project. Ask a contributor to add you.' : undefined}
                 >
                   <div className={s.cardHead}>
@@ -215,14 +224,15 @@ export default function WorkspaceProjects() {
 
       {/* Create modal */}
       {createOpen && (
-        <div className={s.modalOverlay} onClick={() => setCreateOpen(false)}>
+        <div className={s.modalOverlay} onClick={closeCreate}>
           <div className={s.modal} onClick={e => e.stopPropagation()}>
             <h3 className={s.modalTitle}>Create Project</h3>
             <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <Input label="Project name" placeholder="e.g. Auth System" value={newName}
-                onChange={e => setNewName(e.target.value)} required autoFocus />
+                onChange={e => { setNewName(e.target.value); if (nameError) setNameError(''); }}
+                error={nameError} required autoFocus />
               <div className={s.modalActions}>
-                <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button type="button" variant="ghost" onClick={closeCreate}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={creating}>Create</Button>
               </div>
             </form>

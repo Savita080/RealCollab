@@ -4,19 +4,35 @@ import User from '../models/user.js';
 import { notifyUser } from '../utils/notify.js';
 import { logWorkspaceActivity, logProjectActivity } from '../utils/activityLogger.js';
 import { WS_ACTIONS, PROJ_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
+import { generateUniqueSlug, normalizeName } from '../utils/slug.js';
 
 export const createProject = async (req, res) => {
     try {
         const { name, description } = req.body;
         const workspaceId = req.params.workspaceId;
 
-        if (!name) {
+        if (!name || !name.trim()) {
             return res.status(400).json({ message: "Project name is required" });
         }
 
+        const normalized = normalizeName(name);
+
+        // Per-workspace duplicate check.
+        const existing = await Project.findOne({ workspace: workspaceId, normalizedName: normalized });
+        if (existing) {
+            return res.status(409).json({
+                message: `A project named "${existing.name}" already exists in this workspace.`,
+                code: 'DUPLICATE_NAME'
+            });
+        }
+
+        const slug = await generateUniqueSlug(Project, name, { extraFilter: { workspace: workspaceId } });
+
         const newProject = await Project.create({
             workspace: workspaceId,
-            name,
+            name: name.trim(),
+            normalizedName: normalized,
+            slug,
             description,
             createdBy: req.userId,
             members: [{
@@ -51,6 +67,12 @@ export const createProject = async (req, res) => {
             project: newProject
         });
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "A project with this name already exists in this workspace.",
+                code: 'DUPLICATE_NAME'
+            });
+        }
         console.error("Error creating project:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
@@ -106,9 +128,36 @@ export const updateProject = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
+        const updates = { description };
+
+        if (name !== undefined && name.trim()) {
+            const normalized = normalizeName(name);
+            // Per-workspace dup check, excluding self
+            const collision = await Project.findOne({
+                workspace: workspaceId,
+                normalizedName: normalized,
+                _id: { $ne: projectId }
+            });
+            if (collision) {
+                return res.status(409).json({
+                    message: `A project named "${collision.name}" already exists in this workspace.`,
+                    code: 'DUPLICATE_NAME'
+                });
+            }
+            updates.name = name.trim();
+            updates.normalizedName = normalized;
+            // Regenerate slug if normalized name actually changed
+            if (normalized !== before.normalizedName) {
+                updates.slug = await generateUniqueSlug(Project, name, {
+                    extraFilter: { workspace: workspaceId },
+                    excludeId: projectId
+                });
+            }
+        }
+
         const updatedProject = await Project.findByIdAndUpdate(
             projectId,
-            { name, description },
+            updates,
             { new: true }
         );
 
@@ -145,6 +194,12 @@ export const updateProject = async (req, res) => {
             project: updatedProject
         });
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "A project with this name already exists in this workspace.",
+                code: 'DUPLICATE_NAME'
+            });
+        }
         console.error("Error updating project:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }

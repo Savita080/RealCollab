@@ -8,9 +8,11 @@ import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole } from '../middleware/rbac.js';
 import { checkWorkspaceLimit } from '../middleware/planLimits.js';
 import { sendWorkspaceMessage, getWorkspaceMessages, reactToWorkspaceMessage } from '../controllers/workspacechatcontroller.js';
+import { resolveWorkspace } from '../middleware/resolveWorkspace.js';
 
 
 const router = express.Router();
+router.param('workspaceId', resolveWorkspace);
 
 router.post('/', protectRoute, checkWorkspaceLimit, createWorkspace);
 router.get('/', protectRoute, getUserWorkspaces);

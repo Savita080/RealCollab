@@ -86,11 +86,13 @@ export default function ProjectChat() {
       .catch(() => {});
   }, [workspaceId, projectId]);
 
-  // Socket: incoming project chat messages
+  // Socket: incoming project chat messages. Socket payloads carry the project's
+  // canonical _id, but projectId from useParams may be a slug — accept both.
   useEffect(() => {
+    const canonicalId = project?._id;
     const onMsg = (msg) => {
       const pid = msg.project?._id ?? msg.project;
-      if (pid !== projectId) return;
+      if (pid !== canonicalId && pid !== projectId) return;
       setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
     };
     const onReaction = ({ scope, messageId, reactions }) => {
@@ -103,19 +105,20 @@ export default function ProjectChat() {
       socket.off('new_group_message', onMsg);
       socket.off('message_reaction_updated', onReaction);
     };
-  }, [projectId]);
+  }, [projectId, project?._id]);
 
   // Socket: typing indicator
   useEffect(() => {
+    const canonicalId = project?._id;
     const onTyping = ({ userName, projectId: pid }) => {
-      if (pid !== projectId) return;
+      if (pid !== canonicalId && pid !== projectId) return;
       setTypingUser(userName);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
     };
     socket.on('user_typing', onTyping);
     return () => { socket.off('user_typing', onTyping); if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current); };
-  }, [projectId]);
+  }, [projectId, project?._id]);
 
   // Whiteboard socket events
   useEffect(() => {
@@ -325,8 +328,8 @@ export default function ProjectChat() {
               autoFocus
               onChange={e => {
                 setInput(e.target.value);
-                if (projectId && user?.name && !typingEmitRef.current) {
-                  emitTyping(projectId, user.name);
+                if (project?._id && user?.name && !typingEmitRef.current) {
+                  emitTyping(project._id, user.name);
                   typingEmitRef.current = setTimeout(() => { typingEmitRef.current = null; }, 2000);
                 }
               }}

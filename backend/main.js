@@ -23,7 +23,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { setupKanbanSockets } from './sockets/kanbanSocket.js';
 import { setupWhiteboardSockets } from './sockets/whiteboardSocket.js';
-
+import { resolveSlugUrl } from './middleware/resolveSlugUrl.js';
 const app = express();
 const httpServer = createServer(app);
 const allowedOrigins = process.env.FRONTEND_URL
@@ -52,8 +52,13 @@ app.use((req, res, next) => {
     next();
 });
 
+// Rewrite slugs in the URL to canonical ObjectIds before routing kicks in.
+// Runs once at the app level — every downstream layer sees ObjectIds, so no
+// router/controller/model has to know slugs exist.
+app.use(resolveSlugUrl);
+
 //routes
-app.use("/api/auth",authroutes);
+app.use("/api/auth", authroutes);
 app.use("/api/workspaces", workspaceroutes);
 app.use("/api/workspaces/:workspaceId/activity", workspaceactivityroutes);
 app.use("/api/workspaces/:workspaceId/projects", projectroutes);

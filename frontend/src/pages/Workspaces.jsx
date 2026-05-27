@@ -105,7 +105,7 @@ export default function Workspaces() {
             {workspaces.map(ws => {
               const role = getMyRole(ws);
               return (
-                <Link to={`/workspaces/${ws._id}`} key={ws._id} className={s.card}>
+                <Link to={`/workspaces/${ws.slug || ws._id}`} key={ws._id} className={s.card}>
                   <div className={s.cardName}>{ws.name}</div>
                   <div className={s.cardMeta}>
                     <span>{ws.members?.length ?? 0} members</span>

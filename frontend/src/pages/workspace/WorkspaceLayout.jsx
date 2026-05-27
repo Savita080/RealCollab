@@ -29,18 +29,19 @@ export default function WorkspaceLayout() {
     return () => unbindNotifications();
   }, []);
 
-  // Sync URL → store
+  // Sync URL → store. workspaceId in the URL may be an _id (legacy) or a slug
+  // (pretty URLs), so match against both.
   useEffect(() => {
     if (!workspaceId) return;
-    if (current?._id !== workspaceId) {
-      const exists = wsList.find(w => w._id === workspaceId);
+    if (current?._id !== workspaceId && current?.slug !== workspaceId) {
+      const exists = wsList.find(w => w._id === workspaceId || w.slug === workspaceId);
       if (exists || wsList.length === 0) {
         setWorkspace(workspaceId).catch(() => {});
       } else {
         navigate('/workspaces', { replace: true });
       }
     }
-  }, [workspaceId, wsList.length, current?._id]);
+  }, [workspaceId, wsList.length, current?._id, current?.slug]);
 
   // Listen for project access denied to refresh project list
   useEffect(() => {

@@ -76,7 +76,9 @@ export default function ProjectKanban() {
   const handleDragOver = (status, e) => { if (canEdit) { e.preventDefault(); setDragOver(status); } };
   const handleDrop = (status) => {
     if (dragging && dragging.status !== status && canEdit) {
-      move(workspaceId, projectId, dragging._id, status, projectId);
+      // 5th arg goes onto the socket payload — must be canonical _id (kanban
+      // rooms are keyed by _id, not slug).
+      move(workspaceId, projectId, dragging._id, status, project?._id || projectId);
     }
     setDragging(null);
     setDragOver(null);

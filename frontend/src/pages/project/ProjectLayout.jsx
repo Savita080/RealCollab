@@ -38,22 +38,25 @@ export default function ProjectLayout() {
       .finally(() => setProjLoading(false));
   }, [workspaceId, projectId]);
 
-  // Keep store in sync if project list loads
+  // Keep store in sync if project list loads. projectId from the URL may be
+  // either a Mongo _id or a slug, so match against both.
   useEffect(() => {
-    const p = projList.find(p => p._id === projectId);
+    const p = projList.find(p => p._id === projectId || p.slug === projectId);
     if (p && p !== project) setStoreProject(p);
   }, [projList, projectId]);
 
-  // Join project socket room
+  // Join project socket room. Backend emits to room=canonical _id, so we must
+  // join with _id (not the URL token, which may be a slug).
   useEffect(() => {
-    if (!projectId) return;
-    joinProject(projectId);
+    const roomId = project?._id;
+    if (!roomId) return;
+    joinProject(roomId);
     bindSocket();
     return () => {
-      leaveProject(projectId);
+      leaveProject(roomId);
       unbindSocket();
     };
-  }, [projectId]);
+  }, [project?._id]);
 
   if (loading || projLoading) {
     return (

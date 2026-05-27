@@ -1,15 +1,29 @@
 import mongoose from 'mongoose';
 
 const projectSchema = new mongoose.Schema({
-    workspace: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Workspace', 
-        required: true 
+    workspace: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Workspace',
+        required: true
     },
-    name: { 
-        type: String, 
+    name: {
+        type: String,
         required: [true, 'Project name is required'],
         trim: true
+    },
+    // Lower-cased + trimmed name. Used to enforce per-workspace uniqueness
+    // (one workspace can't have two projects named "Launch" / "launch  ").
+    normalizedName: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true
+    },
+    // URL-safe slug for pretty URLs. Unique per workspace, not globally.
+    slug: {
+        type: String,
+        required: true,
+        lowercase: true
     },
     description: {
         type: String,
@@ -20,24 +34,28 @@ const projectSchema = new mongoose.Schema({
         ref: 'User',
     },
     members: [{
-        user: { 
-            type: mongoose.Schema.Types.ObjectId, 
+        user: {
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: true
         },
-        role: { 
-            type: String, 
-            enum: ['CONTRIBUTOR', 'VIEWER'], 
-            default: 'VIEWER' 
+        role: {
+            type: String,
+            enum: ['CONTRIBUTOR', 'VIEWER'],
+            default: 'VIEWER'
         },
-        joinedAt: { 
-            type: Date, 
-            default: Date.now 
+        joinedAt: {
+            type: Date,
+            default: Date.now
         }
     }]
 }, {
-    timestamps: true 
+    timestamps: true
 });
+
+// Per-workspace uniqueness on both name and slug.
+projectSchema.index({ workspace: 1, normalizedName: 1 }, { unique: true });
+projectSchema.index({ workspace: 1, slug: 1 }, { unique: true });
 
 const Project = mongoose.model('Project', projectSchema);
 export default Project;

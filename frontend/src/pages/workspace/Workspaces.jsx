@@ -36,6 +36,7 @@ export default function Workspaces() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [nameError, setNameError] = useState('');
   const [creating, setCreating] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
 
@@ -75,11 +76,19 @@ export default function Workspaces() {
     e.preventDefault();
     if (!newName.trim()) return;
     setCreating(true);
+    setNameError('');
     try {
       const ws = await createWorkspace({ name: newName.trim() });
       setNewName('');
       setCreateOpen(false);
-      navigate(`/workspaces/${ws._id}`);
+      navigate(`/workspaces/${ws.slug || ws._id}`);
+    } catch (err) {
+      const data = err?.response?.data;
+      if (data?.code === 'DUPLICATE_NAME') {
+        setNameError(data.message || 'You already have a workspace with this name.');
+      } else {
+        setNameError(data?.message || 'Failed to create workspace.');
+      }
     } finally { setCreating(false); }
   };
 
@@ -164,7 +173,7 @@ export default function Workspaces() {
             <button
               key={w._id}
               className={s.folderCard}
-              onClick={() => navigate(`/workspaces/${w._id}`)}
+              onClick={() => navigate(`/workspaces/${w.slug || w._id}`)}
               style={{ '--accent-1': grad[0], '--accent-2': grad[1] }}
             >
               {/* Folder Backing (Gradient Top) */}
@@ -237,7 +246,7 @@ export default function Workspaces() {
 
       {/* Create modal */}
       {createOpen && (
-        <div className={s.modalOverlay} onClick={() => setCreateOpen(false)}>
+        <div className={s.modalOverlay} onClick={() => { setCreateOpen(false); setNameError(''); setNewName(''); }}>
           <div className={s.modal} onClick={e => e.stopPropagation()}>
             <h3 className={s.modalTitle}>Create Workspace</h3>
             <p className={s.modalDesc}>
@@ -248,12 +257,13 @@ export default function Workspaces() {
                 label="Workspace name"
                 placeholder="e.g. DevFusion Team"
                 value={newName}
-                onChange={e => setNewName(e.target.value)}
+                onChange={e => { setNewName(e.target.value); if (nameError) setNameError(''); }}
+                error={nameError}
                 required
                 autoFocus
               />
               <div className={s.modalActions}>
-                <Button type="button" variant="ghost" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                <Button type="button" variant="ghost" onClick={() => { setCreateOpen(false); setNameError(''); setNewName(''); }}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={creating}>Create</Button>
               </div>
             </form>

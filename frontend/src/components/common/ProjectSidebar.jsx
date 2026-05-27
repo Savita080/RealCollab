@@ -70,10 +70,11 @@ export default function ProjectSidebar({ project, canEdit, role }) {
     { to: `${projBase}/settings`, label: 'Settings', icon: Settings, editorOnly: true },
   ];
 
-  const activeProj = project || projects.find(p => p._id === projectId);
+  // projectId from URL may be _id (legacy) or slug (pretty URL) — match both.
+  const activeProj = project || projects.find(p => p._id === projectId || p.slug === projectId);
   const projectName = activeProj?.name || 'Loading…';
-  const projIdx = projects.findIndex(p => p._id === projectId);
-  const projColor = PROJECT_COLORS[projIdx % PROJECT_COLORS.length] || PROJECT_COLORS[0];
+  const projIdx = projects.findIndex(p => p._id === projectId || p.slug === projectId);
+  const projColor = PROJECT_COLORS[projIdx >= 0 ? projIdx % PROJECT_COLORS.length : 0];
 
   return (
     <aside className={`${s.sidebar} ${!sidebarOpen ? s.collapsed : ''}`}>
@@ -96,14 +97,14 @@ export default function ProjectSidebar({ project, canEdit, role }) {
         {wsDropOpen && (
           <div className={wsStyles.wsDrop}>
             {wsList.map(w => {
-              const active = workspaceId === w._id;
+              const active = workspaceId === w._id || workspaceId === w.slug;
               return (
                 <button
                   key={w._id}
                   className={`${wsStyles.wsOpt} ${active ? wsStyles.wsOptActive : ''}`}
                   onClick={() => {
                     setWsDropOpen(false);
-                    navigate(`/workspaces/${w._id}`);
+                    navigate(`/workspaces/${w.slug || w._id}`);
                   }}
                 >
                   <span className={wsStyles.wsAvatarSm}>{w.name[0]?.toUpperCase()}</span>
@@ -139,14 +140,14 @@ export default function ProjectSidebar({ project, canEdit, role }) {
         {projDropOpen && (
           <div className={s.projDrop}>
             {projects.map((p, i) => {
-              const active = p._id === projectId;
+              const active = p._id === projectId || p.slug === projectId;
               return (
                 <button
                   key={p._id}
                   className={`${s.projOpt} ${active ? s.projOptActive : ''}`}
                   onClick={() => {
                     setProjDropOpen(false);
-                    navigate(`/workspaces/${workspaceId}/projects/${p._id}`);
+                    navigate(`/workspaces/${workspaceId}/projects/${p.slug || p._id}`);
                   }}
                 >
                   <span className={s.projOptDot} style={{ background: PROJECT_COLORS[i % PROJECT_COLORS.length] }} />

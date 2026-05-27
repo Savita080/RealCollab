@@ -19,10 +19,12 @@ export const useWorkspace = create((set, get) => ({
     if (targetId) get().setWorkspace(targetId);
   },
 
+  // id may be a Mongo _id or a slug — match against both.
   setWorkspace: async (id) => {
-    const ws = get().workspaces.find(w => w._id === id);
+    const ws = get().workspaces.find(w => w._id === id || w.slug === id);
     set({ current: ws });
-    const { data } = await projects.list(id);
+    const lookup = ws?._id || id;
+    const { data } = await projects.list(lookup);
     const list = data.projects ?? data;
     set({ projects: list });
     if (list.length && !get().currentProject) set({ currentProject: list[0] });
