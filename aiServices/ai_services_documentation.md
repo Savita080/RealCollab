@@ -160,8 +160,8 @@ An AI & mathematical engine that detects stalled tasks using log-normal distribu
 MONGO_URI=mongodb://localhost:27017
 DB_NAME=realcollab
 
-GROK_API_KEY=your_grok_api_key_here
-GROK_MODEL=llama-3.3-70b-versatile
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
 
 # Math engine constants
 STALL_Z_THRESHOLD=1.645
@@ -275,7 +275,7 @@ Calculates a comprehensive project health score based on velocity, overdue tasks
 
 ### `.env.example`
 ```env
-GROK_API_KEY=your_grok_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 PORT=8003
 ```
 

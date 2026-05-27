@@ -1,6 +1,7 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import Workspace from '../models/workspace.js';
+import User from '../models/user.js';
+import { PLAN_LIMITS } from '../middleware/planLimits.js';
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -11,20 +12,18 @@ const PRO_AMOUNT = 49900; // ₹499 in paise
 
 export const createOrder = async (req, res) => {
     try {
-        const workspace = req.workspace;
+        const user = await User.findById(req.userId).select('subscription');
+        if (!user) return res.status(401).json({ message: "User not found" });
 
-        if (workspace.subscription.plan === 'PRO') {
-            return res.status(400).json({ message: "Workspace is already on Pro plan" });
+        if (user.subscription.plan === 'PRO') {
+            return res.status(400).json({ message: "Already on Pro plan" });
         }
 
         const order = await razorpay.orders.create({
             amount: PRO_AMOUNT,
             currency: 'INR',
-            receipt: `ws_${Date.now()}`,
-            notes: {
-                workspaceId: req.params.workspaceId,
-                userId: req.userId
-            }
+            receipt: `user_${Date.now()}`,
+            notes: { userId: req.userId }
         });
 
         res.status(200).json({
@@ -42,7 +41,6 @@ export const createOrder = async (req, res) => {
 export const verifyPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
         if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
             return res.status(400).json({ message: "Missing payment verification fields" });
         }
@@ -56,19 +54,21 @@ export const verifyPayment = async (req, res) => {
             return res.status(400).json({ error: "Invalid payment signature" });
         }
 
-        const workspace = req.workspace;
-        workspace.subscription.plan = 'PRO';
-        workspace.subscription.razorpaySubscriptionId = razorpay_payment_id;
-        // Set PRO access for 1 year (hackathon demo — no recurring billing needed)
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(401).json({ message: "User not found" });
+
+        user.subscription.plan = 'PRO';
+        user.subscription.razorpayPaymentId = razorpay_payment_id;
+        // 1-year access (hackathon demo — no recurring billing).
         const periodEnd = new Date();
         periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-        workspace.subscription.currentPeriodEnd = periodEnd;
-        await workspace.save();
+        user.subscription.currentPeriodEnd = periodEnd;
+        await user.save();
 
         res.status(200).json({
-            message: "Payment verified. Workspace upgraded to Pro!",
+            message: "Payment verified. Upgraded to Pro!",
             plan: 'PRO',
-            currentPeriodEnd: workspace.subscription.currentPeriodEnd
+            currentPeriodEnd: user.subscription.currentPeriodEnd
         });
     } catch (error) {
         console.error("Error verifying payment:", error.message);
@@ -78,33 +78,51 @@ export const verifyPayment = async (req, res) => {
 
 export const cancelSubscription = async (req, res) => {
     try {
-        const workspace = req.workspace;
+        const user = await User.findById(req.userId);
+        if (!user) return res.status(401).json({ message: "User not found" });
 
-        if (workspace.subscription.plan !== 'PRO') {
+        if (user.subscription.plan !== 'PRO') {
             return res.status(400).json({ message: "No active Pro subscription" });
         }
 
-        workspace.subscription.plan = 'FREE';
-        workspace.subscription.razorpaySubscriptionId = null;
-        workspace.subscription.currentPeriodEnd = null;
-        await workspace.save();
+        user.subscription.plan = 'FREE';
+        user.subscription.razorpayPaymentId = null;
+        user.subscription.currentPeriodEnd = null;
+        await user.save();
 
-        res.status(200).json({ message: "Subscription cancelled. Workspace downgraded to Free." });
+        res.status(200).json({ message: "Subscription cancelled. Downgraded to Free." });
     } catch (error) {
         console.error("Error cancelling subscription:", error.message);
         res.status(500).json({ error: "Failed to cancel subscription" });
     }
 };
 
+// JSON.stringify(Infinity) emits null, which would land on the client as
+// "limit: null" and break any "X / Y used" UI. Serialize unlimited as -1
+// so the client can render a clear "Unlimited" without ambiguity.
+const serializeLimit = (n) => (n === Infinity ? -1 : n);
+
 export const getSubscriptionStatus = async (req, res) => {
     try {
-        const workspace = req.workspace;
+        const user = await User.findById(req.userId).select('subscription').lean();
+        if (!user) return res.status(401).json({ message: "User not found" });
 
+        const plan = user.subscription?.plan || 'FREE';
         res.status(200).json({
-            plan: workspace.subscription.plan,
-            currentPeriodEnd: workspace.subscription.currentPeriodEnd,
-            aiRequestsUsed: workspace.subscription.aiRequestsUsed,
-            aiRequestsResetAt: workspace.subscription.aiRequestsResetAt
+            plan,
+            currentPeriodEnd: user.subscription?.currentPeriodEnd || null,
+            aiRequestsUsed: user.subscription?.aiRequestsUsed || 0,
+            aiRequestsResetAt: user.subscription?.aiRequestsResetAt || null,
+            limits: {
+                workspaces:  serializeLimit(PLAN_LIMITS.workspaces[plan]),
+                projects:    serializeLimit(PLAN_LIMITS.projects[plan]),
+                tasks:       serializeLimit(PLAN_LIMITS.tasks[plan]),
+                wikiPages:   serializeLimit(PLAN_LIMITS.wikiPages[plan]),
+                whiteboards: serializeLimit(PLAN_LIMITS.whiteboards[plan]),
+                snippets:    serializeLimit(PLAN_LIMITS.snippets[plan]),
+                members:     serializeLimit(PLAN_LIMITS.members[plan]),
+                aiRequests:  serializeLimit(PLAN_LIMITS.aiRequests[plan])
+            }
         });
     } catch (error) {
         console.error("Error fetching subscription status:", error.message);

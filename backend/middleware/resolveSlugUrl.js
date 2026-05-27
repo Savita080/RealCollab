@@ -21,25 +21,22 @@ import Project from '../models/project.js';
 const OBJECT_ID_RE = /^[a-f0-9]{24}$/i;
 const isObjectId = (s) => OBJECT_ID_RE.test(s) && mongoose.isValidObjectId(s);
 
-// Matches the two URL shapes that carry a workspace token:
+// Matches the URL shape that carries a workspace token:
 //   /api/workspaces/:wsToken[/projects/:projToken][/...rest]
-//   /api/subscriptions/:wsToken/...rest
+// Subscription routes are user-scoped now — no workspace token to resolve.
 const WS_PATH_RE = /^(\/api\/workspaces\/)([^/?]+)(\/projects\/([^/?]+))?(.*)$/i;
-const SUB_PATH_RE = /^(\/api\/subscriptions\/)([^/?]+)(.*)$/i;
 
 export const resolveSlugUrl = async (req, res, next) => {
     try {
-        const m = req.url.match(WS_PATH_RE) || req.url.match(SUB_PATH_RE);
+        const m = req.url.match(WS_PATH_RE);
         if (!m) return next();
 
-        // WS_PATH_RE captures: prefix, wsToken, projSegment?, projToken?, rest
-        // SUB_PATH_RE captures: prefix, wsToken, rest
-        const isWsPath = m.length === 6;
+        // Captures: prefix, wsToken, projSegment?, projToken?, rest
         const prefix = m[1];
         const wsToken = m[2];
-        const projSegment = isWsPath ? m[3] : null;
-        const projToken = isWsPath ? m[4] : null;
-        const rest = isWsPath ? m[5] : m[3];
+        const projSegment = m[3];
+        const projToken = m[4];
+        const rest = m[5];
 
         // No-op fast path: both already ObjectIds (or only workspace present + ObjectId).
         if (isObjectId(wsToken) && (!projToken || isObjectId(projToken))) {

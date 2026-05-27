@@ -216,7 +216,7 @@ export default function Sidebar() {
 
         {/* User footer */}
         <div className={s.userFoot}>
-          <Avatar name={user?.name || 'U'} size={30} />
+          <Avatar name={user?.name || 'U'} src={user?.avatar} size={30} />
           <div className={s.userInfo}>
             <button
               className={s.userNameBtn}
@@ -348,6 +348,8 @@ function WorkspaceDetailPopup({ workspace, projects, user, onClose, onNewProject
   }, [onClose]);
 
   const ownerName = user?.name || 'Owner';
+  const isPro = user?.subscription?.plan === 'PRO';
+  const planLabel = isPro ? 'PRO plan' : 'FREE plan';
 
   return (
     <div className={s.wsPopupOverlay} ref={overlayRef} onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}>
@@ -359,7 +361,7 @@ function WorkspaceDetailPopup({ workspace, projects, user, onClose, onNewProject
             <p className={s.wsPopupMeta}>
               Owner: {ownerName}
               {memberCount != null && <> · {memberCount} member{memberCount !== 1 ? 's' : ''}</>}
-              <> · Free plan</>
+              <> · <span className={isPro ? s.planTagPro : s.planTagFree}>{planLabel}</span></>
             </p>
           </div>
           <button className={s.wsPopupClose} onClick={onClose}>×</button>

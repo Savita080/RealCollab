@@ -159,7 +159,7 @@ export default function WorkspaceSidebar({ role }) {
 
         {/* User footer */}
         <div className={s.userFoot}>
-          <Avatar name={user?.name || 'U'} size={32} />
+          <Avatar name={user?.name || 'U'} src={user?.avatar} size={32} />
           <div className={s.userInfo}>
             <button className={s.userNameBtn} onClick={() => navigate('/profile')} title="Edit profile">
               {firstName}

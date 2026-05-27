@@ -12,6 +12,7 @@ import Login        from './pages/Login';
 import Register     from './pages/Register';
 import AcceptInvite from './pages/AcceptInvite';
 import Profile      from './pages/Profile';
+import Subscribe    from './pages/Subscribe';
 
 // Workspace tier
 import Workspaces        from './pages/workspace/Workspaces';
@@ -77,6 +78,14 @@ export default function App() {
             </ProtectedRoot>
           }
         />
+        <Route
+          path="/subscribe"
+          element={
+            <ProtectedRoot>
+              <Subscribe />
+            </ProtectedRoot>
+          }
+        />
 
         {/* Master workspaces dashboard (no chrome) */}
         <Route
@@ -130,7 +139,6 @@ export default function App() {
         <Route path="/collab"    element={<Navigate to="/workspaces" replace />} />
         <Route path="/ai"        element={<Navigate to="/workspaces" replace />} />
         <Route path="/members"   element={<Navigate to="/workspaces" replace />} />
-        <Route path="/subscribe" element={<Navigate to="/workspaces" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

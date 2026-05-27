@@ -157,15 +157,18 @@ All endpoints require `projectId` or `workspaceId` in body for quota tracking. R
 
 ## Subscriptions
 
-| Method | Endpoint | Body | RBAC |
-|---|---|---|---|
-| `POST` | `/subscriptions/:workspaceId/subscribe` | — | OWNER |
-| `POST` | `/subscriptions/:workspaceId/verify` | `{ razorpay_order_id, razorpay_payment_id, razorpay_signature }` | OWNER |
-| `POST` | `/subscriptions/:workspaceId/cancel` | — | OWNER |
-| `GET` | `/subscriptions/:workspaceId/subscription` | — | VIEWER |
+Subscription is **per-user** — no workspace context needed. The plan governs all workspaces the user owns.
 
-`/subscribe` returns `{ orderId, amount, currency, keyId }` — pass to Razorpay checkout JS.  
-`/verify` upgrades workspace to PRO on valid HMAC signature.
+| Method | Endpoint | Body | Auth |
+|---|---|---|---|
+| `POST` | `/subscriptions/subscribe` | — | Authenticated |
+| `POST` | `/subscriptions/verify` | `{ razorpay_order_id, razorpay_payment_id, razorpay_signature }` | Authenticated |
+| `POST` | `/subscriptions/cancel` | — | Authenticated |
+| `GET` | `/subscriptions/status` | — | Authenticated |
+
+`/subscribe` returns `{ orderId, amount, currency, keyId }` — pass directly to Razorpay checkout JS.  
+`/verify` validates HMAC-SHA256 signature and upgrades the **user** to PRO (1-year access, ₹499).  
+`/status` returns `{ plan, currentPeriodEnd, aiRequestsUsed, aiRequestsResetAt, limits }` where unlimited resources are serialized as `-1`.
 
 ---
 

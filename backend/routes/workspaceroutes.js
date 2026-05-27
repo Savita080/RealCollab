@@ -6,7 +6,7 @@ import {
 } from '../controllers/workspacecontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
 import { requireRole } from '../middleware/rbac.js';
-import { checkWorkspaceLimit } from '../middleware/planLimits.js';
+import { checkWorkspaceLimit, checkLimit } from '../middleware/planLimits.js';
 import { sendWorkspaceMessage, getWorkspaceMessages, reactToWorkspaceMessage } from '../controllers/workspacechatcontroller.js';
 import { resolveWorkspace } from '../middleware/resolveWorkspace.js';
 
@@ -21,7 +21,7 @@ router.patch('/:workspaceId', protectRoute, requireRole('OWNER'), updateWorkspac
 router.delete('/:workspaceId', protectRoute, requireRole('OWNER'), deleteWorkspace);
 router.patch('/:workspaceId/transfer-ownership', protectRoute, requireRole('OWNER'), transferOwnership);
 
-router.post('/:workspaceId/invite', protectRoute, requireRole('ADMIN'), generateInvite);
+router.post('/:workspaceId/invite', protectRoute, requireRole('ADMIN'), checkLimit('members'), generateInvite);
 router.post('/invite/accept/:token', protectRoute, acceptInvite);
 
 router.get('/:workspaceId/members', protectRoute, requireRole('VIEWER'), getWorkspaceMembers);

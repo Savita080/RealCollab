@@ -67,7 +67,8 @@ export const login = async (req, res) => {
             user: {
                 id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                subscription: user.subscription
             }
         });
 
@@ -208,7 +209,8 @@ export const googleLogin = async (req, res) => {
                 id: user._id,
                 name: user.name,
                 email: user.email,
-                avatar: user.avatar
+                avatar: user.avatar,
+                subscription: user.subscription
             }
         });
 

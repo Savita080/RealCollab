@@ -95,5 +95,9 @@ export const useAuth = create((set, get) => ({
     return updated;
   },
 
+  // Imperatively replace the user object — used after subscription refresh
+  // to keep the plan badge in sync without a full reload.
+  setUser: (user) => set({ user }),
+
   isAuthed: () => !!get().token,
 }));

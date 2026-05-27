@@ -2,9 +2,9 @@
 
 <br />
 
-<img src="https://img.shields.io/badge/-DEVCOLLAB-1a1a2e?style=for-the-badge&labelColor=1a1a2e" alt="DevCollab" height="40" />
+<img src="https://img.shields.io/badge/-REALCOLLAB-1a1a2e?style=for-the-badge&labelColor=1a1a2e" alt="RealCollab" height="40" />
 
-# 🚀 DevCollab
+# 🚀 RealCollab
 
 ### **One workspace. Zero context-switching. Ship faster.**
 
@@ -23,7 +23,7 @@
 <br />
 
 ```
-🏆  Built for DevFusion 2.0  ·  3 devs  ·  10 days  ·  ~30 endpoints  ·  6 AI agents  ·  16 socket events
+🏆  Built for DevFusion 2.0  ·  3 devs  ·  ~35 endpoints  ·  5 AI services  ·  16 socket events
 ```
 
 <br />
@@ -36,12 +36,12 @@
 
 </div>
 
-## 💡 Why DevCollab?
+## 💡 Why RealCollab?
 
-> Student teams spend more time **switching tools** than **shipping code**.
+> Student dev teams spend more time **switching tools** than **shipping code**.
 > Tasks live in Trello. Code lives in GitHub. Notes live in Notion. Discussions die in Discord. Standups never happen because nobody wants to summarize what they did yesterday.
 
-**DevCollab** is the workspace that fixes that. Plan, code, document, draw, and chat — all in one tab — with an AI layer that handles the boring parts so your team can focus on building.
+**RealCollab** is the workspace that fixes that. Plan, code, document, draw, and chat — all in one tab — with an AI layer that handles the boring parts so your team can focus on building.
 
 <br />
 
@@ -125,7 +125,7 @@ Per-project audit trail of every action — task moves, wiki edits, role changes
 
 <div align="center">
 
-| Capability | DevCollab | Trello | Notion | Linear | Slack |
+| Capability | RealCollab | Trello | Notion | Linear | Slack |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Real-time Kanban | ✅ | ✅ | ⚠️ | ✅ | ❌ |
 | Versioned Wiki | ✅ | ❌ | ⚠️ | ❌ | ❌ |
@@ -310,9 +310,9 @@ Open `http://localhost:5173` and you're in. 🎉
 
 |  | 🆓 **FREE** | 💎 **PRO** — ₹499 / year |
 |---|:---:|:---:|
-| **Workspaces** | 1 | ♾️ Unlimited |
+| **Workspaces owned** | 2 | ♾️ Unlimited |
 | **Projects** per workspace | 3 | ♾️ Unlimited |
-| **Members** per workspace | 5 | 50 |
+| **Members** per workspace | 4 | 50 |
 | **Tasks** per project | 50 | ♾️ Unlimited |
 | **Wiki pages** per project | 10 | ♾️ Unlimited |
 | **Whiteboards** per project | 2 | ♾️ Unlimited |
@@ -321,7 +321,7 @@ Open `http://localhost:5173` and you're in. 🎉
 
 </div>
 
-Limits enforced at the API layer via `planLimits` middleware. Upgrades flow through Razorpay's Orders API with HMAC-SHA256 signature verification — **no webhooks, no KYC, no friction**.
+Subscription is **per user account** — the plan governs all workspaces the user owns. Limits enforced at the API layer via `planLimits` middleware. Upgrades flow through Razorpay's Orders API with HMAC-SHA256 signature verification — **no webhooks, no KYC, no friction**.
 
 ---
 
@@ -371,8 +371,8 @@ POST   /api/ai/review-code                                    AI code review
 POST   /api/ai/standup                                        Generate standup
 POST   /api/ai/bottleneck                                     Detect bottlenecks
 
-POST   /api/subscriptions/:wId/subscribe                      Razorpay order
-POST   /api/subscriptions/:wId/verify                         HMAC verify → PRO
+POST   /api/subscriptions/subscribe                           Razorpay order (per-user)
+POST   /api/subscriptions/verify                              HMAC verify → user upgraded to PRO
 ```
 
 > 📖 **Full reference (30+ REST endpoints + 16 Socket.IO events):** [`docs/api/backend_api.md`](docs/api/backend_api.md)
@@ -420,12 +420,14 @@ Redis is optional. AI services are optional. App keeps running.
 - [x] Collaborative whiteboard with Redis cache
 - [x] @Mentions + notifications
 - [x] AI code reviewer (6-agent pipeline)
-- [x] AI standup / bottleneck / progress services
-- [x] Razorpay billing (Orders API)
+- [x] AI standup / bottleneck / progress / task-breaker services
+- [x] Razorpay billing — per-user subscription (Orders API, HMAC verify)
 - [x] Google OAuth
 - [x] Workspace ownership transfer
-- [ ] Frontend SPA (in progress)
-- [ ] AI services integration with backend (in progress)
+- [x] React SPA — Kanban, wiki, whiteboard, chat, snippets, AI panel
+- [x] AI services integration with backend proxy + quota enforcement
+- [x] Live typing indicators + real-time chat
+- [x] Multi-theme system (Midnight, Caramel, and more)
 - [ ] GitHub integration (commits → activity feed)
 - [ ] Email digest summaries
 - [ ] Mobile-responsive UI polish
@@ -449,7 +451,7 @@ REST API · Real-time<br />RBAC · Billing · Infra
 <td align="center" width="33%">
 
 🔵 **Frontend**
-<br /><sub>Teammate</sub>
+<br /><sub>Savita</sub>
 <br /><br />
 React SPA · Kanban UI<br />Whiteboard · Wiki Editor
 
@@ -457,7 +459,7 @@ React SPA · Kanban UI<br />Whiteboard · Wiki Editor
 <td align="center" width="33%">
 
 🟣 **AI Services**
-<br /><sub>Teammate</sub>
+<br /><sub>Suhani</sub>
 <br /><br />
 4 FastAPI services<br />Multi-agent · LangChain + Groq
 
@@ -506,7 +508,7 @@ Released under the **ISC License** — see [`LICENSE`](LICENSE) for details.
 
 <br />
 
-⭐ **Star us on GitHub** if DevCollab saved your team some context-switching
+⭐ **Star us on GitHub** if RealCollab saved your team some context-switching
 
 <br />
 

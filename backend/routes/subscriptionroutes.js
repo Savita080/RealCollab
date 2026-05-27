@@ -1,15 +1,13 @@
 import express from 'express';
 import { createOrder, verifyPayment, cancelSubscription, getSubscriptionStatus } from '../controllers/subscriptioncontroller.js';
 import { protectRoute } from '../middleware/authmiddleware.js';
-import { requireRole } from '../middleware/rbac.js';
-import { resolveWorkspace } from '../middleware/resolveWorkspace.js';
 
 const router = express.Router();
-router.param('workspaceId', resolveWorkspace);
 
-router.post('/:workspaceId/subscribe', protectRoute, requireRole('OWNER'), createOrder);
-router.post('/:workspaceId/verify', protectRoute, requireRole('OWNER'), verifyPayment);
-router.post('/:workspaceId/cancel', protectRoute, requireRole('OWNER'), cancelSubscription);
-router.get('/:workspaceId/subscription', protectRoute, requireRole('VIEWER'), getSubscriptionStatus);
+// Subscription is per-user now — no workspace context required.
+router.post('/subscribe', protectRoute, createOrder);
+router.post('/verify',    protectRoute, verifyPayment);
+router.post('/cancel',    protectRoute, cancelSubscription);
+router.get('/status',     protectRoute, getSubscriptionStatus);
 
 export default router;
