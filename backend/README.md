@@ -76,7 +76,7 @@ All protected routes require: `Authorization: Bearer <token>`
 | Notifications | `/notifications` | unread, mark-read |
 | Activity | `/workspaces/:wId/projects/:pId/activity` | Feed (latest 50) |
 | AI | `/ai` | review-code, standup, summarize, generate-tasks, bottleneck |
-| Subscriptions | `/subscriptions` | Razorpay order, verify, cancel, status |
+| Subscriptions | `/subscriptions` | subscribe, verify, cancel, status — **per-user, no workspace context** |
 
 Full API reference: [`../docs/api/backend_api.md`](../docs/api/backend_api.md)
 
@@ -94,16 +94,20 @@ Socket.IO runs on the same port as HTTP. Key events:
 
 ## Plan Limits
 
+Plan is per-user and governs all workspaces that user **owns**.
+
 | Resource | FREE | PRO |
 |---|---|---|
-| Workspaces | 1 | Unlimited |
-| Projects | 3 | Unlimited |
-| Members | 5 | 50 |
-| Tasks | 50 | Unlimited |
-| Wiki pages | 10 | Unlimited |
-| Whiteboards | 2 | Unlimited |
-| Snippets | 20 | Unlimited |
+| Workspaces owned | 2 | Unlimited |
+| Projects per workspace | 3 | Unlimited |
+| Members per workspace | 4 | 50 |
+| Tasks per project | 50 | Unlimited |
+| Wiki pages per project | 10 | Unlimited |
+| Whiteboards per project | 2 | Unlimited |
+| Snippets per project | 20 | Unlimited |
 | AI requests/month | 10 | 200 |
+
+Limits are enforced in `middleware/planLimits.js`. The middleware resolves the workspace owner's plan at request time — non-owner members inherit the owner's plan for workspace-scoped limits.
 
 ## Verify Setup
 

@@ -34,8 +34,8 @@ Security is handled via custom middleware and third-party integrations:
 - **Configuration**: Requires `BREVO_API_KEY` and `BREVO_SENDER_EMAIL` in the `.env` file.
 
 ### Razorpay (Payments & Subscriptions)
-- **Purpose**: Handling workspace Pro upgrades.
-- **Implementation**: We use the official `razorpay` npm package. The backend generates order IDs (`/subscriptions/:workspaceId/subscribe`) which the frontend fulfills. Once paid, the frontend posts the transaction details back to `/verify` where the backend validates the HMAC signature (`razorpay_signature`) to prevent fraud before upgrading the workspace status.
+- **Purpose**: Handling per-user PRO upgrades (₹499/year, one-time billing for hackathon demo).
+- **Implementation**: We use the official `razorpay` npm package. The backend generates an order (`POST /subscriptions/subscribe`) which the frontend fulfills via the Razorpay checkout JS. Once paid, the frontend posts the transaction details to `POST /subscriptions/verify` where the backend validates the HMAC-SHA256 signature (`razorpay_signature`) to prevent fraud before upgrading the **user's** subscription plan. Subscription is scoped to the user account — all workspaces the user owns inherit their plan.
 
 ---
 
@@ -55,7 +55,7 @@ The Node.js backend acts as an orchestrator for several isolated Python/FastAPI 
 
 - **Data Assembly**: The Node backend fetches the necessary context from MongoDB (e.g., fetching a task's full comment history).
 - **Forwarding**: It packages this context into a JSON payload and makes an HTTP POST request to the relevant AI microservice (Code Reviewer, Blocker Identifier, etc.).
-- **Quota Tracking**: The backend intercepts these requests to ensure the workspace hasn't exceeded its monthly AI usage quotas before forwarding.
+- **Quota Tracking**: The backend intercepts these requests to ensure the **user** hasn't exceeded their monthly AI request quota (10 FREE / 200 PRO) before forwarding. The counter resets monthly and lives on `User.subscription.aiRequestsUsed`.
 
 ---
 
