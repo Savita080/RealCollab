@@ -8,7 +8,7 @@ import { useUI } from '../../store/ui';
 import { workspaces as wsApi, projects as projApi, notifications as notifApi } from '../../lib/api';
 import { Avatar } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { Input } from '../../components/ui/Input';
+import { Input, Textarea } from '../../components/ui/Input';
 import { useClickOutside } from '../../lib/hooks';
 import ProfileCardBadge from '../../components/layout/ProfileCardBadge';
 import ThemeQuickPick from '../../components/layout/ThemeQuickPick';
@@ -36,6 +36,7 @@ export default function Workspaces() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState('');
+  const [description, setDescription] = useState('');
   const [nameError, setNameError] = useState('');
   const [creating, setCreating] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
@@ -78,8 +79,9 @@ export default function Workspaces() {
     setCreating(true);
     setNameError('');
     try {
-      const ws = await createWorkspace({ name: newName.trim() });
+      const ws = await createWorkspace({ name: newName.trim(), description: description.trim() });
       setNewName('');
+      setDescription('');
       setCreateOpen(false);
       navigate(`/workspaces/${ws.slug || ws._id}`);
     } catch (err) {
@@ -246,7 +248,7 @@ export default function Workspaces() {
 
       {/* Create modal */}
       {createOpen && (
-        <div className={s.modalOverlay} onClick={() => { setCreateOpen(false); setNameError(''); setNewName(''); }}>
+        <div className={s.modalOverlay} onClick={() => { setCreateOpen(false); setNameError(''); setNewName(''); setDescription(''); }}>
           <div className={s.modal} onClick={e => e.stopPropagation()}>
             <h3 className={s.modalTitle}>Create Workspace</h3>
             <p className={s.modalDesc}>
@@ -262,8 +264,15 @@ export default function Workspaces() {
                 required
                 autoFocus
               />
+              <Textarea
+                label="Description"
+                placeholder="Describe your workspace (optional)"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                rows={3}
+              />
               <div className={s.modalActions}>
-                <Button type="button" variant="ghost" onClick={() => { setCreateOpen(false); setNameError(''); setNewName(''); }}>Cancel</Button>
+                <Button type="button" variant="ghost" onClick={() => { setCreateOpen(false); setNameError(''); setNewName(''); setDescription(''); }}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={creating}>Create</Button>
               </div>
             </form>
