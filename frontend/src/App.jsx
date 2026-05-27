@@ -1,7 +1,8 @@
 // App.jsx — hierarchical routing: /workspaces (master) → /workspaces/:wsId/* → .../projects/:projectId/*
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from './store/auth';
+import { listenServiceWorkerNav } from './lib/webpush';
 
 import PaywallModal from './components/PaywallModal';
 import ToastStack from './components/ui/Toast';
@@ -57,12 +58,19 @@ function ProtectedRoot({ children }) {
   );
 }
 
+function ServiceWorkerNav() {
+  const navigate = useNavigate();
+  useEffect(() => { listenServiceWorkerNav(navigate); }, []);
+  return null;
+}
+
 export default function App() {
   const { init } = useAuth();
   useEffect(() => { init(); }, []);
 
   return (
     <BrowserRouter>
+      <ServiceWorkerNav />
       <PaywallModal />
       <Routes>
         {/* Public */}

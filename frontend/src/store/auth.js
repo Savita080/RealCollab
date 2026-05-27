@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { auth as authApi } from '../lib/api';
 import { connectSocket, disconnectSocket, setSocketIdentity } from '../lib/socket';
+import { registerPush } from '../lib/webpush';
 import { useWorkspace } from './workspace';
 import { useTasks } from './tasks';
 
@@ -20,6 +21,7 @@ export const useAuth = create((set, get) => ({
       set({ user, loading: false });
       const uid = user.id || user._id;
       connectSocket(token, uid, user?.name);
+      registerPush();
     } catch {
       localStorage.removeItem('rc_token');
       set({ user: null, token: null, loading: false });
@@ -44,6 +46,7 @@ export const useAuth = create((set, get) => ({
         setSocketIdentity(me.user.id || me.user._id, me.user.name);
       }
     } catch (_) {}
+    registerPush();
     return data;
   },
 
@@ -57,6 +60,7 @@ export const useAuth = create((set, get) => ({
       const uid = data.user?.id || data.user?._id;
       connectSocket(data.token, uid, data.user?.name);
     } catch (_) {}
+    registerPush();
     return data;
   },
 
@@ -71,6 +75,7 @@ export const useAuth = create((set, get) => ({
       const uid = data.user?.id || data.user?._id;
       connectSocket(data.token, uid, data.user?.name);
     } catch (_) {}
+    registerPush();
     return data;
   },
 

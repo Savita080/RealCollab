@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    // Web Push subscriptions — one entry per browser/device
+    pushSubscriptions: {
+        type: [mongoose.Schema.Types.Mixed],
+        default: []
+    },
+
     // Per-user subscription. Applies to every workspace the user owns.
     subscription: {
         plan: {

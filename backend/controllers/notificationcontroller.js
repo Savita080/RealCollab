@@ -1,5 +1,7 @@
 import Notification from '../models/notification.js';
+import User from '../models/user.js';
 import redis from '../config/redis.js';
+import { sendPushToUser } from '../lib/webpush.js';
 
 // This function gets called when someone tags a user in a comment
 export const createNotification = async (req, res) => {
@@ -15,23 +17,24 @@ export const createNotification = async (req, res) => {
             link
         });
 
-        // Flowchart Step 2: Backend checks Redis -> user:online exists?
+        // Live socket ping (user has tab open)
         if (redis) {
             const socketId = await redis.get(`user:online:${recipientId}`);
-            
             if (socketId) {
-                // Flowchart Step 3 (YES): io.to(socketId).emit(...)
                 req.io.to(socketId).emit('new_notification', notification);
-                
-                // Flowchart Step 4: DB updated -> notified: true
                 notification.notified = true;
                 await notification.save();
-                
-                console.log(`[Notification] Live ping sent to user ${recipientId}`);
-            } else {
-                // Flowchart Step 3 (NO): Row stays in DB (notified: false)
-                console.log(`[Notification] User ${recipientId} is offline. Saved to DB.`);
             }
+        }
+
+        // Web Push (works even when browser tab is closed)
+        const recipient = await User.findById(recipientId).select('pushSubscriptions');
+        if (recipient) {
+            sendPushToUser(recipient, {
+                title: 'RealCollab',
+                body: content,
+                link,
+            });
         }
 
         res.status(201).json({ message: "Notification processed", notification });
@@ -80,6 +83,44 @@ export const markOneNotificationRead = async (req, res) => {
             return res.status(404).json({ message: "Notification not found" });
         }
         res.status(200).json({ message: "Notification marked as read" });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// Return the VAPID public key so the frontend can subscribe
+export const getVapidPublicKey = (req, res) => {
+    res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
+};
+
+// Save a new push subscription for this user's device
+export const subscribePush = async (req, res) => {
+    try {
+        const { subscription } = req.body;
+        if (!subscription?.endpoint) {
+            return res.status(400).json({ message: "Invalid subscription object" });
+        }
+        const user = await User.findById(req.userId);
+        // Avoid storing duplicate endpoints
+        const already = user.pushSubscriptions.some(s => s.endpoint === subscription.endpoint);
+        if (!already) {
+            user.pushSubscriptions.push(subscription);
+            await user.save();
+        }
+        res.json({ message: "Push subscription saved" });
+    } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+// Remove a push subscription (user disabled notifications in browser)
+export const unsubscribePush = async (req, res) => {
+    try {
+        const { endpoint } = req.body;
+        const user = await User.findById(req.userId);
+        user.pushSubscriptions = user.pushSubscriptions.filter(s => s.endpoint !== endpoint);
+        await user.save();
+        res.json({ message: "Push subscription removed" });
     } catch (error) {
         res.status(500).json({ error: "Internal Server Error" });
     }
