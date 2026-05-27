@@ -86,7 +86,7 @@ export default function Snippets() {
     setAiLoading(true);
     setAiResult('');
     try {
-      const { data } = await aiApi.review({ code: aiModal.code, language: aiModal.language, snippetId: aiModal._id });
+      const { data } = await aiApi.review({ code: aiModal.code, language: aiModal.language, snippetId: aiModal._id, projectId: currentProject._id });
       setAiResult(typeof data === 'string' ? data : JSON.stringify(data, null, 2));
     } catch (err) {
       setAiResult('Error: ' + (err.response?.data?.message || err.message));
