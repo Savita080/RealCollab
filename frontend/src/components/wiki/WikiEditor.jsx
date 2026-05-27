@@ -33,9 +33,8 @@ export default function WikiEditor({ page, onSave }) {
   };
 
   const handleSave = async () => {
-    const commitMessage = window.prompt('Save note (describe your changes):', 'Content update') || 'Content update';
     setSaving(true);
-    await onSave(editorRef.current.innerHTML, commitMessage);
+    await onSave(editorRef.current.innerHTML);
     setSaving(false);
   };
 

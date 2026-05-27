@@ -1,0 +1,65 @@
+/* Prism token colors — tuned for RealCollab CSS variables */
+code[class*='language-'],
+pre[class*='language-'] {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--text-3);
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: var(--text-2);
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #c97b2e;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: var(--status-success);
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: var(--indigo);
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: var(--indigo);
+  font-weight: 600;
+}
+
+.token.function,
+.token.class-name {
+  color: #2a7ab8;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: var(--status-warning);
+}

@@ -1,0 +1,29 @@
+.wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: auto;
+  transition: border-color 0.2s;
+}
+
+.wrap:focus-within {
+  border-color: var(--indigo);
+}
+
+.editor {
+  font-family: var(--font-mono) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  min-height: inherit;
+}
+
+.textarea,
+.pre {
+  outline: none !important;
+  min-height: inherit;
+}
+
+.textarea::placeholder {
+  color: var(--text-3);
+  opacity: 1;
+}

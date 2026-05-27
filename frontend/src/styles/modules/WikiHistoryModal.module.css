@@ -1,0 +1,147 @@
+.muted {
+  color: var(--text-3);
+  font-size: 13px;
+  text-align: center;
+  margin: 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: var(--font-body);
+}
+
+.listItem:hover {
+  background: var(--accent-soft);
+  border-color: var(--focus-ring);
+}
+
+.commitMessage {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1.35;
+}
+
+.meta,
+.detailAuthorTime {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.metaSep {
+  margin: 0 6px;
+  opacity: 0.7;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 70vh;
+}
+
+.backBtn {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--indigo);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font-body);
+}
+
+.backBtn:hover {
+  text-decoration: underline;
+}
+
+.detailMeta {
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detailCommit {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0 0 6px;
+}
+
+.detailAuthorTime {
+  margin: 0;
+}
+
+.preview {
+  flex: 1;
+  min-height: 120px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 16px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-1);
+}
+
+.preview :global(h2),
+.preview :global(h3) {
+  font-family: var(--font-display);
+  margin: 1em 0 0.5em;
+}
+
+.preview :global(pre) {
+  background: var(--bg-3);
+  border-radius: var(--r-sm);
+  padding: 12px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.detailActions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.restoreForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.restoreHint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.restoreActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

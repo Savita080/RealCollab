@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { useWorkspace } from '../store/workspace';
 import { wiki as wikiApi } from '../lib/api';
 import { useUI } from '../store/ui';
-import { fmtRelative } from '../lib/utils';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import WikiEditor from '../components/wiki/WikiEditor';
+import WikiHistoryModal from '../components/wiki/WikiHistoryModal';
 import s from '../styles/modules/Wiki.module.css';
 
 export default function Wiki() {
@@ -78,7 +78,7 @@ export default function Wiki() {
   const savePage = async (content, commitMessage) => {
     if (commitMessage.length < 10) {
       toast('Commit message must be at least 10 characters', 'error');
-      return;
+      return false;
     }
     setSaving(true);
     try {
@@ -88,8 +88,10 @@ export default function Wiki() {
       setCommitModal(false);
       setPendingContent(null);
       toast('Saved ✓', 'success');
+      return true;
     } catch (err) {
       toast(err?.response?.data?.message || 'Failed to save', 'error');
+      return false;
     } finally { setSaving(false); }
   };
 
@@ -123,12 +125,12 @@ export default function Wiki() {
     finally { setLoadingVersions(false); }
   };
 
-  const restoreVersion = async (v) => {
-    if (!confirm('Restore this version? Current content will be overwritten.')) return;
-    const msg = `Restored version from ${fmtRelative(v.createdAt)}`;
-    await savePage(v.content, msg);
-    setHistoryModal(false);
-    toast('Version restored', 'success');
+  const restoreVersion = async (version, commitMessage) => {
+    const ok = await savePage(version.content || '', commitMessage);
+    if (ok) {
+      setHistoryModal(false);
+      toast('Version restored', 'success');
+    }
   };
 
   const handleRenameTitle = async (e) => {
@@ -235,32 +237,15 @@ export default function Wiki() {
         </form>
       </Modal>
 
-      {/* Version history modal */}
-      <Modal open={historyModal} onClose={() => setHistoryModal(false)} title={`History — ${activePage?.title}`} size="lg">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 400, overflowY: 'auto' }}>
-          {loadingVersions && <p style={{ color: 'var(--text-3)', textAlign: 'center' }}>Loading versions…</p>}
-          {!loadingVersions && versions.length === 0 && <p style={{ color: 'var(--text-3)', textAlign: 'center' }}>No version history yet.</p>}
-          {versions.map((v, i) => (
-            <div key={v._id} style={{ background: 'var(--bg-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-1)', marginBottom: 4 }}>
-                  {i === 0 ? '🔵 Latest' : `v${versions.length - i}`}
-                  {v.commitMessage && <span style={{ color: 'var(--text-3)', marginLeft: 8 }}>— {v.commitMessage}</span>}
-                </p>
-                <p style={{ fontSize: 11, color: 'var(--text-3)' }}>
-                  Saved by {v.savedBy?.name || 'Unknown'} · {fmtRelative(v.createdAt)}
-                </p>
-                <p style={{ fontSize: 11, color: 'var(--text-3)', fontFamily: 'var(--font-mono)', marginTop: 4 }}>
-                  {(v.content || '').slice(0, 80)}{v.content?.length > 80 ? '…' : ''}
-                </p>
-              </div>
-              {i > 0 && (
-                <Button variant="ghost" size="sm" onClick={() => restoreVersion(v)}>Restore</Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </Modal>
+      <WikiHistoryModal
+        open={historyModal}
+        onClose={() => setHistoryModal(false)}
+        pageTitle={activePage?.title}
+        versions={versions}
+        loading={loadingVersions}
+        saving={saving}
+        onRestore={restoreVersion}
+      />
     </div>
   );
 }
