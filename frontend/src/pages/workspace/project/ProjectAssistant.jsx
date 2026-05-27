@@ -7,7 +7,7 @@ import Button from '../../../components/ui/Button';
 import { Textarea, Select } from '../../../components/ui/Input';
 import s from '../../../styles/modules/AIPanel.module.css';
 
-const LANGUAGES = ['javascript','python','typescript','java','go','rust','c','cpp','html','css','sql','bash'];
+const LANGUAGES = ['python', 'java', 'javascript', 'c++', 'go'];
 
 export default function ProjectAssistant() {
   const ctx = useOutletContext();

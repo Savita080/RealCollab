@@ -10,11 +10,7 @@ import { Input, Textarea, Select } from '../components/ui/Input';
 import SnippetCard from '../components/snippets/SnippetCard';
 import s from '../styles/modules/Snippets.module.css';
 
-const LANGS = [
-  'javascript', 'typescript', 'python', 'go', 'rust',
-  'java', 'c++', 'c#', 'php', 'ruby',
-  'swift', 'kotlin', 'html', 'css', 'bash',
-];
+const LANGS = ['python', 'java', 'javascript', 'c++', 'go'];
 
 
 export default function Snippets() {

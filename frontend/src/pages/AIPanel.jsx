@@ -4,7 +4,7 @@ import { useWorkspace } from '../store/workspace';
 import { ai as aiApi } from '../lib/api';
 import { useUI } from '../store/ui';
 import Button from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
+import { Input, Textarea } from '../components/ui/Input';
 import { Select } from '../components/ui/Input';
 import s from '../styles/modules/AIPanel.module.css';
 
@@ -16,7 +16,25 @@ const PANELS = [
   { id: 'review',   label: 'Code Reviewer',     icon: '</>', desc: 'Paste code and get bug, performance, readability feedback.' },
 ];
 
-const CODE_LANGS = ['javascript', 'typescript', 'python', 'go', 'java', 'c++', 'rust', 'php', 'ruby', 'swift'];
+const CODE_LANGS = ['python', 'java', 'javascript', 'c++', 'go'];
+
+const REVIEW_CRITERIA = [
+  { key: 'clean_code', label: 'Clean Code' },
+  { key: 'syntax', label: 'Syntax' },
+  { key: 'security', label: 'Security' },
+  { key: 'readability', label: 'Readability' },
+  { key: 'performance', label: 'Performance' },
+  { key: 'robustness', label: 'Robustness' },
+];
+
+const DEFAULT_REVIEW_WEIGHTS = {
+  clean_code: 17,
+  syntax: 17,
+  security: 17,
+  readability: 17,
+  performance: 16,
+  robustness: 16,
+};
 
 // ── Structured result renderers per panel type ─────────────────────────────
 const toSafeArray = (value) => (Array.isArray(value) ? value : []);
@@ -321,27 +339,40 @@ function ReviewResult({ data }) {
         {agentResults.map((agent, i) => {
           const score = Number(agent.score ?? agent.weighted_score ?? 0);
           const scoreClass = score >= 80 ? s.agentScoreGood : score >= 60 ? s.agentScoreWarn : s.agentScoreBad;
+          const issues = toSafeArray(agent.issues);
+          const suggestions = toSafeArray(agent.suggestions);
+          const isPerfect = score >= 100 && issues.length === 0 && suggestions.length === 0;
           return (
             <div key={`${agent.criteria ?? agent.name ?? i}`} className={s.agentCard}>
               <div className={s.agentHeader}>
                 <span className={s.agentCriteria}>{agent.criteria ?? agent.name ?? `Criteria ${i + 1}`}</span>
                 {agent.score != null && <span className={`${s.agentScore} ${scoreClass}`}>{score.toFixed(1)}</span>}
               </div>
-              {toSafeArray(agent.issues).length > 0 && (
+              {agent.summary && (issues.length > 0 || suggestions.length > 0) && (
+                <p className={s.agentSummary}>{agent.summary}</p>
+              )}
+              {issues.length > 0 && (
                 <div className={s.section}>
                   <span className={s.sLabel}>Issues</span>
                   <ul className={s.issueList}>
-                    {agent.issues.map((issue, idx) => <li key={idx}>{issue}</li>)}
+                    {issues.map((issue, idx) => <li key={idx}>{issue}</li>)}
                   </ul>
                 </div>
               )}
-              {toSafeArray(agent.suggestions).length > 0 && (
+              {suggestions.length > 0 && (
                 <div className={s.section}>
                   <span className={s.sLabel}>Suggestions</span>
                   <ul className={s.suggList}>
-                    {agent.suggestions.map((suggestion, idx) => <li key={idx}>{suggestion}</li>)}
+                    {suggestions.map((suggestion, idx) => <li key={idx}>{suggestion}</li>)}
                   </ul>
                 </div>
+              )}
+              {issues.length === 0 && suggestions.length === 0 && (
+                <p className={isPerfect ? s.agentClean : s.agentSummary}>
+                  {agent.summary || (isPerfect
+                    ? '✓ No issues found — excellent score.'
+                    : 'No issues or suggestions for this criteria.')}
+                </p>
               )}
             </div>
           );
@@ -402,7 +433,32 @@ export default function AIPanel({ canEdit = true, isContributor = true } = {}) {
   const [loading, setLoading] = useState(false);
   const [codeInput, setCodeInput] = useState('');
   const [codeLang, setCodeLang] = useState('javascript');
+  const [reviewContext, setReviewContext] = useState('');
+  const [reviewWeights, setReviewWeights] = useState(DEFAULT_REVIEW_WEIGHTS);
   const [planInput, setPlanInput] = useState('');
+
+  const reviewWeightTotal = REVIEW_CRITERIA.reduce(
+    (sum, { key }) => sum + (Number(reviewWeights[key]) || 0),
+    0,
+  );
+
+  const buildReviewPayload = () => {
+    const payload = {
+      code: codeInput,
+      language: codeLang,
+      projectId: currentProject._id,
+    };
+    const trimmedContext = reviewContext.trim();
+    if (trimmedContext) payload.context = trimmedContext;
+
+    const weights = {};
+    for (const { key } of REVIEW_CRITERIA) {
+      const pct = Number(reviewWeights[key]);
+      if (!Number.isNaN(pct) && pct > 0) weights[key] = pct / 100;
+    }
+    if (Object.keys(weights).length > 0) payload.weights = weights;
+    return payload;
+  };
 
   const run = async () => {
     if (!currentProject) {
@@ -422,7 +478,7 @@ export default function AIPanel({ canEdit = true, isContributor = true } = {}) {
       if (active === 'blockers') ({ data } = await aiApi.blockers(currentWorkspace._id, currentProject._id));
       if (active === 'standup')  ({ data } = await aiApi.standup(currentWorkspace._id, currentProject._id));
       if (active === 'plan')     ({ data } = await aiApi.plan(currentWorkspace._id, currentProject._id, { featureDescription: planInput }));
-      if (active === 'review')   ({ data } = await aiApi.review({ code: codeInput, language: codeLang, projectId: currentProject._id }));
+      if (active === 'review')   ({ data } = await aiApi.review(buildReviewPayload()));
       // #region agent log
       fetch('http://127.0.0.1:7942/ingest/a4a06877-767b-4074-b736-7d5787786897',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'bc313a'},body:JSON.stringify({sessionId:'bc313a',location:'AIPanel.jsx:run:success',message:'API success',data:{active,dataKeys:data&&typeof data==='object'?Object.keys(data):null,healthScoreType:data?.health_score!=null?typeof data.health_score:null,hasSummaryText:!!data?.summary_text,hasSummary:!!data?.summary},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
       // #endregion
@@ -525,6 +581,42 @@ export default function AIPanel({ canEdit = true, isContributor = true } = {}) {
                     options={CODE_LANGS}
                   />
                 </div>
+              </div>
+              <Textarea
+                label="Code purpose (context)"
+                placeholder="e.g. LeetCode two-sum solution for interview prep (≤50 words)"
+                value={reviewContext}
+                onChange={e => setReviewContext(e.target.value)}
+                rows={2}
+                maxLength={400}
+              />
+              <div className={s.weightsSection}>
+                <div className={s.weightsHeader}>
+                  <span className={s.sLabel}>Criteria weights (%)</span>
+                  <span className={s.weightsTotal} data-warning={reviewWeightTotal !== 100 ? 'true' : undefined}>
+                    Total: {reviewWeightTotal}%
+                  </span>
+                </div>
+                <div className={s.weightsGrid}>
+                  {REVIEW_CRITERIA.map(({ key, label }) => (
+                    <Input
+                      key={key}
+                      label={label}
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={reviewWeights[key]}
+                      onChange={e => setReviewWeights(prev => ({
+                        ...prev,
+                        [key]: e.target.value === '' ? '' : Number(e.target.value),
+                      }))}
+                    />
+                  ))}
+                </div>
+                <p className={s.weightsHint}>
+                  Sent to the reviewer as 0–1 values (e.g. 20% → 0.2). Weights do not need to sum to 100.
+                </p>
               </div>
               <textarea
                 className={s.codeInput}
