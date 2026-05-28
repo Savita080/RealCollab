@@ -24,19 +24,20 @@ export const setSocketIdentity = (userId, name) => {
 };
 
 socket.on('connect', () => {
-  console.log('[socket] CONNECT id=', socket.id, 'identity=', identity, 'activeProjects=', [...activeRooms.projects]);
+  const ident = identity ? `${identity.userId}|${identity.name}` : 'null';
+  const projs = [...activeRooms.projects].join(',');
+  console.log(`[socket] CONNECT sid=${socket.id} identity=${ident} activeProjects=[${projs}]`);
   if (identity) socket.emit('user_online', identity);
-  // Re-join all active rooms after reconnect / late connect
   activeRooms.workspaces.forEach(id => socket.emit('join_workspace', id));
   activeRooms.projects.forEach(id => {
-    console.log('[socket] connect-handler emit join_project + request_presence', id);
+    console.log(`[socket] CONNECT-rejoin pid=${id}`);
     socket.emit('join_project', id);
     socket.emit('request_presence', id);
   });
   activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
 });
 
-socket.on('disconnect', (reason) => console.log('[socket] DISCONNECT', reason));
+socket.on('disconnect', (reason) => console.log(`[socket] DISCONNECT reason=${reason}`));
 
 export const connectSocket = (token, userId, name) => {
   if (BYPASS_BACKEND) {
@@ -68,12 +69,10 @@ export const emitUserOnline = (userId, name) => socket.emit('user_online', { use
 // Instead we add to activeRooms and let the 'connect' handler emit in the
 // correct order: user_online first, then joins.
 export const joinProject     = (projectId)    => {
-  console.log('[socket] joinProject called', projectId, 'connected=', socket.connected);
+  console.log(`[socket] joinProject pid=${projectId} connected=${socket.connected} sid=${socket.id}`);
   activeRooms.projects.add(projectId);
   if (socket.connected) {
     socket.emit('join_project', projectId);
-    // Also request presence right after joining — guarantees the request
-    // arrives AFTER join_project on the server, so our socket is in the room.
     socket.emit('request_presence', projectId);
   }
 };
