@@ -27,7 +27,10 @@ socket.on('connect', () => {
   if (identity) socket.emit('user_online', identity);
   // Re-join all active rooms after reconnect / late connect
   activeRooms.workspaces.forEach(id => socket.emit('join_workspace', id));
-  activeRooms.projects.forEach(id => socket.emit('join_project', id));
+  activeRooms.projects.forEach(id => {
+    socket.emit('join_project', id);
+    socket.emit('request_presence', id);
+  });
   activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
 });
 
@@ -60,7 +63,15 @@ export const emitUserOnline = (userId, name) => socket.emit('user_online', { use
 // would deliver join_project BEFORE user_online, which races presence tracking.
 // Instead we add to activeRooms and let the 'connect' handler emit in the
 // correct order: user_online first, then joins.
-export const joinProject     = (projectId)    => { activeRooms.projects.add(projectId);    if (socket.connected) socket.emit('join_project', projectId); };
+export const joinProject     = (projectId)    => {
+  activeRooms.projects.add(projectId);
+  if (socket.connected) {
+    socket.emit('join_project', projectId);
+    // Also request presence right after joining — guarantees the request
+    // arrives AFTER join_project on the server, so our socket is in the room.
+    socket.emit('request_presence', projectId);
+  }
+};
 export const leaveProject    = (projectId)    => { activeRooms.projects.delete(projectId); if (socket.connected) socket.emit('leave_project', projectId); };
 export const joinWorkspace   = (workspaceId)  => { activeRooms.workspaces.add(workspaceId);    if (socket.connected) socket.emit('join_workspace', workspaceId); };
 export const leaveWorkspace  = (workspaceId)  => { activeRooms.workspaces.delete(workspaceId); if (socket.connected) socket.emit('leave_workspace', workspaceId); };
