@@ -37,23 +37,28 @@ export function usePresence(projectId) {
     if (!projectId) return;
     const requestPresence = () => socket.emit('request_presence', projectId);
     // Server sends { projectId, users } — accept only updates for OUR room.
-    // Tolerate legacy array payloads (no projectId field) too.
     const onPresenceUpdate = (data) => {
-      if (Array.isArray(data)) { setOnline(data); return; }
       if (data?.projectId === projectId) setOnline(data.users || []);
     };
     const onFocus = () => { if (socket.connected) requestPresence(); };
     socket.on('presence:update', onPresenceUpdate);
     socket.on('connect', requestPresence);
     window.addEventListener('focus', onFocus);
-    // Request immediately in case socket is already connected
-    if (socket.connected) requestPresence();
-    // Heartbeat — re-request presence every 15s as a safety net for missed broadcasts
+    // React fires child effects BEFORE parent effects — so this hook runs
+    // before ProjectLayout's joinProject. Defer the initial request to the
+    // next macrotask so join_project lands first, putting our socket in the
+    // room before request_presence asks who's in it.
+    let initialTimer;
+    if (socket.connected) {
+      initialTimer = setTimeout(requestPresence, 0);
+    }
+    // Heartbeat — re-request presence every 15s as a safety net
     const heartbeat = setInterval(() => { if (socket.connected) requestPresence(); }, 15000);
     return () => {
       socket.off('presence:update', onPresenceUpdate);
       socket.off('connect', requestPresence);
       window.removeEventListener('focus', onFocus);
+      window.clearTimeout(initialTimer);
       clearInterval(heartbeat);
     };
   }, [projectId]);
