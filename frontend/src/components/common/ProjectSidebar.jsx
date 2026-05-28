@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useWorkspace } from '../../store/workspace';
 import { useAuth } from '../../store/auth';
+import { useChat } from '../../store/chat';
 import { useClickOutside } from '../../lib/hooks';
 import { useUI } from '../../store/ui';
 import { Avatar } from '../ui/Badge';
@@ -24,6 +25,7 @@ export default function ProjectSidebar({ project, canEdit, role }) {
   const { projects, workspaces: wsList, current } = useWorkspace();
   const { user, logout } = useAuth();
   const { sidebarOpen } = useUI();
+  const unreadMap = useChat(s => s.unread);
   
   const [projDropOpen, setProjDropOpen] = useState(false);
   const [wsDropOpen, setWsDropOpen] = useState(false);
@@ -73,6 +75,7 @@ export default function ProjectSidebar({ project, canEdit, role }) {
   // projectId from URL may be _id (legacy) or slug (pretty URL) — match both.
   const activeProj = project || projects.find(p => p._id === projectId || p.slug === projectId);
   const projectName = activeProj?.name || 'Loading…';
+  const chatUnread = activeProj?._id ? (unreadMap[activeProj._id] || 0) : 0;
   const projIdx = projects.findIndex(p => p._id === projectId || p.slug === projectId);
   const projColor = PROJECT_COLORS[projIdx >= 0 ? projIdx % PROJECT_COLORS.length : 0];
 
@@ -171,18 +174,36 @@ export default function ProjectSidebar({ project, canEdit, role }) {
       {/* Main nav */}
       <nav className={s.navSection}>
         <div className={s.sectionLabel}>PROJECT</div>
-        {NAV.map(n => (
-          <NavLink
-            key={n.to}
-            to={n.to}
-            end={n.end}
-            className={({ isActive }) => `${s.link} ${isActive ? s.active : ''}`}
-          >
-            <span className={s.linkIcon}><n.icon size={16} /></span>
-            <span className={s.linkLabel}>{n.label}</span>
-            {n.badge && <span className={s.badge}>{n.badge}</span>}
-          </NavLink>
-        ))}
+        {NAV.map(n => {
+          const showUnread = n.label === 'Chat' && chatUnread > 0;
+          return (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.end}
+              className={({ isActive }) => `${s.link} ${isActive ? s.active : ''}`}
+            >
+              <span className={s.linkIcon}><n.icon size={16} /></span>
+              <span className={s.linkLabel}>{n.label}</span>
+              {showUnread && (
+                <span style={{
+                  marginLeft: 'auto',
+                  background: 'var(--status-danger, #ef4444)',
+                  color: '#fff',
+                  fontSize: 10,
+                  fontWeight: 600,
+                  padding: '1px 6px',
+                  borderRadius: 10,
+                  minWidth: 16,
+                  textAlign: 'center',
+                }}>
+                  {chatUnread > 99 ? '99+' : chatUnread}
+                </span>
+              )}
+              {n.badge && !showUnread && <span className={s.badge}>{n.badge}</span>}
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* Settings */}

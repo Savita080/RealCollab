@@ -20,7 +20,7 @@ export const useAuth = create((set, get) => ({
       const user = data.user || { id: data.yourId, name: data.name, email: data.email };
       set({ user, loading: false });
       const uid = user.id || user._id;
-      connectSocket(token, uid, user?.name);
+      connectSocket(token, uid, user?.name, user?.avatar);
       registerPush();
     } catch {
       localStorage.removeItem('rc_token');
@@ -36,14 +36,14 @@ export const useAuth = create((set, get) => ({
     set({ user: data.user, token: data.token });
     try {
       const uid = data.user?.id || data.user?._id;
-      connectSocket(data.token, uid, data.user?.name);
+      connectSocket(data.token, uid, data.user?.name, data.user?.avatar);
     } catch (_) {}
     // Fetch full profile after login (avatar, bio, skills, etc.)
     try {
       const { data: me } = await authApi.me();
       if (me.user) {
         set({ user: me.user });
-        setSocketIdentity(me.user.id || me.user._id, me.user.name);
+        setSocketIdentity(me.user.id || me.user._id, me.user.name, me.user.avatar);
       }
     } catch (_) {}
     registerPush();
@@ -58,7 +58,7 @@ export const useAuth = create((set, get) => ({
     set({ user: data.user, token: data.token });
     try {
       const uid = data.user?.id || data.user?._id;
-      connectSocket(data.token, uid, data.user?.name);
+      connectSocket(data.token, uid, data.user?.name, data.user?.avatar);
     } catch (_) {}
     registerPush();
     return data;
@@ -73,7 +73,7 @@ export const useAuth = create((set, get) => ({
     set({ user: data.user, token: data.token });
     try {
       const uid = data.user?.id || data.user?._id;
-      connectSocket(data.token, uid, data.user?.name);
+      connectSocket(data.token, uid, data.user?.name, data.user?.avatar);
     } catch (_) {}
     registerPush();
     return data;
@@ -97,6 +97,7 @@ export const useAuth = create((set, get) => ({
     const { data } = await authApi.updateProfile(d);
     const updated = data.user ?? data;
     set({ user: updated });
+    setSocketIdentity(updated.id || updated._id, updated.name, updated.avatar);
     return updated;
   },
 

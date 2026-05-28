@@ -1,8 +1,10 @@
 import ProjectMessage from '../models/projectMessage.js';
+import ChatRead from '../models/chatRead.js';
 import Project from '../models/project.js';
 import Workspace from '../models/workspace.js';
 import { notifyMentions, notifyUser } from '../utils/notify.js';
 import { toggleReaction } from '../utils/reactions.js';
+import { extractFirstUrl, fetchLinkPreview } from '../utils/linkPreview.js';
 
 // Populate shape used everywhere — sender + the quoted parent (sender + content).
 // Reply previews need just enough to render the quote chip, not the full thread.
@@ -77,6 +79,27 @@ export const sendMessage = async (req, res) => {
         }
 
         res.status(201).json({ message: "Message sent", chatMessage: populatedMessage });
+
+        // Fetch OG preview in the background for the first URL in the message.
+        // We respond first so chat stays fast, then patch the message + broadcast.
+        const firstUrl = extractFirstUrl(content);
+        if (firstUrl) {
+            fetchLinkPreview(firstUrl).then(async (preview) => {
+                if (!preview) return;
+                const updated = await ProjectMessage.findByIdAndUpdate(
+                    newMessage._id,
+                    { linkPreview: preview },
+                    { new: true }
+                ).populate('sender', 'name avatar').populate(REPLY_POPULATE);
+                if (updated) {
+                    req.io.to(projectId).emit('message_link_preview', {
+                        scope: 'project',
+                        messageId: updated._id,
+                        linkPreview: preview,
+                    });
+                }
+            }).catch(() => {});
+        }
     } catch (error) {
         console.error("Error sending message:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
@@ -100,6 +123,101 @@ export const reactToProjectMessage = async (req, res) => {
     }
 };
 
+export const editProjectMessage = async (req, res) => {
+    try {
+        const { projectId, messageId } = req.params;
+        const { content } = req.body;
+        if (!content || !content.trim()) return res.status(400).json({ message: 'Content required' });
+
+        const msg = await ProjectMessage.findById(messageId);
+        if (!msg || msg.project.toString() !== projectId) return res.status(404).json({ message: 'Not found' });
+        if (msg.deletedAt) return res.status(410).json({ message: 'Message deleted' });
+        if (msg.sender.toString() !== req.userId.toString()) return res.status(403).json({ message: 'Not your message' });
+
+        msg.content = content;
+        msg.editedAt = new Date();
+        await msg.save();
+
+        const populated = await ProjectMessage.findById(messageId)
+            .populate('sender', 'name avatar')
+            .populate(REPLY_POPULATE);
+
+        req.io.to(projectId).emit('message_edited', { scope: 'project', message: populated });
+        res.status(200).json({ message: populated });
+    } catch (err) {
+        console.error('Edit message error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+export const deleteProjectMessage = async (req, res) => {
+    try {
+        const { projectId, messageId } = req.params;
+        const msg = await ProjectMessage.findById(messageId);
+        if (!msg || msg.project.toString() !== projectId) return res.status(404).json({ message: 'Not found' });
+        if (msg.deletedAt) return res.status(200).json({ messageId });
+        if (msg.sender.toString() !== req.userId.toString()) return res.status(403).json({ message: 'Not your message' });
+
+        msg.deletedAt = new Date();
+        msg.content = '';
+        await msg.save();
+
+        req.io.to(projectId).emit('message_deleted', { scope: 'project', messageId });
+        res.status(200).json({ messageId });
+    } catch (err) {
+        console.error('Delete message error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+export const searchProjectMessages = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const q = (req.query.q || '').trim();
+        if (!q) return res.status(200).json({ matches: [] });
+        // Case-insensitive substring match. Mongo $text would need a text index;
+        // regex is fine for hackathon-scale chat history.
+        const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const matches = await ProjectMessage.find({
+            project: projectId,
+            content: { $regex: safe, $options: 'i' },
+            deletedAt: null,
+        })
+            .populate('sender', 'name avatar')
+            .sort('-createdAt')
+            .limit(20)
+            .lean();
+        res.status(200).json({ matches });
+    } catch (err) {
+        console.error('search error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+export const togglePinProjectMessage = async (req, res) => {
+    try {
+        const { projectId, messageId } = req.params;
+        const msg = await ProjectMessage.findById(messageId);
+        if (!msg || msg.project.toString() !== projectId) return res.status(404).json({ message: 'Not found' });
+        if (msg.deletedAt) return res.status(410).json({ message: 'Message deleted' });
+
+        msg.pinned = !msg.pinned;
+        msg.pinnedAt = msg.pinned ? new Date() : null;
+        msg.pinnedBy = msg.pinned ? req.userId : null;
+        await msg.save();
+
+        const populated = await ProjectMessage.findById(messageId)
+            .populate('sender', 'name avatar')
+            .populate(REPLY_POPULATE);
+
+        req.io.to(projectId).emit('message_pinned', { scope: 'project', message: populated });
+        res.status(200).json({ message: populated });
+    } catch (err) {
+        console.error('togglePin error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
 export const getProjectMessages = async (req, res) => {
     try {
         const { projectId } = req.params;
@@ -108,9 +226,84 @@ export const getProjectMessages = async (req, res) => {
             .populate(REPLY_POPULATE)
             .sort('createdAt'); // Oldest first (like normal chat history)
 
-        res.status(200).json({ messages });
+        // Per-user lastReadAt for the seen-by row.
+        const reads = await ChatRead.find({ project: projectId })
+            .populate('user', 'name avatar')
+            .lean();
+
+        res.status(200).json({ messages, reads });
     } catch (error) {
         console.error("Error fetching messages:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+export const markProjectChatRead = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const now = new Date();
+        const record = await ChatRead.findOneAndUpdate(
+            { user: req.userId, project: projectId },
+            { lastReadAt: now },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        ).populate('user', 'name avatar');
+
+        // Tell others (so seen-by avatars update live)
+        req.io.to(projectId).emit('chat_read', {
+            scope: 'project',
+            projectId,
+            userId: req.userId.toString(),
+            user: { _id: record.user._id, name: record.user.name, avatar: record.user.avatar },
+            lastReadAt: now,
+        });
+        res.status(200).json({ lastReadAt: now });
+    } catch (err) {
+        console.error('markProjectChatRead error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+// Returns unread counts for every project the caller is a member of, in one
+// trip — used by the sidebar badges. Counts messages from OTHERS (not self)
+// after the user's lastReadAt for that project.
+export const getUnreadCounts = async (req, res) => {
+    try {
+        const userId = req.userId;
+        // All projects the user is a member of (or workspace OWNER/ADMIN of)
+        const wsAdmin = await Workspace.find({
+            'members.user': userId,
+            'members.role': { $in: ['OWNER', 'ADMIN'] },
+        }).select('_id').lean();
+        const wsAdminIds = wsAdmin.map(w => w._id);
+
+        const projects = await Project.find({
+            $or: [
+                { 'members.user': userId },
+                { workspace: { $in: wsAdminIds } },
+            ],
+        }).select('_id').lean();
+        const projectIds = projects.map(p => p._id);
+        if (!projectIds.length) return res.status(200).json({ counts: {} });
+
+        const reads = await ChatRead.find({ user: userId, project: { $in: projectIds } })
+            .select('project lastReadAt').lean();
+        const readMap = new Map(reads.map(r => [r.project.toString(), r.lastReadAt]));
+
+        // Aggregate count of messages newer than lastReadAt, by project, excluding self.
+        const counts = {};
+        await Promise.all(projectIds.map(async (pid) => {
+            const after = readMap.get(pid.toString()) || new Date(0);
+            const n = await ProjectMessage.countDocuments({
+                project: pid,
+                sender: { $ne: userId },
+                createdAt: { $gt: after },
+                deletedAt: null,
+            });
+            if (n > 0) counts[pid.toString()] = n;
+        }));
+        res.status(200).json({ counts });
+    } catch (err) {
+        console.error('getUnreadCounts error:', err.message);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
