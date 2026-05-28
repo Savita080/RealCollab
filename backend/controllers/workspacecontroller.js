@@ -182,7 +182,7 @@ export const generateInvite = async (req, res) => {
         await req.workspace.save();
 
         // Get the frontend URL from env (fallback to localhost for dev)
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim();
         const inviteLink = `${frontendUrl}/invite/accept/${token}`;
 
         // Send actual email via Brevo

@@ -10,14 +10,24 @@ const TYPE_LABEL = { MENTION: 'New mention', PROJECT_ASSIGN: 'New assignment', R
 // Routes that actually exist in App.jsx — prevents "throw to login" when an old
 // notification has a stale link like /tasks/:id (which falls through to /).
 const VALID_PREFIXES = ['/workspaces', '/profile'];
-const isSafeLink = (l) => typeof l === 'string' && VALID_PREFIXES.some(p => l === p || l.startsWith(p + '?') || l.startsWith(p + '/'));
+
+// Strip origin from absolute URLs (e.g. http://localhost:5173/workspaces/... → /workspaces/...)
+const toRelative = (l) => {
+  if (typeof l !== 'string') return l;
+  try { return new URL(l).pathname + new URL(l).search; } catch { return l; }
+};
+
+const isSafeLink = (l) => {
+  const rel = toRelative(l);
+  return typeof rel === 'string' && VALID_PREFIXES.some(p => rel === p || rel.startsWith(p + '?') || rel.startsWith(p + '/'));
+};
 
 export default function NotificationPopupStack() {
   const { popups, dismissPopup, pausePopup, resumePopup } = useUI();
   const navigate = useNavigate();
 
   const handleClick = (n) => {
-    if (isSafeLink(n.link)) navigate(n.link);
+    if (isSafeLink(n.link)) navigate(toRelative(n.link));
     dismissPopup(n._id || n.id);
   };
 

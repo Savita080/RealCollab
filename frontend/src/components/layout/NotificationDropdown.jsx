@@ -9,6 +9,11 @@ import s from '../../styles/modules/NotificationDropdown.module.css';
 
 const TYPE_ICONS = { MENTION: '💬', PROJECT_ASSIGN: '📋', ROLE_CHANGE: '🔑' };
 
+const toRelative = (l) => {
+  if (typeof l !== 'string') return l;
+  try { return new URL(l).pathname + new URL(l).search; } catch { return l; }
+};
+
 export default function NotificationDropdown({ onClose }) {
   const { notifications, setNotifications, clearUnread } = useUI();
   const ref = useRef(null);
@@ -30,7 +35,7 @@ export default function NotificationDropdown({ onClose }) {
       notifApi.markOne(n._id).catch(() => {});
       setNotifications(notifications.filter(x => x._id !== n._id));
     }
-    if (n.link) { navigate(n.link); onClose(); }
+    if (n.link) { navigate(toRelative(n.link)); onClose(); }
   };
 
   const handleMarkAll = async () => {

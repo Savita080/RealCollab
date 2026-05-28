@@ -41,9 +41,9 @@ export const sendWorkspaceMessage = async (req, res) => {
         // name collisions don't ping the wrong person.
         const senderName = populatedMessage.sender?.name || 'Someone';
         const snippet = content.slice(0, 80) + (content.length > 80 ? '…' : '');
-        const ws = await Workspace.findById(workspaceId).select('members').lean();
+        const ws = await Workspace.findById(workspaceId).select('members slug').lean();
         const allowedUserIds = (ws?.members || []).map(m => m.user.toString());
-        const chatLink = `/workspaces/${req.params.workspaceId}/chat`;
+        const chatLink = `/workspaces/${ws?.slug || req.params.workspaceId}/chat`;
         notifyMentions(req.io, {
             content,
             sender: req.userId,

@@ -65,6 +65,11 @@ export const setupKanbanSockets = (io) => {
             await broadcastPresence(io, projectId, redis);
         });
 
+        // Snapshot request — sends current presence only to the requesting socket
+        socket.on('request_presence', async (projectId) => {
+            await broadcastPresence(io, projectId, redis);
+        });
+
         // WORKSPACE ROOMS: for workspace-level chat broadcasts
         socket.on('join_workspace', (workspaceId) => {
             socket.join(`workspace_${workspaceId}`);

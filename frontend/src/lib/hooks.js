@@ -35,6 +35,8 @@ export function usePresence(projectId) {
   useEffect(() => {
     if (!projectId) return;
     socket.on('presence:update', setOnline);
+    // Request current presence snapshot immediately on mount
+    socket.emit('request_presence', projectId);
     return () => socket.off('presence:update', setOnline);
   }, [projectId]);
   return online;
