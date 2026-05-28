@@ -159,7 +159,6 @@ export const deleteProjectMessage = async (req, res) => {
         if (msg.sender.toString() !== req.userId.toString()) return res.status(403).json({ message: 'Not your message' });
 
         msg.deletedAt = new Date();
-        msg.content = '';
         await msg.save();
 
         req.io.to(projectId).emit('message_deleted', { scope: 'project', messageId });
