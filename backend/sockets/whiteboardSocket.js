@@ -110,6 +110,19 @@ export const setupWhiteboardSockets = (io) => {
             // If we saved it here, we would accidentally overwrite the whole canvas with just the diff!
         });
 
+        // 2.5 Broadcast pointer movements for live cursors
+        socket.on('whiteboard_pointer_update', (data) => {
+            const { whiteboardId, pointer, button, user, color } = data;
+            // No strict DB auth check for pointer movements to keep latency low.
+            socket.to(`whiteboard:${whiteboardId}`).emit('whiteboard_pointer_update', {
+                socketId: socket.id,
+                pointer,
+                button,
+                user,
+                color
+            });
+        });
+
         // 3. Save to MongoDB & Redis (Frontend should emit this every 10 seconds with the FULL array)
         socket.on('save_whiteboard', async (data) => {
             const { whiteboardId, elements } = data;
