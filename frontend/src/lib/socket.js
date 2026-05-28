@@ -24,15 +24,19 @@ export const setSocketIdentity = (userId, name) => {
 };
 
 socket.on('connect', () => {
+  console.log('[socket] CONNECT id=', socket.id, 'identity=', identity, 'activeProjects=', [...activeRooms.projects]);
   if (identity) socket.emit('user_online', identity);
   // Re-join all active rooms after reconnect / late connect
   activeRooms.workspaces.forEach(id => socket.emit('join_workspace', id));
   activeRooms.projects.forEach(id => {
+    console.log('[socket] connect-handler emit join_project + request_presence', id);
     socket.emit('join_project', id);
     socket.emit('request_presence', id);
   });
   activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
 });
+
+socket.on('disconnect', (reason) => console.log('[socket] DISCONNECT', reason));
 
 export const connectSocket = (token, userId, name) => {
   if (BYPASS_BACKEND) {
@@ -64,6 +68,7 @@ export const emitUserOnline = (userId, name) => socket.emit('user_online', { use
 // Instead we add to activeRooms and let the 'connect' handler emit in the
 // correct order: user_online first, then joins.
 export const joinProject     = (projectId)    => {
+  console.log('[socket] joinProject called', projectId, 'connected=', socket.connected);
   activeRooms.projects.add(projectId);
   if (socket.connected) {
     socket.emit('join_project', projectId);

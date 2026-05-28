@@ -35,10 +35,16 @@ export function usePresence(projectId) {
   const [online, setOnline] = useState([]);
   useEffect(() => {
     if (!projectId) return;
-    const requestPresence = () => socket.emit('request_presence', projectId);
+    console.log('[presence] usePresence MOUNT projectId=', projectId, 'connected=', socket.connected);
+    const requestPresence = () => {
+      console.log('[presence] -> emit request_presence', projectId, 'connected=', socket.connected);
+      socket.emit('request_presence', projectId);
+    };
     // Server sends { projectId, users } — accept only updates for OUR room.
     const onPresenceUpdate = (data) => {
-      if (data?.projectId === projectId) setOnline(data.users || []);
+      const match = data?.projectId === projectId;
+      console.log('[presence] <- presence:update', { received: data, expected: projectId, match });
+      if (match) setOnline(data.users || []);
     };
     const onFocus = () => { if (socket.connected) requestPresence(); };
     socket.on('presence:update', onPresenceUpdate);
