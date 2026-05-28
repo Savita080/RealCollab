@@ -7,7 +7,7 @@ import { usePresence } from '../lib/hooks';
 import {
   joinProject, leaveProject,
   joinWhiteboard, leaveWhiteboard,
-  emitDraw, emitSaveWb, emitTyping
+  emitDraw, emitSaveWb, emitTyping, emitPointerUpdate
 } from '../lib/socket';
 import socket from '../lib/socket';
 import { chat as chatApi, whiteboards as wbApi, workspaces as wsApi } from '../lib/api';
@@ -56,6 +56,8 @@ export default function Collab() {
   const elementsRef = useRef([]);
   const isRemoteUpdateRef = useRef(false);
   const drawThrottleRef = useRef(null);
+  const pointerThrottleRef = useRef(null);
+  const collaboratorsRef = useRef(new Map());
   const activeWbRef = useRef(null);
   const [wbModal, setWbModal] = useState(false);
   const [newWbName, setNewWbName] = useState('');
@@ -224,11 +226,27 @@ export default function Collab() {
       
       requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
     };
+
+    const onPointerUpdateSocket = (data) => {
+      const { socketId, pointer, button, user, color } = data;
+      collaboratorsRef.current.set(socketId, {
+        pointer,
+        button,
+        username: user || 'Anonymous',
+        color: color || '#3498db'
+      });
+      if (excalidrawAPI) {
+        excalidrawAPI.updateScene({ collaborators: collaboratorsRef.current });
+      }
+    };
+
     socket.on('whiteboard_sync', onSync);
     socket.on('whiteboard_update', onUpdate);
+    socket.on('whiteboard_pointer_update', onPointerUpdateSocket);
     return () => {
       socket.off('whiteboard_sync', onSync);
       socket.off('whiteboard_update', onUpdate);
+      socket.off('whiteboard_pointer_update', onPointerUpdateSocket);
     };
   }, [excalidrawAPI]);
 
@@ -505,6 +523,21 @@ export default function Collab() {
                             loadScene: false,
                             export: false,
                           },
+                        }}
+                        onPointerUpdate={(payload) => {
+                          if (!activeWbRef.current) return;
+                          if (pointerThrottleRef.current) return;
+                          
+                          pointerThrottleRef.current = setTimeout(() => {
+                            pointerThrottleRef.current = null;
+                          }, 40); // throttle to ~25fps
+                          
+                          emitPointerUpdate({
+                            whiteboardId: activeWbRef.current._id,
+                            pointer: payload.pointer,
+                            button: payload.button,
+                            user: user?.name
+                          });
                         }}
                       />
                     </div>

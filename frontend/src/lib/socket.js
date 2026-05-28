@@ -91,5 +91,6 @@ export const emitTaskMove   = (data) => socket.emit('task_move', data);
 // Whiteboard events
 export const emitDraw       = (data) => socket.emit('whiteboard_draw', data);
 export const emitSaveWb     = (data) => socket.emit('save_whiteboard', data);
+export const emitPointerUpdate = (data) => socket.emit('whiteboard_pointer_update', data);
 
 export default socket;
