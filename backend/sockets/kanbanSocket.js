@@ -67,7 +67,8 @@ export const setupKanbanSockets = (io) => {
 
         // Snapshot request — sends current presence only to the requesting socket
         socket.on('request_presence', async (projectId) => {
-            await broadcastPresence(io, projectId, redis);
+            const online = await collectPresence(io, projectId, redis);
+            socket.emit('presence:update', online);
         });
 
         // WORKSPACE ROOMS: for workspace-level chat broadcasts
@@ -145,9 +146,9 @@ export const setupKanbanSockets = (io) => {
     });
 };
 
-async function broadcastPresence(io, projectId, redis) {
+async function collectPresence(io, projectId, redis) {
     const room = io.sockets.adapter.rooms.get(projectId);
-    if (!room) return;
+    if (!room) return [];
     const seen = new Set();
     const online = [];
     for (const socketId of room) {
@@ -166,5 +167,10 @@ async function broadcastPresence(io, projectId, redis) {
             online.push({ _id: userId, name: name || 'User' });
         }
     }
+    return online;
+}
+
+async function broadcastPresence(io, projectId, redis) {
+    const online = await collectPresence(io, projectId, redis);
     io.to(projectId).emit('presence:update', online);
 }

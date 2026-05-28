@@ -34,10 +34,15 @@ export function usePresence(projectId) {
   const [online, setOnline] = useState([]);
   useEffect(() => {
     if (!projectId) return;
+    const requestPresence = () => socket.emit('request_presence', projectId);
     socket.on('presence:update', setOnline);
-    // Request current presence snapshot immediately on mount
-    socket.emit('request_presence', projectId);
-    return () => socket.off('presence:update', setOnline);
+    socket.on('connect', requestPresence);
+    // Request immediately in case socket is already connected
+    if (socket.connected) requestPresence();
+    return () => {
+      socket.off('presence:update', setOnline);
+      socket.off('connect', requestPresence);
+    };
   }, [projectId]);
   return online;
 }
