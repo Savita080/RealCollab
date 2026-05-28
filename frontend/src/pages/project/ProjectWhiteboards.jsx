@@ -11,12 +11,15 @@ import { joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb } from '../../lib
 import socket from '../../lib/socket';
 import Button from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { usePresence } from '../../lib/hooks';
+import { Avatar } from '../../components/ui/Badge';
 import s from '../../styles/modules/Whiteboards.module.css';
 
 export default function ProjectWhiteboards() {
   const { workspaceId, projectId, project, canEdit } = useOutletContext();
   const { toast } = useUI();
   const themeKind = useTheme(s => s.getActive().kind);
+  const online = usePresence(project?._id);
 
   const [whiteboards, setWhiteboards] = useState([]);
   const [activeWb, setActiveWb] = useState(null);
@@ -153,11 +156,24 @@ export default function ProjectWhiteboards() {
           <h1 className={s.title}>Whiteboards</h1>
           <p className={s.subtitle}>Real-time collaborative canvas · {project?.name}</p>
         </div>
-        {canEdit && (
-          <Button variant="primary" size="md" onClick={() => setWbModal(true)}>
-            <Plus size={14} /> New Whiteboard
-          </Button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {online.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', paddingLeft: '8px' }}>
+                {online.map((u, i) => (
+                  <div key={u._id || i} style={{ marginLeft: '-8px', border: '2px solid var(--bg)', borderRadius: '50%', zIndex: online.length - i }}>
+                    <Avatar name={u.name} online size={28} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {canEdit && (
+            <Button variant="primary" size="md" onClick={() => setWbModal(true)}>
+              <Plus size={14} /> New Whiteboard
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className={s.body}>
