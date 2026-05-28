@@ -11,8 +11,29 @@ const wikiPageSchema = new mongoose.Schema({
         required: true
     },
     content: {
-        type: String, // Usually stored as a TipTap JSON string or Markdown
+        type: String, // TipTap JSON string or Markdown
         default: ""
+    },
+    // Folder organisation
+    folder: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'WikiFolder',
+        default: null   // null = root level (no folder)
+    },
+    order: {
+        type: Number,
+        default: 0
+    },
+    // Prerequisite / suggested-next navigation
+    prevPage: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'WikiPage',
+        default: null
+    },
+    nextPage: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'WikiPage',
+        default: null
     }
 }, {
     timestamps: true

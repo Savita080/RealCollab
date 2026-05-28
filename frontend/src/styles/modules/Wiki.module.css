@@ -78,3 +78,342 @@
   padding: 4px 12px; outline: none;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Wiki.module.css  — ADDITIONS for facilitating addition of folders
+   The classes that already exist (.page, .sidebar, .editor, etc.) are unchanged.
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Sidebar tree ────────────────────────────────────────────────────────── */
+
+.treeRoot {
+  padding: 4px 0 8px;
+  user-select: none;
+}
+
+/* Root drop-zone: accepts pages dragged out of folders */
+.rootDropZone {
+  min-height: 4px;
+}
+
+/* ── Folder row ────────────────────────────────────────────────────────────── */
+
+.folderRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  border-radius: 5px;
+  transition: background .12s;
+}
+.folderRow:hover {
+  background: var(--surface-2, rgba(255,255,255,.05));
+}
+.folderRow:hover .folderActions { opacity: 1; }
+
+.folderToggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 2px;
+  color: var(--text-1);
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.folderLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folderActions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity .12s;
+  flex-shrink: 0;
+}
+
+.folderRenameInput {
+  flex: 1;
+  font-size: 12px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border, #3a3a4a);
+  background: var(--surface-2, #1e1e2e);
+  color: var(--text-1, #eee);
+  outline: none;
+  min-width: 0;
+  max-width: 110px;
+}
+
+.miniBtn {
+  background: none;
+  border: 1px solid var(--border, #3a3a4a);
+  border-radius: 3px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 1px 4px;
+  line-height: 1.4;
+}
+.miniBtn:hover { background: var(--surface-3, rgba(255,255,255,.08)); }
+
+.miniIconBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-3, #888);
+  padding: 2px 4px;
+  font-size: 11px;
+  border-radius: 3px;
+  line-height: 1;
+}
+.miniIconBtn:hover { color: var(--text-1); background: var(--surface-3, rgba(255,255,255,.08)); }
+
+/* ── Page rows inside sidebar ─────────────────────────────────────────────── */
+
+.pageRow {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px;
+  border-radius: 5px;
+  transition: background .12s;
+}
+.pageRow:hover { background: var(--surface-2, rgba(255,255,255,.05)); }
+.pageRow:hover .deletePageBtn { opacity: 1; }
+
+.pageItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 2px;
+  font-size: 12.5px;
+  text-align: left;
+  color: var(--text-2);
+  border-radius: 4px;
+  transition: color .12s;
+}
+.pageItem.active { color: var(--accent, #7b78ff); font-weight: 500; }
+.pageItem:hover { color: var(--text-1); }
+
+.pageLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activeRow { background: var(--surface-2, rgba(255,255,255,.05)); }
+
+.deletePageBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-4, #666);
+  font-size: 10px;
+  opacity: 0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  transition: opacity .12s, color .12s;
+}
+.deletePageBtn:hover { color: var(--danger, #f87171); opacity: 1 !important; }
+
+/* ── "New folder" trigger ────────────────────────────────────────────────── */
+
+.newFolderBtn {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-4, #666);
+  font-size: 11.5px;
+  padding: 6px 8px;
+  text-align: left;
+  border-radius: 5px;
+  margin-top: 4px;
+  transition: color .12s, background .12s;
+}
+.newFolderBtn:hover { color: var(--text-1); background: var(--surface-2, rgba(255,255,255,.05)); }
+
+.newFolderForm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+}
+
+/* ── Toolbar right cluster ────────────────────────────────────────────────── */
+
+.toolbarRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.navLinksBtn,
+.sectionLinkBtn,
+.historyBtn {
+  background: none;
+  border: 1px solid var(--border, #3a3a4a);
+  border-radius: 6px;
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 10px;
+  transition: border-color .12s, color .12s, background .12s;
+  white-space: nowrap;
+}
+.navLinksBtn:hover,
+.sectionLinkBtn:hover,
+.historyBtn:hover {
+  border-color: var(--accent, #7b78ff);
+  color: var(--accent, #7b78ff);
+  background: var(--accent-muted, rgba(123,120,255,.08));
+}
+
+/* ── Prev / Next navigation bar ───────────────────────────────────────────── */
+
+.prevNextBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 12px;
+  padding: 10px 0 14px;
+  border-bottom: 1px solid var(--border, #2e2e3e);
+  margin-bottom: 4px;
+}
+
+.prevBtn,
+.nextBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2, rgba(255,255,255,.03));
+  border: 1px solid var(--border, #2e2e3e);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 14px;
+  color: var(--text-2);
+  font-size: 13px;
+  transition: border-color .15s, background .15s, color .15s;
+  max-width: 46%;
+  text-align: left;
+}
+.prevBtn:hover,
+.nextBtn:hover {
+  border-color: var(--accent, #7b78ff);
+  background: var(--accent-muted, rgba(123,120,255,.07));
+  color: var(--text-1);
+}
+
+.navArrow {
+  font-size: 18px;
+  color: var(--accent, #7b78ff);
+  flex-shrink: 0;
+}
+
+.navMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.navLabel {
+  font-size: 10.5px;
+  color: var(--text-4, #888);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.navTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── @-mention page-link picker (floating) ──────────────────────────────── */
+
+.pageLinkPicker {
+  position: absolute;
+  z-index: 100;
+  min-width: 200px;
+  max-width: 280px;
+  background: var(--surface-1, #18181f);
+  border: 1px solid var(--border, #2e2e3e);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  overflow: hidden;
+  animation: pickerIn .12s ease;
+}
+
+@keyframes pickerIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pickerHeader {
+  font-size: 10.5px;
+  color: var(--text-4, #888);
+  padding: 7px 12px 5px;
+  border-bottom: 1px solid var(--border, #2e2e3e);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-1);
+  text-align: left;
+  transition: background .1s;
+}
+.pickerItem:hover { background: var(--accent-muted, rgba(123,120,255,.1)); }
+
+/* ── Section-link / Prev-Next modal selects & labels ────────────────────── */
+
+.formLabel {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-3, #aaa);
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.select {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--surface-2, #1e1e2e);
+  border: 1px solid var(--border, #2e2e3e);
+  border-radius: 6px;
+  color: var(--text-1, #eee);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.select:focus { border-color: var(--accent, #7b78ff); }
+.select option { background: var(--surface-1, #18181f); }

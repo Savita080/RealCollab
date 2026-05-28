@@ -15,6 +15,19 @@ import { Excalidraw } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import s from '../../../styles/modules/Collab.module.css';
 
+
+//new function added
+function stringToColor(str = '') {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 70%, 50%)`;
+}
+
+const excalidrawAPIRef = useRef(null);
+
 export default function ProjectWhiteboards() {
   const ctx = useOutletContext();
   const { workspaceId, projectId, canEdit } = ctx;
@@ -38,9 +51,13 @@ export default function ProjectWhiteboards() {
   const pointerThrottleRef = useRef(null);
   const collaboratorsRef = useRef(new Map());
   const activeWbRef = useRef(null);
+  const collaboratorsRef = useRef(new Map());
   const saveIntervalRef = useRef(null);
 
   activeWbRef.current = activeWb;
+  useEffect(() => {
+  excalidrawAPIRef.current = excalidrawAPI;
+    }, [excalidrawAPI]);
 
   const saveNow = useCallback((wbId) => {
     const id = wbId ?? activeWbRef.current?._id;
@@ -112,14 +129,16 @@ export default function ProjectWhiteboards() {
       const { socketId, pointer, button, user, color } = data;
       const baseColor = color || '#3498db';
       collaboratorsRef.current.set(socketId, {
+        id: socketId,
         pointer,
         button,
         username: user || 'Anonymous',
-        color: { background: baseColor, stroke: baseColor }
+        color: { background: baseColor, stroke: baseColor },
+        isCurrentUser: false,
       });
-      if (excalidrawAPI) {
-        excalidrawAPI.updateScene({ collaborators: new Map(collaboratorsRef.current) });
-      }
+      excalidrawAPIRef.current?.updateScene({
+        collaborators: new Map(collaboratorsRef.current),
+      });
     };
 
     socket.on('whiteboard_sync', onSync);
@@ -270,18 +289,17 @@ export default function ProjectWhiteboards() {
                         }
                         
                         if (!activeWbRef.current) return;
-                        if (pointerThrottleRef.current) return;
-                        
-                        pointerThrottleRef.current = setTimeout(() => {
-                          pointerThrottleRef.current = null;
-                        }, 40);
-                        
-                        emitPointerUpdate({
-                          whiteboardId: activeWbRef.current._id,
-                          pointer: payload.pointer,
-                          button: payload.button,
-                          user: user?.name
-                        });
+                        if (pointerThrottleRef.current) clearTimeout(pointerThrottleRef.current);
+                          pointerThrottleRef.current = setTimeout(() => {
+                            pointerThrottleRef.current = null;
+                            emitPointerUpdate({
+                              whiteboardId: activeWbRef.current._id,
+                              pointer: payload.pointer,
+                              button: payload.button,
+                              user: user?.name,
+                              color: stringToColor(user?._id || user?.name || 'user'),
+                            });
+                          }, 40);
                       }}
                     />
                   </div>

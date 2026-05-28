@@ -148,6 +148,15 @@ export const chat = {
   sendProject:       (wid, pid, d) => api.post(`/workspaces/${wid}/projects/${pid}/chat`, d),
   reactProject:      (wid, pid, mid, emoji) =>
     api.post(`/workspaces/${wid}/projects/${pid}/chat/${mid}/react`, { emoji }),
+  editProject:       (wid, pid, mid, content) =>
+    api.patch(`/workspaces/${wid}/projects/${pid}/chat/${mid}`, { content }),
+  deleteProject:     (wid, pid, mid) =>
+    api.delete(`/workspaces/${wid}/projects/${pid}/chat/${mid}`),
+  markProjectRead:   (wid, pid)    =>
+    api.post(`/workspaces/${wid}/projects/${pid}/chat/read`),
+  unreadCounts:      ()            => api.get('/chat/unread'),
+  togglePin:         (wid, pid, mid) =>
+    api.post(`/workspaces/${wid}/projects/${pid}/chat/${mid}/pin`),
   workspaceMessages: (wid)         => api.get(`/workspaces/${wid}/chat`),
   sendWorkspace:     (wid, d)      => api.post(`/workspaces/${wid}/chat`, d),
   reactWorkspace:    (wid, mid, emoji) =>

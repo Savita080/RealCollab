@@ -16,8 +16,8 @@ let identity = null;
 // Rooms to re-join on reconnect.
 const activeRooms = { workspaces: new Set(), projects: new Set(), whiteboards: new Set() };
 
-export const setSocketIdentity = (userId, name) => {
-  identity = userId ? { userId, name: name || '' } : null;
+export const setSocketIdentity = (userId, name, avatar) => {
+  identity = userId ? { userId, name: name || '', avatar: avatar || '' } : null;
   if (identity && socket.connected) {
     socket.emit('user_online', identity);
   }
@@ -35,13 +35,13 @@ socket.on('connect', () => {
   activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
 });
 
-export const connectSocket = (token, userId, name) => {
+export const connectSocket = (token, userId, name, avatar) => {
   if (BYPASS_BACKEND) {
     console.log('[Socket] BYPASS_BACKEND is true. Skipping real socket connection.');
     return;
   }
   socket.auth = { token };
-  if (userId) identity = { userId, name: name || '' };
+  if (userId) identity = { userId, name: name || '', avatar: avatar || '' };
   
   if (socket.connected) {
     console.log('[Socket] Socket already connected. Re-announcing identity and active rooms.');

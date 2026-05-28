@@ -4,6 +4,8 @@ import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useWorkspaceRole } from '../../lib/useWorkspaceRole';
 import { useWorkspace } from '../../store/workspace';
 import { useUI } from '../../store/ui';
+import { useAuth } from '../../store/auth';
+import { useChat } from '../../store/chat';
 import { notifications as notifApi } from '../../lib/api';
 import WorkspaceSidebar from '../../components/common/WorkspaceSidebar';
 import WorkspaceTopBar from '../../components/common/WorkspaceTopBar';
@@ -18,6 +20,8 @@ export default function WorkspaceLayout() {
   const { role, members, loading, isOwner, isAdmin, canManage, canCreate } = useWorkspaceRole(workspaceId);
   const { workspaces: wsList, current, fetchWorkspaces, setWorkspace, refreshProjects } = useWorkspace();
   const { bindNotifications, unbindNotifications, setNotifications, toast } = useUI();
+  const { user } = useAuth();
+  const { fetchUnread, bindSocket: bindChatSocket } = useChat();
 
   // Initial workspace data load
   useEffect(() => {
@@ -28,6 +32,14 @@ export default function WorkspaceLayout() {
       .catch(() => {});
     return () => unbindNotifications();
   }, []);
+
+  // Chat unread bookkeeping — runs once user is known.
+  useEffect(() => {
+    const uid = user?.id || user?._id;
+    if (!uid) return;
+    bindChatSocket(uid);
+    fetchUnread();
+  }, [user?.id, user?._id]);
 
   // Sync URL → store. workspaceId in the URL may be an _id (legacy) or a slug
   // (pretty URLs), so match against both.

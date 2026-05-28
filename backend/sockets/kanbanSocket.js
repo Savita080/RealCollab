@@ -34,20 +34,23 @@ export const setupKanbanSockets = (io) => {
 
         // WHEN A USER LOGS IN (Tracking Presence)
         socket.on('user_online', async (payload) => {
-            // payload can be userId string or { userId, name }
+            // payload can be userId string or { userId, name, avatar }
             const userId = payload?.userId || payload;
             const name = payload?.name || '';
+            const avatar = payload?.avatar || '';
             if (!userId) return;
 
             // Store directly on socket object for 0-latency synchronous lookup
             socket.userId = String(userId);
             socket.userName = name;
+            socket.userAvatar = avatar;
 
-            memSocketUser.set(socket.id, { userId: String(userId), name });
+            memSocketUser.set(socket.id, { userId: String(userId), name, avatar });
             if (redis) {
                 await redis.set(`user:online:${userId}`, socket.id);
                 await redis.set(`socket:${socket.id}`, String(userId));
                 if (name) await redis.set(`user:name:${userId}`, name);
+                if (avatar) await redis.set(`user:avatar:${userId}`, avatar);
                 console.log(`[Redis] User ${userId} is now online!`);
             }
             // Re-broadcast presence for project rooms this socket is already in.
@@ -172,6 +175,7 @@ async function collectPresence(io, projectId, redis) {
         const socketInstance = io.sockets.sockets.get(socketId);
         let userId = socketInstance?.userId;
         let name = socketInstance?.userName;
+        let avatar = socketInstance?.userAvatar;
 
         // 2. Fallback to in-memory map
         if (!userId) {
@@ -179,18 +183,22 @@ async function collectPresence(io, projectId, redis) {
             if (mem) {
                 userId = mem.userId;
                 name = mem.name;
+                avatar = mem.avatar;
             }
         }
 
         // 3. Fallback to Redis only if still not found
         if (!userId && redis) {
             userId = await redis.get(`socket:${socketId}`);
-            if (userId) name = await redis.get(`user:name:${userId}`);
+            if (userId) {
+                name = await redis.get(`user:name:${userId}`);
+                avatar = await redis.get(`user:avatar:${userId}`);
+            }
         }
 
         if (userId && !seen.has(userId)) {
             seen.add(userId);
-            online.push({ _id: userId, name: name || 'User' });
+            online.push({ _id: userId, name: name || 'User', avatar: avatar || '' });
         }
     }
     return online;
