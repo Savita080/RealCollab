@@ -1,6 +1,6 @@
 // lib/hooks.js — all custom hooks
 import { useState, useEffect, useCallback, useRef } from 'react';
-import socket from './socket';
+import socket, { getSocketIdentity } from './socket';
 
 /** Debounce a value */
 export function useDebounce(value, delay = 400) {
@@ -30,41 +30,31 @@ export function useInView(opts = {}) {
 }
 
 /** Socket presence tracker — scoped to a specific projectId.
- *  Robust against missed broadcasts via a 15s heartbeat + focus refresh. */
+ *  Self-sufficient: announces identity, joins the room, and requests presence
+ *  on its own so it doesn't depend on parent-effect ordering. */
 export function usePresence(projectId) {
   const [online, setOnline] = useState([]);
   useEffect(() => {
     if (!projectId) return;
-    console.log(`[presence] MOUNT pid=${projectId} connected=${socket.connected} sid=${socket.id}`);
-    const requestPresence = () => {
-      console.log(`[presence] -> request_presence pid=${projectId} connected=${socket.connected} sid=${socket.id}`);
+    const announceAndJoin = () => {
+      const identity = getSocketIdentity();
+      if (identity) socket.emit('user_online', identity);
+      socket.emit('join_project', projectId);
       socket.emit('request_presence', projectId);
     };
     const onPresenceUpdate = (data) => {
-      const match = data?.projectId === projectId;
-      const userIds = (data?.users || []).map(u => u._id || u.userId).join(',');
-      console.log(`[presence] <- presence:update recvPid=${data?.projectId} expPid=${projectId} match=${match} count=${data?.users?.length ?? 0} users=[${userIds}]`);
-      if (match) setOnline(data.users || []);
+      if (data?.projectId === projectId) setOnline(data.users || []);
     };
-    const onFocus = () => { if (socket.connected) requestPresence(); };
+    const onFocus = () => { if (socket.connected) announceAndJoin(); };
     socket.on('presence:update', onPresenceUpdate);
-    socket.on('connect', requestPresence);
+    socket.on('connect', announceAndJoin);
     window.addEventListener('focus', onFocus);
-    // React fires child effects BEFORE parent effects — so this hook runs
-    // before ProjectLayout's joinProject. Defer the initial request to the
-    // next macrotask so join_project lands first, putting our socket in the
-    // room before request_presence asks who's in it.
-    let initialTimer;
-    if (socket.connected) {
-      initialTimer = setTimeout(requestPresence, 0);
-    }
-    // Heartbeat — re-request presence every 15s as a safety net
-    const heartbeat = setInterval(() => { if (socket.connected) requestPresence(); }, 15000);
+    if (socket.connected) announceAndJoin();
+    const heartbeat = setInterval(() => { if (socket.connected) announceAndJoin(); }, 15000);
     return () => {
       socket.off('presence:update', onPresenceUpdate);
-      socket.off('connect', requestPresence);
+      socket.off('connect', announceAndJoin);
       window.removeEventListener('focus', onFocus);
-      window.clearTimeout(initialTimer);
       clearInterval(heartbeat);
     };
   }, [projectId]);
