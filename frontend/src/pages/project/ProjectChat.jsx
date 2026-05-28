@@ -329,7 +329,7 @@ export default function ProjectChat() {
               <Search size={14} />
             </button>
             {searchOpen && (
-              <div style={{ position: 'absolute', top: '110%', right: 0, width: 320, background: 'var(--bg-1, #1a1a1a)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, zIndex: 10, boxShadow: '0 6px 24px rgba(0,0,0,0.3)' }}>
+              <div style={{ position: 'absolute', top: '110%', right: 0, width: 320, background: 'var(--bg-dropdown, var(--bg-card, #fff))', color: 'var(--text-1)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, zIndex: 10, boxShadow: '0 6px 24px rgba(0,0,0,0.18)' }}>
                 <input
                   autoFocus
                   type="text"
@@ -337,7 +337,7 @@ export default function ProjectChat() {
                   value={searchQ}
                   onChange={e => setSearchQ(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQ(''); } }}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'inherit', font: 'inherit', marginBottom: 6 }}
+                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-2, transparent)', color: 'var(--text-1)', font: 'inherit', marginBottom: 6 }}
                 />
                 <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                   {searchQ.trim() === '' ? (
@@ -350,10 +350,10 @@ export default function ProjectChat() {
                       <button
                         key={h._id}
                         onClick={() => { setSearchOpen(false); setSearchQ(''); jumpToMessage(h._id); }}
-                        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '6px 4px', cursor: 'pointer', color: 'inherit', borderBottom: '1px solid var(--border)' }}
+                        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '6px 4px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
                       >
                         <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{h.sender?.name || 'Unknown'} · {fmtRelative(h.createdAt)}</div>
-                        <div style={{ fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.content}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.content}</div>
                       </button>
                     ));
                   })()}

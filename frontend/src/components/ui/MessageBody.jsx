@@ -29,16 +29,7 @@ function renderInline(text, keyPrefix) {
   parts.forEach((part, i) => {
     if (part.startsWith('`') && part.endsWith('`')) {
       out.push(
-        <code
-          key={`${keyPrefix}-c-${i}`}
-          style={{
-            background: 'rgba(0,0,0,0.12)',
-            padding: '1px 5px',
-            borderRadius: 4,
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-            fontSize: '0.92em',
-          }}
-        >
+        <code key={`${keyPrefix}-c-${i}`} className="rc-inlinecode">
           {part.slice(1, -1)}
         </code>
       );
@@ -81,23 +72,9 @@ export default function MessageBody({ text }) {
           return (
             <pre
               key={`pre-${i}`}
-              style={{
-                background: 'rgba(0,0,0,0.18)',
-                padding: '8px 10px',
-                borderRadius: 6,
-                marginTop: 6,
-                marginBottom: 4,
-                overflowX: 'auto',
-                fontSize: 12,
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                lineHeight: 1.4,
-              }}
+              className="rc-codeblock"
             >
-              {seg.lang && (
-                <div style={{ fontSize: 10, opacity: 0.6, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                  {seg.lang}
-                </div>
-              )}
+              {seg.lang && <div className="rc-codeblock-lang">{seg.lang}</div>}
               <code dangerouslySetInnerHTML={{ __html: html }} />
             </pre>
           );
