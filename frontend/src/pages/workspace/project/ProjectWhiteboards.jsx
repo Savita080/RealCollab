@@ -15,6 +15,17 @@ import { Excalidraw } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import s from '../../../styles/modules/Collab.module.css';
 
+//new function added
+function stringToColor(str = '') {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const h = Math.abs(hash) % 360;
+  return `hsl(${h}, 70%, 50%)`;
+}
+
+
 export default function ProjectWhiteboards() {
   const ctx = useOutletContext();
   const { workspaceId, projectId, canEdit } = ctx;
@@ -111,12 +122,16 @@ export default function ProjectWhiteboards() {
     const onPointerUpdateSocket = (data) => {
       const { socketId, pointer, button, user, color } = data;
       const baseColor = color || '#3498db';
+
       collaboratorsRef.current.set(socketId, {
+        id: socketId,           // ← ADD THIS
         pointer,
         button,
-        username: user || 'Anonymous',
-        color: { background: baseColor, stroke: baseColor }
+        username: user || 'Anonymous',   // ← make sure your backend sends `user` as a string name
+        color: { background: baseColor, stroke: baseColor },
+        isCurrentUser: false,   // ← ADD THIS
       });
+
       if (excalidrawAPI) {
         excalidrawAPI.updateScene({ collaborators: new Map(collaboratorsRef.current) });
       }
@@ -280,7 +295,8 @@ export default function ProjectWhiteboards() {
                           whiteboardId: activeWbRef.current._id,
                           pointer: payload.pointer,
                           button: payload.button,
-                          user: user?.name
+                          user: user?.name,
+                          color: stringToColor(user?._id || user?.name || 'user')
                         });
                       }}
                     />
