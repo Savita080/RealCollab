@@ -32,6 +32,8 @@ export default function ProjectWhiteboards() {
 
   const elementsRef = useRef([]);
   const isRemoteUpdateRef = useRef(false);
+  const isDrawingRef = useRef(false);
+  const pendingUpdateRef = useRef(null);
   const drawThrottleRef = useRef(null);
   const pointerThrottleRef = useRef(null);
   const collaboratorsRef = useRef(new Map());
@@ -74,6 +76,11 @@ export default function ProjectWhiteboards() {
       if (!Array.isArray(elements)) return;
       if (!excalidrawAPI) return;
       
+      if (isDrawingRef.current) {
+          pendingUpdateRef.current = elements;
+          return;
+      }
+      
       isRemoteUpdateRef.current = true;
       const localElements = excalidrawAPI.getSceneElements();
       
@@ -103,14 +110,15 @@ export default function ProjectWhiteboards() {
 
     const onPointerUpdateSocket = (data) => {
       const { socketId, pointer, button, user, color } = data;
+      const baseColor = color || '#3498db';
       collaboratorsRef.current.set(socketId, {
         pointer,
         button,
         username: user || 'Anonymous',
-        color: color || '#3498db'
+        color: { background: baseColor, stroke: baseColor }
       });
       if (excalidrawAPI) {
-        excalidrawAPI.updateScene({ collaborators: collaboratorsRef.current });
+        excalidrawAPI.updateScene({ collaborators: new Map(collaboratorsRef.current) });
       }
     };
 
@@ -179,6 +187,30 @@ export default function ProjectWhiteboards() {
       emitDraw({ whiteboardId: id, elements: elementsRef.current });
     }, 50);
   }, []);
+  
+  // We need a stable reference to onUpdate to call it from onPointerUpdate
+  const onUpdateRef = useRef(null);
+  useEffect(() => {
+    onUpdateRef.current = (elements) => {
+      if (!Array.isArray(elements) || !excalidrawAPI) return;
+      isRemoteUpdateRef.current = true;
+      const localElements = excalidrawAPI.getSceneElements();
+      const localMap = new Map(localElements.map(el => [el.id, el]));
+      const nextElementsMap = new Map();
+      for (const remoteEl of elements) {
+         const localEl = localMap.get(remoteEl.id);
+         if (localEl && localEl.version > remoteEl.version) nextElementsMap.set(localEl.id, localEl);
+         else nextElementsMap.set(remoteEl.id, remoteEl);
+      }
+      for (const localEl of localElements) {
+         if (!nextElementsMap.has(localEl.id)) nextElementsMap.set(localEl.id, localEl);
+      }
+      const mergedElements = Array.from(nextElementsMap.values());
+      elementsRef.current = mergedElements;
+      excalidrawAPI.updateScene({ elements: mergedElements });
+      requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
+    };
+  }, [excalidrawAPI]);
 
   return (
     <div className={s.page} style={{ height: 'calc(100vh - 56px)' }}>
@@ -228,6 +260,15 @@ export default function ProjectWhiteboards() {
                       viewModeEnabled={!canEdit}
                       UIOptions={{ canvasActions: { saveToActiveFile: false, loadScene: false, export: false } }}
                       onPointerUpdate={(payload) => {
+                        const wasDrawing = isDrawingRef.current;
+                        isDrawingRef.current = payload.button === "down";
+                        
+                        // If user just finished drawing, apply any pending updates
+                        if (wasDrawing && !isDrawingRef.current && pendingUpdateRef.current) {
+                            if (onUpdateRef.current) onUpdateRef.current(pendingUpdateRef.current);
+                            pendingUpdateRef.current = null;
+                        }
+                        
                         if (!activeWbRef.current) return;
                         if (pointerThrottleRef.current) return;
                         
