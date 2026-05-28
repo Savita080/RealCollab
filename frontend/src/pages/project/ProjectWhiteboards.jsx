@@ -5,9 +5,10 @@ import { Plus, Palette, Trash2 } from 'lucide-react';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import { useUI } from '../../store/ui';
+import { useAuth } from '../../store/auth';
 import { useTheme } from '../../store/theme';
 import { whiteboards as wbApi } from '../../lib/api';
-import { joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb } from '../../lib/socket';
+import { joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb, emitPointerUpdate } from '../../lib/socket';
 import socket from '../../lib/socket';
 import Button from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -17,6 +18,7 @@ import s from '../../styles/modules/Whiteboards.module.css';
 
 export default function ProjectWhiteboards() {
   const { workspaceId, projectId, project, canEdit } = useOutletContext();
+  const { user } = useAuth();
   const { toast } = useUI();
   const themeKind = useTheme(s => s.getActive().kind);
   const online = usePresence(project?._id);
@@ -30,11 +32,47 @@ export default function ProjectWhiteboards() {
   const [creating, setCreating] = useState(false);
   const elementsRef = useRef([]);
   const isRemoteUpdateRef = useRef(false);
+  const isDrawingRef = useRef(false);
+  const pendingUpdateRef = useRef(null);
   const drawThrottleRef = useRef(null);
+  const pointerThrottleRef = useRef(null);
+  const collaboratorsRef = useRef(new Map());
   const activeWbRef = useRef(null);
   const saveIntervalRef = useRef(null);
 
   activeWbRef.current = activeWb;
+
+  // Merge helper: reconcile remote elements with local elements by version
+  const mergeElements = useCallback((remoteElements) => {
+    if (!excalidrawAPI) return;
+    isRemoteUpdateRef.current = true;
+    const localElements = excalidrawAPI.getSceneElements();
+
+    const localMap = new Map(localElements.map(el => [el.id, el]));
+    const nextElementsMap = new Map();
+
+    // Keep whichever version is newer for each element
+    for (const remoteEl of remoteElements) {
+      const localEl = localMap.get(remoteEl.id);
+      if (localEl && localEl.version > remoteEl.version) {
+        nextElementsMap.set(localEl.id, localEl);
+      } else {
+        nextElementsMap.set(remoteEl.id, remoteEl);
+      }
+    }
+
+    // Preserve local-only elements not present in remote
+    for (const localEl of localElements) {
+      if (!nextElementsMap.has(localEl.id)) {
+        nextElementsMap.set(localEl.id, localEl);
+      }
+    }
+
+    const mergedElements = Array.from(nextElementsMap.values());
+    elementsRef.current = mergedElements;
+    excalidrawAPI.updateScene({ elements: mergedElements });
+    requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
+  }, [excalidrawAPI]);
 
   const saveNow = useCallback((wbId) => {
     const id = wbId ?? activeWbRef.current?._id;
@@ -73,7 +111,8 @@ export default function ProjectWhiteboards() {
 
   // Socket events
   useEffect(() => {
-    const apply = (elements) => {
+    // Full sync from server (initial load) — replace everything
+    const onSync = (elements) => {
       if (!Array.isArray(elements)) return;
       isRemoteUpdateRef.current = true;
       elementsRef.current = elements;
@@ -81,15 +120,45 @@ export default function ProjectWhiteboards() {
       if (excalidrawAPI) excalidrawAPI.updateScene({ elements });
       requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
     };
-    const onSync = (els) => apply(els);
-    const onUpdate = (els) => apply(els);
+
+    // Incremental update from another user — merge, don't overwrite
+    const onUpdate = (elements) => {
+      if (!Array.isArray(elements)) return;
+      if (!excalidrawAPI) return;
+
+      // If user is actively drawing, buffer the update to prevent disruption
+      if (isDrawingRef.current) {
+        pendingUpdateRef.current = elements;
+        return;
+      }
+
+      mergeElements(elements);
+    };
+
+    // Live collaborator cursors
+    const onPointerUpdate = (data) => {
+      const { socketId, pointer, button, user, color } = data;
+      const baseColor = color || '#3498db';
+      collaboratorsRef.current.set(socketId, {
+        pointer,
+        button,
+        username: user || 'Anonymous',
+        color: { background: baseColor, stroke: baseColor },
+      });
+      if (excalidrawAPI) {
+        excalidrawAPI.updateScene({ collaborators: new Map(collaboratorsRef.current) });
+      }
+    };
+
     socket.on('whiteboard_sync', onSync);
     socket.on('whiteboard_update', onUpdate);
+    socket.on('whiteboard_pointer_update', onPointerUpdate);
     return () => {
       socket.off('whiteboard_sync', onSync);
       socket.off('whiteboard_update', onUpdate);
+      socket.off('whiteboard_pointer_update', onPointerUpdate);
     };
-  }, [excalidrawAPI]);
+  }, [excalidrawAPI, mergeElements]);
 
   // Save on unmount
   useEffect(() => {
@@ -105,6 +174,7 @@ export default function ProjectWhiteboards() {
     setActiveWb(wb);
     setInitialData(null);
     elementsRef.current = [];
+    collaboratorsRef.current = new Map();
   };
 
   const onChange = useCallback((elements) => {
@@ -117,6 +187,31 @@ export default function ProjectWhiteboards() {
       emitDraw({ whiteboardId: wbId, elements: elementsRef.current });
     }, 50);
   }, []);
+
+  const handlePointerUpdate = useCallback((payload) => {
+    const wasDrawing = isDrawingRef.current;
+    isDrawingRef.current = payload.button === 'down';
+
+    // When user finishes drawing, flush any buffered remote updates
+    if (wasDrawing && !isDrawingRef.current && pendingUpdateRef.current) {
+      mergeElements(pendingUpdateRef.current);
+      pendingUpdateRef.current = null;
+    }
+
+    if (!activeWbRef.current) return;
+    if (pointerThrottleRef.current) return;
+
+    pointerThrottleRef.current = setTimeout(() => {
+      pointerThrottleRef.current = null;
+    }, 40); // ~25fps
+
+    emitPointerUpdate({
+      whiteboardId: activeWbRef.current._id,
+      pointer: payload.pointer,
+      button: payload.button,
+      user: user?.name,
+    });
+  }, [user?.name, mergeElements]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -226,6 +321,7 @@ export default function ProjectWhiteboards() {
                   excalidrawAPI={(api) => setExcalidrawAPI(api)}
                   initialData={initialData ?? { elements: elementsRef.current, scrollToContent: false }}
                   onChange={onChange}
+                  onPointerUpdate={handlePointerUpdate}
                   theme={themeKind}
                   viewModeEnabled={!canEdit}
                   UIOptions={{
