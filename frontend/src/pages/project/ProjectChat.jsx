@@ -21,7 +21,8 @@ export default function ProjectChat() {
   const { workspaceId, projectId, project } = useOutletContext();
   const { user } = useAuth();
   const { toast } = useUI();
-  const online = usePresence(projectId);
+  // Backend rooms are keyed by canonical _id, not the URL token (which may be a slug).
+  const online = usePresence(project?._id);
 
   const [members, setMembers] = useState([]);
   const [messages, setMessages] = useState([]);

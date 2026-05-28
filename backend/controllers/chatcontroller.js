@@ -39,9 +39,9 @@ export const sendMessage = async (req, res) => {
 
         // Build the access-scoped recipient set: project members + workspace OWNER/ADMIN.
         // We don't notify random workspace users on a project-scoped @mention.
-        const project = req.project || await Project.findById(projectId).select('members workspace').lean();
+        const project = req.project || await Project.findById(projectId).select('members workspace slug').lean();
         const projMemberIds = (project?.members || []).map(m => m.user.toString());
-        const workspace = await Workspace.findById(project?.workspace || req.params.workspaceId).select('members').lean();
+        const workspace = await Workspace.findById(project?.workspace || req.params.workspaceId).select('members slug').lean();
         const wsAdminIds = (workspace?.members || [])
             .filter(m => m.role === 'OWNER' || m.role === 'ADMIN')
             .map(m => m.user.toString());
@@ -50,7 +50,9 @@ export const sendMessage = async (req, res) => {
         // Notify @mentioned users (scoped to project members + ws admins)
         const senderName = populatedMessage.sender?.name || 'Someone';
         const snippet = content.slice(0, 80) + (content.length > 80 ? '…' : '');
-        const chatLink = `/workspaces/${req.params.workspaceId}/projects/${projectId}/chat`;
+        const wsSlug = workspace?.slug || req.params.workspaceId;
+        const projSlug = project?.slug || projectId;
+        const chatLink = `/workspaces/${wsSlug}/projects/${projSlug}/chat`;
         notifyMentions(req.io, {
             content,
             sender: req.userId,

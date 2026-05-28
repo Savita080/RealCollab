@@ -13,6 +13,9 @@ import { BYPASS_BACKEND } from './api';
 // Identity to re-announce on every (re)connect. Set by connectSocket / setSocketIdentity.
 let identity = null;
 
+// Rooms to re-join on reconnect.
+const activeRooms = { workspaces: new Set(), projects: new Set(), whiteboards: new Set() };
+
 export const setSocketIdentity = (userId, name) => {
   identity = userId ? { userId, name: name || '' } : null;
   if (identity && socket.connected) {
@@ -21,8 +24,20 @@ export const setSocketIdentity = (userId, name) => {
 };
 
 socket.on('connect', () => {
+  const ident = identity ? `${identity.userId}|${identity.name}` : 'null';
+  const projs = [...activeRooms.projects].join(',');
+  console.log(`[socket] CONNECT sid=${socket.id} identity=${ident} activeProjects=[${projs}]`);
   if (identity) socket.emit('user_online', identity);
+  activeRooms.workspaces.forEach(id => socket.emit('join_workspace', id));
+  activeRooms.projects.forEach(id => {
+    console.log(`[socket] CONNECT-rejoin pid=${id}`);
+    socket.emit('join_project', id);
+    socket.emit('request_presence', id);
+  });
+  activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
 });
+
+socket.on('disconnect', (reason) => console.log(`[socket] DISCONNECT reason=${reason}`));
 
 export const connectSocket = (token, userId, name) => {
   if (BYPASS_BACKEND) {
@@ -31,7 +46,16 @@ export const connectSocket = (token, userId, name) => {
   }
   socket.auth = { token };
   if (userId) identity = { userId, name: name || '' };
-  socket.connect();
+  
+  if (socket.connected) {
+    console.log('[Socket] Socket already connected. Re-announcing identity and active rooms.');
+    if (identity) socket.emit('user_online', identity);
+    activeRooms.workspaces.forEach(id => socket.emit('join_workspace', id));
+    activeRooms.projects.forEach(id => socket.emit('join_project', id));
+    activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
+  } else {
+    socket.connect();
+  }
 };
 
 export const disconnectSocket = () => socket.disconnect();
@@ -39,13 +63,24 @@ export const disconnectSocket = () => socket.disconnect();
 // Presence
 export const emitUserOnline = (userId, name) => socket.emit('user_online', { userId, name: name || '' });
 
-// Room helpers — event names must match backend (underscores, not colons)
-export const joinProject     = (projectId)    => socket.emit('join_project', projectId);
-export const leaveProject    = (projectId)    => socket.emit('leave_project', projectId);
-export const joinWorkspace   = (workspaceId)  => socket.emit('join_workspace', workspaceId);
-export const leaveWorkspace  = (workspaceId)  => socket.emit('leave_workspace', workspaceId);
-export const joinWhiteboard  = (wbId)         => socket.emit('join_whiteboard', wbId);
-export const leaveWhiteboard = (wbId)         => socket.emit('leave_whiteboard', wbId);
+// Room helpers — event names must match backend (underscores, not colons).
+// When the socket isn't connected yet, we DO NOT emit immediately — the buffer
+// would deliver join_project BEFORE user_online, which races presence tracking.
+// Instead we add to activeRooms and let the 'connect' handler emit in the
+// correct order: user_online first, then joins.
+export const joinProject     = (projectId)    => {
+  console.log(`[socket] joinProject pid=${projectId} connected=${socket.connected} sid=${socket.id}`);
+  activeRooms.projects.add(projectId);
+  if (socket.connected) {
+    socket.emit('join_project', projectId);
+    socket.emit('request_presence', projectId);
+  }
+};
+export const leaveProject    = (projectId)    => { activeRooms.projects.delete(projectId); if (socket.connected) socket.emit('leave_project', projectId); };
+export const joinWorkspace   = (workspaceId)  => { activeRooms.workspaces.add(workspaceId);    if (socket.connected) socket.emit('join_workspace', workspaceId); };
+export const leaveWorkspace  = (workspaceId)  => { activeRooms.workspaces.delete(workspaceId); if (socket.connected) socket.emit('leave_workspace', workspaceId); };
+export const joinWhiteboard  = (wbId)         => { activeRooms.whiteboards.add(wbId);    if (socket.connected) socket.emit('join_whiteboard', wbId); };
+export const leaveWhiteboard = (wbId)         => { activeRooms.whiteboards.delete(wbId); if (socket.connected) socket.emit('leave_whiteboard', wbId); };
 
 // Typing indicator
 export const emitTyping = (projectId, userName) => socket.emit('typing', { projectId, userName });

@@ -21,7 +21,7 @@ export default function ProjectKanban() {
   const { tasks, fetch, create, move, loading, delete: deleteTaskStore } = useTasks();
   const { toast } = useUI();
   const { user } = useAuth();
-  const online = usePresence(projectId);
+  const online = usePresence(project?._id);
 
   const [dragging, setDragging] = useState(null);
   const [dragOver, setDragOver] = useState(null);

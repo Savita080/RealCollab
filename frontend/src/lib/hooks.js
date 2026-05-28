@@ -29,13 +29,44 @@ export function useInView(opts = {}) {
   return [ref, inView];
 }
 
-/** Socket presence tracker */
+/** Socket presence tracker — scoped to a specific projectId.
+ *  Robust against missed broadcasts via a 15s heartbeat + focus refresh. */
 export function usePresence(projectId) {
   const [online, setOnline] = useState([]);
   useEffect(() => {
     if (!projectId) return;
-    socket.on('presence:update', setOnline);
-    return () => socket.off('presence:update', setOnline);
+    console.log(`[presence] MOUNT pid=${projectId} connected=${socket.connected} sid=${socket.id}`);
+    const requestPresence = () => {
+      console.log(`[presence] -> request_presence pid=${projectId} connected=${socket.connected} sid=${socket.id}`);
+      socket.emit('request_presence', projectId);
+    };
+    const onPresenceUpdate = (data) => {
+      const match = data?.projectId === projectId;
+      const userIds = (data?.users || []).map(u => u._id || u.userId).join(',');
+      console.log(`[presence] <- presence:update recvPid=${data?.projectId} expPid=${projectId} match=${match} count=${data?.users?.length ?? 0} users=[${userIds}]`);
+      if (match) setOnline(data.users || []);
+    };
+    const onFocus = () => { if (socket.connected) requestPresence(); };
+    socket.on('presence:update', onPresenceUpdate);
+    socket.on('connect', requestPresence);
+    window.addEventListener('focus', onFocus);
+    // React fires child effects BEFORE parent effects — so this hook runs
+    // before ProjectLayout's joinProject. Defer the initial request to the
+    // next macrotask so join_project lands first, putting our socket in the
+    // room before request_presence asks who's in it.
+    let initialTimer;
+    if (socket.connected) {
+      initialTimer = setTimeout(requestPresence, 0);
+    }
+    // Heartbeat — re-request presence every 15s as a safety net
+    const heartbeat = setInterval(() => { if (socket.connected) requestPresence(); }, 15000);
+    return () => {
+      socket.off('presence:update', onPresenceUpdate);
+      socket.off('connect', requestPresence);
+      window.removeEventListener('focus', onFocus);
+      window.clearTimeout(initialTimer);
+      clearInterval(heartbeat);
+    };
   }, [projectId]);
   return online;
 }
