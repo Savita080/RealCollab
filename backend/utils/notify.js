@@ -2,6 +2,7 @@
 import Notification from '../models/notification.js';
 import User from '../models/user.js';
 import redis from '../config/redis.js';
+import { sendPushToUser } from '../lib/webpush.js';
 
 /**
  * Create a notification and push live to recipient if online.
@@ -39,6 +40,23 @@ export async function notifyUser(io, { recipient, sender, type, content, link })
                 notification.notified = true;
                 await notification.save();
             }
+        }
+
+        // Web push — fires the OS-level notification too. Sent regardless of
+        // online state so users get notified when the tab is backgrounded or
+        // on another window. The browser de-dupes naturally because online
+        // tabs already showed an in-app popup via socket.
+        try {
+            const recipientUser = await User.findById(recipient).select('pushSubscriptions');
+            if (recipientUser?.pushSubscriptions?.length) {
+                sendPushToUser(recipientUser, {
+                    title: sender ? `${populated.sender?.name || 'Someone'} on RealCollab` : 'RealCollab',
+                    body: content,
+                    link: link || '/',
+                }).catch(err => console.error('[push send] failed:', err.message));
+            }
+        } catch (err) {
+            console.error('[push lookup] failed:', err.message);
         }
         return populated;
     } catch (err) {
