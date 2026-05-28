@@ -22,6 +22,15 @@ const router = express.Router({ mergeParams: true });
 router.use(resolveWorkspace, resolveProject);
 
 // ─────────────────────────────────────────────
+// WIKI FOLDER ROUTES
+// ─────────────────────────────────────────────
+router.post('/folders', protectRoute, requireProjectRole('CONTRIBUTOR'), createWikiFolder);
+router.get('/folders', protectRoute, requireProjectRole('VIEWER'), getProjectWikiFolders);
+router.patch('/folders/:folderId', protectRoute, requireProjectRole('CONTRIBUTOR'), updateWikiFolder);
+router.delete('/folders/:folderId', protectRoute, requireProjectRole('CONTRIBUTOR'), deleteWikiFolder);
+
+
+// ─────────────────────────────────────────────
 // WIKI PAGE ROUTES
 // ─────────────────────────────────────────────
 router.post('/', protectRoute, requireProjectRole('CONTRIBUTOR'), checkLimit('wikiPages'), createWikiPage);
@@ -32,12 +41,6 @@ router.get('/:pageId/versions', protectRoute, requireProjectRole('VIEWER'), getW
 router.delete('/:pageId', protectRoute, requireProjectRole('CONTRIBUTOR'), deleteWikiPage);
 router.patch('/:pageId/move', protectRoute, requireProjectRole('CONTRIBUTOR'), moveWikiPage);
 
-// ─────────────────────────────────────────────
-// WIKI FOLDER ROUTES
-// ─────────────────────────────────────────────
-router.post('/folders', protectRoute, requireProjectRole('CONTRIBUTOR'), createWikiFolder);
-router.get('/folders', protectRoute, requireProjectRole('VIEWER'), getProjectWikiFolders);
-router.patch('/folders/:folderId', protectRoute, requireProjectRole('CONTRIBUTOR'), updateWikiFolder);
-router.delete('/folders/:folderId', protectRoute, requireProjectRole('CONTRIBUTOR'), deleteWikiFolder);
+
 
 export default router;
