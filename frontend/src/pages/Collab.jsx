@@ -174,7 +174,10 @@ export default function Collab() {
 
   // ── Live socket: whiteboard events ─────────────────────────────────────────
   useEffect(() => {
-    const applyRemoteElements = (elements) => {
+    const onSync = (elements) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:onSync',message:'whiteboard_sync',data:{count:elements?.length??0,hasAPI:!!excalidrawAPI},timestamp:Date.now(),hypothesisId:'B,C'})}).catch(()=>{});
+      // #endregion
       if (!Array.isArray(elements)) return;
       isRemoteUpdateRef.current = true;
       elementsRef.current = elements;
@@ -182,18 +185,44 @@ export default function Collab() {
       if (excalidrawAPI) excalidrawAPI.updateScene({ elements });
       requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
     };
-    const onSync = (elements) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:onSync',message:'whiteboard_sync',data:{count:elements?.length??0,hasAPI:!!excalidrawAPI},timestamp:Date.now(),hypothesisId:'B,C'})}).catch(()=>{});
-      // #endregion
-      applyRemoteElements(elements);
-    };
+
     const onUpdate = (elements) => {
       if (!Array.isArray(elements)) return;
       // #region agent log
       fetch('http://127.0.0.1:7918/ingest/a206e052-0209-4dae-ac9e-d5dd54b7287b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6711b2'},body:JSON.stringify({sessionId:'6711b2',location:'Collab.jsx:onUpdate',message:'whiteboard_update',data:{count:elements.length},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
       // #endregion
-      applyRemoteElements(elements);
+      
+      if (!excalidrawAPI) return;
+      
+      isRemoteUpdateRef.current = true;
+      const localElements = excalidrawAPI.getSceneElements();
+      
+      // Merge remote and local elements by version
+      const localMap = new Map(localElements.map(el => [el.id, el]));
+      const nextElementsMap = new Map();
+      
+      // 1. Process remote elements
+      for (const remoteEl of elements) {
+         const localEl = localMap.get(remoteEl.id);
+         if (localEl && localEl.version > remoteEl.version) {
+             nextElementsMap.set(localEl.id, localEl);
+         } else {
+             nextElementsMap.set(remoteEl.id, remoteEl);
+         }
+      }
+      
+      // 2. Add local elements that are missing in remote
+      for (const localEl of localElements) {
+         if (!nextElementsMap.has(localEl.id)) {
+             nextElementsMap.set(localEl.id, localEl);
+         }
+      }
+      
+      const mergedElements = Array.from(nextElementsMap.values());
+      elementsRef.current = mergedElements;
+      excalidrawAPI.updateScene({ elements: mergedElements });
+      
+      requestAnimationFrame(() => { isRemoteUpdateRef.current = false; });
     };
     socket.on('whiteboard_sync', onSync);
     socket.on('whiteboard_update', onUpdate);
