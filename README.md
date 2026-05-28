@@ -35,7 +35,7 @@
 - Email: `test@test.com`
 - Password: `test1234`
 - Workspace role in **test workspace**: **Member** (viewer permissions)
-- In **DevCollab** workspace: workspace-level **Viewer**
+- In **RealCollab** workspace: workspace-level **Viewer**
 - Project-level role in **ADD Ons** and **BUGS** projects: **Viewer**
 
 <br />
