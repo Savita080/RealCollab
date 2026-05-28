@@ -38,7 +38,16 @@ export const connectSocket = (token, userId, name) => {
   }
   socket.auth = { token };
   if (userId) identity = { userId, name: name || '' };
-  socket.connect();
+  
+  if (socket.connected) {
+    console.log('[Socket] Socket already connected. Re-announcing identity and active rooms.');
+    if (identity) socket.emit('user_online', identity);
+    activeRooms.workspaces.forEach(id => socket.emit('join_workspace', id));
+    activeRooms.projects.forEach(id => socket.emit('join_project', id));
+    activeRooms.whiteboards.forEach(id => socket.emit('join_whiteboard', id));
+  } else {
+    socket.connect();
+  }
 };
 
 export const disconnectSocket = () => socket.disconnect();

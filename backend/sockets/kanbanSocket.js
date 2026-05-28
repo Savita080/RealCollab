@@ -38,6 +38,11 @@ export const setupKanbanSockets = (io) => {
             const userId = payload?.userId || payload;
             const name = payload?.name || '';
             if (!userId) return;
+
+            // Store directly on socket object for 0-latency synchronous lookup
+            socket.userId = String(userId);
+            socket.userName = name;
+
             memSocketUser.set(socket.id, { userId: String(userId), name });
             if (redis) {
                 await redis.set(`user:online:${userId}`, socket.id);
@@ -45,9 +50,12 @@ export const setupKanbanSockets = (io) => {
                 if (name) await redis.set(`user:name:${userId}`, name);
                 console.log(`[Redis] User ${userId} is now online!`);
             }
-            // Re-broadcast presence for any room this socket is already in
+            // Re-broadcast presence for project rooms this socket is already in.
+            // Skip workspace_ rooms — they don't use presence tracking.
             for (const room of socket.rooms) {
-                if (room !== socket.id) await broadcastPresence(io, room, redis);
+                if (room !== socket.id && !room.startsWith('workspace_') && !room.startsWith('whiteboard:')) {
+                    await broadcastPresence(io, room, redis);
+                }
             }
         });
 
@@ -67,8 +75,8 @@ export const setupKanbanSockets = (io) => {
 
         // Snapshot request — sends current presence only to the requesting socket
         socket.on('request_presence', async (projectId) => {
-            const online = await collectPresence(io, projectId, redis);
-            socket.emit('presence:update', online);
+            const users = await collectPresence(io, projectId, redis);
+            socket.emit('presence:update', { projectId, users });
         });
 
         // WORKSPACE ROOMS: for workspace-level chat broadcasts
@@ -125,22 +133,30 @@ export const setupKanbanSockets = (io) => {
             }
         });
 
+        // Snapshot rooms BEFORE the socket actually leaves them in disconnect
+        socket.on('disconnecting', () => {
+            socket.roomsToLeave = [...socket.rooms].filter(r => r !== socket.id);
+        });
+
         // WHEN A USER LOGS OUT / CLOSES TAB
         socket.on('disconnect', async () => {
             console.log(`[Socket] User disconnected: ${socket.id}`);
-            // Snapshot rooms BEFORE we lose the socket reference
-            const rooms = [...socket.rooms].filter(r => r !== socket.id);
-            if (redis) {
-                const userId = await redis.get(`socket:${socket.id}`);
-                if (userId) {
+            const rooms = socket.roomsToLeave || [];
+            
+            const userId = socket.userId || (await resolveUserId(socket.id));
+            if (userId) {
+                if (redis) {
                     await redis.del(`user:online:${userId}`);
                     await redis.del(`socket:${socket.id}`);
-                    console.log(`[Redis] User ${userId} is now offline.`);
                 }
+                console.log(`[Redis] User ${userId} is now offline.`);
             }
             memSocketUser.delete(socket.id);
+            // Only broadcast presence for project rooms, not workspace_ or whiteboard: rooms
             for (const room of rooms) {
-                await broadcastPresence(io, room, redis);
+                if (!room.startsWith('workspace_') && !room.startsWith('whiteboard:')) {
+                    await broadcastPresence(io, room, redis);
+                }
             }
         });
     });
@@ -152,16 +168,26 @@ async function collectPresence(io, projectId, redis) {
     const seen = new Set();
     const online = [];
     for (const socketId of room) {
-        let userId = null;
-        let name = null;
-        if (redis) {
+        // 1. Try directly on the socket instance (0-latency)
+        const socketInstance = io.sockets.sockets.get(socketId);
+        let userId = socketInstance?.userId;
+        let name = socketInstance?.userName;
+
+        // 2. Fallback to in-memory map
+        if (!userId) {
+            const mem = memSocketUser.get(socketId);
+            if (mem) {
+                userId = mem.userId;
+                name = mem.name;
+            }
+        }
+
+        // 3. Fallback to Redis only if still not found
+        if (!userId && redis) {
             userId = await redis.get(`socket:${socketId}`);
             if (userId) name = await redis.get(`user:name:${userId}`);
         }
-        if (!userId) {
-            const mem = memSocketUser.get(socketId);
-            if (mem) { userId = mem.userId; name = mem.name; }
-        }
+
         if (userId && !seen.has(userId)) {
             seen.add(userId);
             online.push({ _id: userId, name: name || 'User' });
@@ -171,6 +197,6 @@ async function collectPresence(io, projectId, redis) {
 }
 
 async function broadcastPresence(io, projectId, redis) {
-    const online = await collectPresence(io, projectId, redis);
-    io.to(projectId).emit('presence:update', online);
+    const users = await collectPresence(io, projectId, redis);
+    io.to(projectId).emit('presence:update', { projectId, users });
 }

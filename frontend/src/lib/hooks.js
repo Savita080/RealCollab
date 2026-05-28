@@ -29,19 +29,32 @@ export function useInView(opts = {}) {
   return [ref, inView];
 }
 
-/** Socket presence tracker */
+/** Socket presence tracker — scoped to a specific projectId.
+ *  Robust against missed broadcasts via a 15s heartbeat + focus refresh. */
 export function usePresence(projectId) {
   const [online, setOnline] = useState([]);
   useEffect(() => {
     if (!projectId) return;
     const requestPresence = () => socket.emit('request_presence', projectId);
-    socket.on('presence:update', setOnline);
+    // Server sends { projectId, users } — accept only updates for OUR room.
+    // Tolerate legacy array payloads (no projectId field) too.
+    const onPresenceUpdate = (data) => {
+      if (Array.isArray(data)) { setOnline(data); return; }
+      if (data?.projectId === projectId) setOnline(data.users || []);
+    };
+    const onFocus = () => { if (socket.connected) requestPresence(); };
+    socket.on('presence:update', onPresenceUpdate);
     socket.on('connect', requestPresence);
+    window.addEventListener('focus', onFocus);
     // Request immediately in case socket is already connected
     if (socket.connected) requestPresence();
+    // Heartbeat — re-request presence every 15s as a safety net for missed broadcasts
+    const heartbeat = setInterval(() => { if (socket.connected) requestPresence(); }, 15000);
     return () => {
-      socket.off('presence:update', setOnline);
+      socket.off('presence:update', onPresenceUpdate);
       socket.off('connect', requestPresence);
+      window.removeEventListener('focus', onFocus);
+      clearInterval(heartbeat);
     };
   }, [projectId]);
   return online;
