@@ -57,9 +57,18 @@ export default function ProjectChat() {
     const canonicalId = project?._id;
     const onNew = (msg) => {
       const msgProj = msg.project?._id || msg.project;
-      if (msgProj === canonicalId || msgProj === projectId) {
-        setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
-      }
+      if (msgProj !== canonicalId && msgProj !== projectId) return;
+      setMessages(prev => {
+        if (prev.some(m => m._id === msg._id)) return prev;
+        const senderId = msg.sender?._id || msg.sender;
+        const tempIdx = prev.findIndex(m => m._optimistic && m.content === msg.content && (m.sender?._id || m.sender) === senderId);
+        if (tempIdx !== -1) {
+          const next = [...prev];
+          next[tempIdx] = msg;
+          return next;
+        }
+        return [...prev, msg];
+      });
     };
     const onReaction = ({ scope, messageId, reactions }) => {
       if (scope !== 'project') return;
@@ -91,19 +100,35 @@ export default function ProjectChat() {
     e.preventDefault();
     if (!input.trim()) return;
     const text = input.trim();
-    const replyToId = replyingTo?._id;
+    const replyTo = replyingTo;
+    const replyToId = replyTo?._id;
     setInput('');
     setReplyingTo(null);
+    const tempId = `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const optimistic = {
+      _id: tempId,
+      _optimistic: true,
+      content: text,
+      sender: { _id: user?.id || user?._id, name: user?.name, avatar: user?.avatar },
+      createdAt: new Date().toISOString(),
+      reactions: [],
+      ...(replyTo ? { replyTo: { _id: replyTo._id, content: replyTo.content, sender: replyTo.sender } } : {}),
+    };
+    setMessages(prev => [...prev, optimistic]);
     try {
       const { data } = await chatApi.sendProject(workspaceId, projectId, {
         content: text,
         ...(replyToId ? { replyTo: replyToId } : {}),
       });
       const msg = data.chatMessage ?? data;
-      setMessages(prev => prev.some(m => m._id === msg._id) ? prev : [...prev, msg]);
+      setMessages(prev => {
+        if (prev.some(m => m._id === msg._id)) return prev.filter(m => m._id !== tempId);
+        return prev.map(m => m._id === tempId ? msg : m);
+      });
     } catch {
+      setMessages(prev => prev.filter(m => m._id !== tempId));
       setInput(text);
-      if (replyToId) setReplyingTo(replyingTo);
+      if (replyTo) setReplyingTo(replyTo);
       toast('Failed to send', 'error');
     }
   };
