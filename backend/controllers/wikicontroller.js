@@ -64,8 +64,8 @@ export const getProjectWikiPages = async (req, res) => {
 
 export const getWikiPageById = async (req, res) => {
     try {
-        const { pageId } = req.params;
-        const page = await WikiPage.findById(pageId)
+        const { pageId, projectId } = req.params;
+        const page = await WikiPage.findOne({ _id: pageId, project: projectId })
             .populate('prevPage', 'title')
             .populate('nextPage', 'title');
 
@@ -83,7 +83,7 @@ export const updateWikiPage = async (req, res) => {
         const { pageId, projectId, workspaceId } = req.params;
         const { title, content, commitMessage, folderId, prevPage, nextPage } = req.body;
 
-        const before = await WikiPage.findById(pageId);
+        const before = await WikiPage.findOne({ _id: pageId, project: projectId });
         if (!before) return res.status(404).json({ message: "Page not found" });
 
         // Content changes require a descriptive commit message
@@ -150,7 +150,12 @@ export const updateWikiPage = async (req, res) => {
 
 export const getWikiPageVersions = async (req, res) => {
     try {
-        const { pageId } = req.params;
+        const { pageId, projectId } = req.params;
+
+        // Confirm the page belongs to this project before exposing its history.
+        const page = await WikiPage.findOne({ _id: pageId, project: projectId }).select('_id').lean();
+        if (!page) return res.status(404).json({ message: "Page not found" });
+
         const versions = await WikiPageVersion.find({ wikiPage: pageId })
             .populate('savedBy', 'name avatar')
             .sort('-createdAt');
@@ -164,8 +169,8 @@ export const getWikiPageVersions = async (req, res) => {
 
 export const deleteWikiPage = async (req, res) => {
     try {
-        const { pageId } = req.params;
-        const deleted = await WikiPage.findByIdAndDelete(pageId);
+        const { pageId, projectId } = req.params;
+        const deleted = await WikiPage.findOneAndDelete({ _id: pageId, project: projectId });
 
         if (!deleted) return res.status(404).json({ message: "Page not found" });
 
@@ -242,15 +247,15 @@ export const getProjectWikiFolders = async (req, res) => {
 
 export const updateWikiFolder = async (req, res) => {
     try {
-        const { folderId } = req.params;
+        const { folderId, projectId } = req.params;
         const { name } = req.body;
 
         if (!name || !name.trim()) {
             return res.status(400).json({ message: "Folder name is required." });
         }
 
-        const updated = await WikiFolder.findByIdAndUpdate(
-            folderId,
+        const updated = await WikiFolder.findOneAndUpdate(
+            { _id: folderId, project: projectId },
             { name: name.trim() },
             { new: true }
         );
@@ -280,7 +285,7 @@ export const deleteWikiFolder = async (req, res) => {
             { $set: { parent: null } }
         );
 
-        const deleted = await WikiFolder.findByIdAndDelete(folderId);
+        const deleted = await WikiFolder.findOneAndDelete({ _id: folderId, project: projectId });
         if (!deleted) return res.status(404).json({ message: "Folder not found." });
 
         res.status(200).json({ message: "Folder deleted" });
@@ -293,11 +298,11 @@ export const deleteWikiFolder = async (req, res) => {
 // Move a page into a folder (or to root when folderId is null)
 export const moveWikiPage = async (req, res) => {
     try {
-        const { pageId } = req.params;
+        const { pageId, projectId } = req.params;
         const { folderId } = req.body; // null = root
 
-        const updated = await WikiPage.findByIdAndUpdate(
-            pageId,
+        const updated = await WikiPage.findOneAndUpdate(
+            { _id: pageId, project: projectId },
             { folder: folderId ?? null },
             { new: true }
         );

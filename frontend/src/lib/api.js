@@ -177,9 +177,8 @@ export const activity = {
 };
 
 // ── Notifications ─────────────────────────────────────
-// Backend supports: GET /notifications/unread, PATCH /notifications/mark-read (marks ALL), POST /notifications
+// Backend supports: GET /notifications/unread, PATCH /notifications/mark-read (marks ALL)
 export const notifications = {
-  create:          d   => api.post('/notifications', d),
   unread:          ()  => api.get('/notifications/unread'),
   markAll:         ()  => api.patch('/notifications/mark-read'),
   markOne:         (id) => api.patch(`/notifications/${id}/read`),

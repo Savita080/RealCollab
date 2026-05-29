@@ -7,6 +7,33 @@ import { toggleReaction } from '../utils/reactions.js';
 
 const REPLY_POPULATE = { path: 'replyTo', select: 'content author', populate: { path: 'author', select: 'name' } };
 
+// The comment routes live under /api/tasks/:taskId/comments, so there's no
+// workspace/project in the URL for RBAC middleware to act on. We resolve the
+// task → project → workspace and check membership in-controller.
+// Returns { allowed, status, message, projectId, workspaceId, project }.
+async function checkTaskAccess(taskId, userId, { requireContributor = false } = {}) {
+    const task = await Task.findById(taskId).select('project').lean();
+    if (!task) return { allowed: false, status: 404, message: "Task not found" };
+
+    const proj = await Project.findById(task.project).select('workspace members').lean();
+    if (!proj) return { allowed: false, status: 404, message: "Project not found" };
+
+    const myProjRole = proj.members?.find(m => m.user.toString() === userId.toString())?.role;
+    const ws = await Workspace.findById(proj.workspace).select('members').lean();
+    const myWsRole = ws?.members?.find(m => m.user.toString() === userId.toString())?.role;
+    const isWsAdmin = myWsRole === 'OWNER' || myWsRole === 'ADMIN';
+
+    // Must be a project member OR a workspace admin to see/touch the task at all.
+    if (!myProjRole && !isWsAdmin) {
+        return { allowed: false, status: 403, message: "You are not a member of this project." };
+    }
+    // Posting/reacting requires contributor-level write access (ws admins bypass).
+    if (requireContributor && !isWsAdmin && myProjRole !== 'CONTRIBUTOR') {
+        return { allowed: false, status: 403, message: "You don't have permission to comment on this task." };
+    }
+    return { allowed: true, projectId: task.project.toString(), workspaceId: proj.workspace.toString(), project: proj };
+}
+
 export const createComment = async (req, res) => {
     try {
         const { taskId } = req.params;
@@ -14,6 +41,11 @@ export const createComment = async (req, res) => {
 
         if (!content) {
             return res.status(400).json({ message: "Content is required" });
+        }
+
+        const access = await checkTaskAccess(taskId, req.userId, { requireContributor: true });
+        if (!access.allowed) {
+            return res.status(access.status).json({ message: access.message });
         }
 
         // Validate replyTo belongs to the same task
@@ -90,6 +122,12 @@ export const createComment = async (req, res) => {
 export const getTaskComments = async (req, res) => {
     try {
         const { taskId } = req.params;
+
+        const access = await checkTaskAccess(taskId, req.userId);
+        if (!access.allowed) {
+            return res.status(access.status).json({ message: access.message });
+        }
+
         // Populate the author + replyTo so the frontend gets their name, avatar, and quote preview
         const comments = await TaskComment.find({ task: taskId })
             .populate('author', 'name avatar')
@@ -107,6 +145,15 @@ export const reactToComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const { emoji } = req.body;
+
+        // Resolve the comment → task and verify project membership before reacting.
+        const comment = await TaskComment.findById(commentId).select('task').lean();
+        if (!comment) return res.status(404).json({ message: "Comment not found" });
+        const access = await checkTaskAccess(comment.task, req.userId);
+        if (!access.allowed) {
+            return res.status(access.status).json({ message: access.message });
+        }
+
         const reactions = await toggleReaction(TaskComment, commentId, emoji, req.userId);
         // Broadcast over the project room if the caller passed projectId (same pattern as create/delete)
         const projectId = req.body.projectId;

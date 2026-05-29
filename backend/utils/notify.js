@@ -33,10 +33,12 @@ export async function notifyUser(io, { recipient, sender, type, content, link })
             ? await Notification.findById(notification._id).populate('sender', 'name avatar')
             : notification;
 
-        if (redis && io) {
-            const socketId = await redis.get(`user:online:${recipient}`);
-            if (socketId) {
-                io.to(socketId).emit('new_notification', populated);
+        // Emit to the recipient's per-user room — reaches every tab/device they
+        // have connected (the room is joined on authenticated socket connect).
+        if (io) {
+            const room = io.sockets.adapter.rooms.get(`user:${recipient.toString()}`);
+            if (room && room.size > 0) {
+                io.to(`user:${recipient.toString()}`).emit('new_notification', populated);
                 notification.notified = true;
                 await notification.save();
             }

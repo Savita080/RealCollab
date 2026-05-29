@@ -288,7 +288,7 @@ export const addProjectMember = async (req, res) => {
             link: `/workspaces/${req.params.workspaceId}/projects/${req.params.projectId}`,
         }).catch(err => console.error('[project-add notify] failed:', err.message));
 
-        res.status(200).json({ message: "Member added to project", members: project.members });
+        res.status(201).json({ message: "Member added to project", members: project.members });
     } catch (error) {
         console.error("Error adding project member:", error.message);
         res.status(500).json({ error: "Internal Server Error" });

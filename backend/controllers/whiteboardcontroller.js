@@ -52,7 +52,7 @@ export const updateWhiteboard = async (req, res) => {
             return res.status(400).json({ message: "Whiteboard name is required" });
         }
 
-        const before = await Whiteboard.findById(whiteboardId);
+        const before = await Whiteboard.findOne({ _id: whiteboardId, project: projectId });
         if (!before) return res.status(404).json({ message: "Whiteboard not found" });
 
         const updated = await Whiteboard.findByIdAndUpdate(
@@ -83,8 +83,8 @@ export const updateWhiteboard = async (req, res) => {
 
 export const deleteWhiteboard = async (req, res) => {
     try {
-        const { whiteboardId } = req.params;
-        const deleted = await Whiteboard.findByIdAndDelete(whiteboardId);
+        const { whiteboardId, projectId } = req.params;
+        const deleted = await Whiteboard.findOneAndDelete({ _id: whiteboardId, project: projectId });
         if (!deleted) return res.status(404).json({ message: "Whiteboard not found" });
 
         await logProjectActivity({

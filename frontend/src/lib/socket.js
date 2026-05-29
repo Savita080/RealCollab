@@ -6,6 +6,9 @@ const URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 export const socket = io(URL, {
   autoConnect: false,
   withCredentials: true,
+  // Pull the current token at (re)connect time so a refreshed access token is
+  // always used — the backend authenticates the handshake via this token.
+  auth: (cb) => cb({ token: localStorage.getItem('rc_token') }),
 });
 
 import { BYPASS_BACKEND } from './api';
@@ -40,7 +43,8 @@ export const connectSocket = (token, userId, name, avatar) => {
     console.log('[Socket] BYPASS_BACKEND is true. Skipping real socket connection.');
     return;
   }
-  socket.auth = { token };
+  // socket.auth is a callback that reads the freshest token from localStorage at
+  // connect time, so we don't set it statically here (token may rotate via refresh).
   if (userId) identity = { userId, name: name || '', avatar: avatar || '' };
   
   if (socket.connected) {

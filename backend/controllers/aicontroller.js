@@ -6,6 +6,7 @@ import User from '../models/user.js';
 import ActivityLog from '../models/activityLog.js';
 import { logProjectActivity } from '../utils/activityLogger.js';
 import { PROJ_ACTIONS, OBJECT_TYPES } from '../utils/activityActions.js';
+import { refundAIQuota } from '../middleware/planLimits.js';
 
 async function logAiServiceUse(userId, projectId, action, label) {
     try {
@@ -64,6 +65,8 @@ export const reviewCode = async (req, res) => {
         }
         res.status(200).json(data);
     } catch (error) {
+        // The AI request failed — refund the quota unit checkAIQuota charged up-front.
+        await refundAIQuota(req.userId);
         console.error("Error connecting to AI service:", error.message);
         res.status(500).json({ error: "Failed to communicate with AI Service" });
     }
@@ -220,6 +223,8 @@ export const generateStandup = async (req, res) => {
         await logAiServiceUse(userId, projectId, PROJ_ACTIONS.AI_STANDUP, 'AI Standup Report');
         res.status(200).json(data);
     } catch (error) {
+        // The AI request failed — refund the quota unit checkAIQuota charged up-front.
+        await refundAIQuota(req.userId);
         console.error("Error connecting to AI service:", error.message);
         res.status(500).json({ error: "Failed to communicate with AI Service" });
     }
@@ -277,6 +282,8 @@ export const summarizeProject = async (req, res) => {
         await logAiServiceUse(req.userId, projectId, PROJ_ACTIONS.AI_SUMMARIZE, 'AI Project Summary');
         res.status(200).json(data);
     } catch (error) {
+        // The AI request failed — refund the quota unit checkAIQuota charged up-front.
+        await refundAIQuota(req.userId);
         console.error("Error connecting to AI service:", error.message);
         res.status(500).json({ error: "Failed to communicate with AI Service" });
     }
@@ -317,6 +324,8 @@ export const generateTasks = async (req, res) => {
         }
         res.status(200).json(data);
     } catch (error) {
+        // The AI request failed — refund the quota unit checkAIQuota charged up-front.
+        await refundAIQuota(req.userId);
         console.error("Error connecting to AI service:", error.message);
         res.status(500).json({ error: "Failed to communicate with AI Service" });
     }
@@ -407,6 +416,8 @@ export const findBottlenecks = async (req, res) => {
         await logAiServiceUse(req.userId, projectId, PROJ_ACTIONS.AI_BOTTLENECK, 'AI Bottleneck Analysis');
         res.status(200).json(data);
     } catch (error) {
+        // The AI request failed — refund the quota unit checkAIQuota charged up-front.
+        await refundAIQuota(req.userId);
         console.error("Error connecting to AI service:", error.message);
         res.status(500).json({ error: "Failed to communicate with AI Service" });
     }

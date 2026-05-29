@@ -33,7 +33,7 @@ export const createOrder = async (req, res) => {
             keyId: process.env.RAZORPAY_KEY_ID
         });
     } catch (error) {
-        console.error("Error creating order:", JSON.stringify(error));
+        console.error("Error creating order:", error?.error?.description || error.message);
         res.status(500).json({ error: "Failed to create payment order" });
     }
 };
