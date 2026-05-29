@@ -4,7 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import { Send, Pencil, Trash2, Check, X, Pin, PinOff, Search } from 'lucide-react';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
-import { usePresence } from '../../lib/hooks';
+import { useScopedPresence } from '../../lib/hooks';
 import { chat as chatApi, projects as projectsApi, tasks as tasksApi } from '../../lib/api';
 import { useChat } from '../../store/chat';
 import { Avatar } from '../../components/ui/Badge';
@@ -24,8 +24,9 @@ export default function ProjectChat() {
   const { user } = useAuth();
   const { toast } = useUI();
   const clearUnread = useChat(s => s.clear);
-  // Backend rooms are keyed by canonical _id, not the URL token (which may be a slug).
-  const online = usePresence(project?._id);
+  // Scoped presence: only people viewing THIS chat (not the whole project).
+  // Keyed by canonical _id, not the URL token (which may be a slug).
+  const online = useScopedPresence(project?._id ? `chat:${project._id}` : null);
 
   const [members, setMembers] = useState([]);
   const [messages, setMessages] = useState([]);

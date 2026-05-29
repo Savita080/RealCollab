@@ -43,11 +43,16 @@ export const setupKanbanSockets = (io) => {
                 if (name) await redis.set(`user:name:${userId}`, name);
                 if (avatar) await redis.set(`user:avatar:${userId}`, avatar);
             }
-            // Re-broadcast presence for project rooms this socket is already in.
-            // Skip workspace_ / whiteboard: rooms — they don't use presence tracking.
+            // Re-broadcast presence for rooms this socket is already in, so the
+            // freshly-arrived name/avatar shows up for everyone. Project rooms use
+            // presence:update; scope: rooms use presence:scope_update. Skip
+            // workspace_ / whiteboard: rooms (no presence tracking) and user: room.
             for (const room of socket.rooms) {
-                if (room !== socket.id && room !== `user:${userId}` &&
-                    !room.startsWith('workspace_') && !room.startsWith('whiteboard:')) {
+                if (room === socket.id || room === `user:${userId}` ||
+                    room.startsWith('workspace_') || room.startsWith('whiteboard:')) continue;
+                if (room.startsWith('scope:')) {
+                    await broadcastScopePresence(io, room.slice('scope:'.length), redis);
+                } else {
                     await broadcastPresence(io, room, redis);
                 }
             }
@@ -71,6 +76,31 @@ export const setupKanbanSockets = (io) => {
         socket.on('request_presence', async (projectId) => {
             const users = await collectPresence(io, projectId, redis);
             socket.emit('presence:update', { projectId, users });
+        });
+
+        // ── Generic SCOPED presence ────────────────────────────────────────
+        // Lets a specific page (chat, whiteboard, etc.) track who is *on that
+        // page* rather than who is in the whole project. Room keys are namespaced
+        // `scope:<key>` so they never collide with project rooms. Reuses the same
+        // collectPresence helper — identity comes from the verified socket.
+        socket.on('presence:join', async (scopeKey) => {
+            if (!scopeKey) return;
+            const room = `scope:${scopeKey}`;
+            socket.join(room);
+            await broadcastScopePresence(io, scopeKey, redis);
+        });
+
+        socket.on('presence:leave', async (scopeKey) => {
+            if (!scopeKey) return;
+            const room = `scope:${scopeKey}`;
+            socket.leave(room);
+            await broadcastScopePresence(io, scopeKey, redis);
+        });
+
+        socket.on('presence:request', async (scopeKey) => {
+            if (!scopeKey) return;
+            const users = await collectPresence(io, `scope:${scopeKey}`, redis);
+            socket.emit('presence:scope_update', { scopeKey, users });
         });
 
         // WORKSPACE ROOMS: for workspace-level chat broadcasts
@@ -140,9 +170,14 @@ export const setupKanbanSockets = (io) => {
                 await redis.del(`socket:${socket.id}`);
             }
             memSocketUser.delete(socket.id);
-            // Only broadcast presence for project rooms, not workspace_ or whiteboard: rooms
+            // Rebroadcast presence for the rooms this socket was in so others see
+            // it drop off. Project rooms → presence:update, scope: → scope_update.
             for (const room of rooms) {
-                if (!room.startsWith('workspace_') && !room.startsWith('whiteboard:')) {
+                if (room.startsWith('workspace_') || room.startsWith('whiteboard:') ||
+                    room.startsWith('user:')) continue;
+                if (room.startsWith('scope:')) {
+                    await broadcastScopePresence(io, room.slice('scope:'.length), redis);
+                } else {
                     await broadcastPresence(io, room, redis);
                 }
             }
@@ -192,4 +227,10 @@ async function collectPresence(io, projectId, redis) {
 async function broadcastPresence(io, projectId, redis) {
     const users = await collectPresence(io, projectId, redis);
     io.to(projectId).emit('presence:update', { projectId, users });
+}
+
+// Broadcast presence for a namespaced scope room (chat, whiteboard, …).
+async function broadcastScopePresence(io, scopeKey, redis) {
+    const users = await collectPresence(io, `scope:${scopeKey}`, redis);
+    io.to(`scope:${scopeKey}`).emit('presence:scope_update', { scopeKey, users });
 }
