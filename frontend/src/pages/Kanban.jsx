@@ -142,7 +142,7 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
       {/* Filters Bar */}
       {showFilters && (
         <KanbanFilters
-          wsMembers={wsMembers}
+          wsMembers={projMembers}
           allTasks={tasks}
           filters={filters}
           onChange={setFilters}
@@ -270,7 +270,7 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
               onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))}
             >
               <option value="">Unassigned</option>
-              {wsMembers.map(m => (
+              {projMembers.map(m => (
                 <option key={m.user?._id} value={m.user?._id}>{m.user?.name}</option>
               ))}
             </select>
@@ -287,7 +287,7 @@ export default function Kanban({ canEdit = true, workspaceRole } = {}) {
       {detailTask && (
         <TaskDetail
           task={detailTask}
-          wsMembers={wsMembers}
+          wsMembers={projMembers}
           mentionMembers={projMembers}
           canEdit={canEdit}
           initialEditing={detailEditMode}
