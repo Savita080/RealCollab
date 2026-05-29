@@ -61,6 +61,40 @@ export function usePresence(projectId) {
   return online;
 }
 
+/** Scoped presence tracker — tracks who is on a specific PAGE (chat, whiteboard,
+ *  etc.) rather than the whole project. `scopeKey` is any stable string, e.g.
+ *  `chat:<projectId>` or `wb:<projectId>`. Returns the list of online users in
+ *  that scope. Mirrors usePresence but uses the generic presence:* events. */
+export function useScopedPresence(scopeKey) {
+  const [online, setOnline] = useState([]);
+  useEffect(() => {
+    if (!scopeKey) return;
+    const announceAndJoin = () => {
+      const identity = getSocketIdentity();
+      if (identity) socket.emit('user_online', identity);
+      socket.emit('presence:join', scopeKey);
+      socket.emit('presence:request', scopeKey);
+    };
+    const onScopeUpdate = (data) => {
+      if (data?.scopeKey === scopeKey) setOnline(data.users || []);
+    };
+    const onFocus = () => { if (socket.connected) announceAndJoin(); };
+    socket.on('presence:scope_update', onScopeUpdate);
+    socket.on('connect', announceAndJoin);
+    window.addEventListener('focus', onFocus);
+    if (socket.connected) announceAndJoin();
+    const heartbeat = setInterval(() => { if (socket.connected) announceAndJoin(); }, 15000);
+    return () => {
+      socket.emit('presence:leave', scopeKey);
+      socket.off('presence:scope_update', onScopeUpdate);
+      socket.off('connect', announceAndJoin);
+      window.removeEventListener('focus', onFocus);
+      clearInterval(heartbeat);
+    };
+  }, [scopeKey]);
+  return online;
+}
+
 /** Local storage sync */
 export function useLocalStorage(key, init) {
   const [val, setVal] = useState(() => {

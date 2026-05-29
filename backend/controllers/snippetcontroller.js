@@ -46,11 +46,11 @@ export const getProjectSnippets = async (req, res) => {
 
 export const getSnippetById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const snippet = await CodeSnippet.findById(id);
-        
+        const { id, projectId } = req.params;
+        const snippet = await CodeSnippet.findOne({ _id: id, project: projectId });
+
         if (!snippet) return res.status(404).json({ message: "Snippet not found" });
-        
+
         res.status(200).json({ snippet });
     } catch (error) {
         console.error("Error fetching snippet:", error.message);
@@ -58,13 +58,19 @@ export const getSnippetById = async (req, res) => {
     }
 };
 
+const SNIPPET_UPDATABLE = ['title', 'language', 'code', 'description', 'tags'];
+
 export const updateSnippet = async (req, res) => {
     try {
         const { id, projectId, workspaceId } = req.params;
-        const updates = req.body;
 
-        const before = await CodeSnippet.findById(id);
+        const before = await CodeSnippet.findOne({ _id: id, project: projectId });
         if (!before) return res.status(404).json({ message: "Snippet not found" });
+
+        const updates = {};
+        for (const key of SNIPPET_UPDATABLE) {
+            if (req.body[key] !== undefined) updates[key] = req.body[key];
+        }
 
         const updatedSnippet = await CodeSnippet.findByIdAndUpdate(id, updates, { new: true });
 
@@ -100,8 +106,8 @@ export const updateSnippet = async (req, res) => {
 
 export const deleteSnippet = async (req, res) => {
     try {
-        const { id } = req.params;
-        const deleted = await CodeSnippet.findByIdAndDelete(id);
+        const { id, projectId } = req.params;
+        const deleted = await CodeSnippet.findOneAndDelete({ _id: id, project: projectId });
 
         if (!deleted) return res.status(404).json({ message: "Snippet not found" });
 

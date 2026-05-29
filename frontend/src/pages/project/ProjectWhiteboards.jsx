@@ -12,8 +12,8 @@ import { joinWhiteboard, leaveWhiteboard, emitDraw, emitSaveWb, emitPointerUpdat
 import socket from '../../lib/socket';
 import Button from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { usePresence } from '../../lib/hooks';
-import { Avatar } from '../../components/ui/Badge';
+import { useScopedPresence } from '../../lib/hooks';
+import PresenceBar from '../../components/ui/PresenceBar';
 import s from '../../styles/modules/Whiteboards.module.css';
 
 export default function ProjectWhiteboards() {
@@ -21,7 +21,8 @@ export default function ProjectWhiteboards() {
   const { user } = useAuth();
   const { toast } = useUI();
   const themeKind = useTheme(s => s.getActive().kind);
-  const online = usePresence(project?._id);
+  // Scoped presence: only people viewing the Whiteboards section right now.
+  const online = useScopedPresence(project?._id ? `wb:${project._id}` : null);
 
   const [whiteboards, setWhiteboards] = useState([]);
   const [activeWb, setActiveWb] = useState(null);
@@ -252,17 +253,7 @@ export default function ProjectWhiteboards() {
           <p className={s.subtitle}>Real-time collaborative canvas · {project?.name}</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          {online.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ display: 'flex', paddingLeft: '8px' }}>
-                {online.map((u, i) => (
-                  <div key={u._id || i} style={{ marginLeft: '-8px', border: '2px solid var(--bg)', borderRadius: '50%', zIndex: online.length - i }}>
-                    <Avatar name={u.name} online size={28} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <PresenceBar users={online} size={28} label="here" />
           {canEdit && (
             <Button variant="primary" size="md" onClick={() => setWbModal(true)}>
               <Plus size={14} /> New Whiteboard

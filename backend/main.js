@@ -22,9 +22,19 @@ import workspaceactivityroutes from './routes/workspaceactivityroutes.js';
 import subscriptionroutes from './routes/subscriptionroutes.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
 import { setupKanbanSockets } from './sockets/kanbanSocket.js';
 import { setupWhiteboardSockets } from './sockets/whiteboardSocket.js';
 import { resolveSlugUrl } from './middleware/resolveSlugUrl.js';
+// Fail fast if security-critical env vars are missing — these are required for
+// auth to work at all, and a missing JWT secret silently makes tokens forgeable.
+const REQUIRED_ENV = ['MONGO_URI', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
+const missingEnv = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missingEnv.length) {
+    console.error(`FATAL: missing required environment variables: ${missingEnv.join(', ')}`);
+    process.exit(1);
+}
+
 const app = express();
 const httpServer = createServer(app);
 const allowedOrigins = process.env.FRONTEND_URL
@@ -36,6 +46,21 @@ const io = new Server(httpServer, {
         origin: allowedOrigins,
         credentials: true,
         methods: ["GET", "POST", "PATCH", "DELETE"]
+    }
+});
+
+// Authenticate every socket connection from the JWT in the handshake.
+// Identity is server-asserted here (socket.userId) and must NOT be taken from
+// any client-emitted payload — that was the old spoofing hole.
+io.use((socket, next) => {
+    try {
+        const token = socket.handshake.auth?.token;
+        if (!token) return next(new Error("unauthorized"));
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        socket.userId = String(decoded.userId);
+        next();
+    } catch (err) {
+        next(new Error("unauthorized"));
     }
 });
 
@@ -77,6 +102,18 @@ app.use("/api/subscriptions", subscriptionroutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "RealCollab Backend Is running" });
+});
+
+// JSON 404 — keeps the error shape consistent with the rest of the API.
+app.use((req, res) => {
+    res.status(404).json({ message: "Not found" });
+});
+
+// Terminal error handler — catches thrown/rejected errors from any route so
+// clients always get JSON, never the default Express HTML error page.
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err.message);
+    res.status(err.status || 500).json({ error: "Internal Server Error" });
 });
 
 // Activate the WebSockets!

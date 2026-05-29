@@ -76,15 +76,24 @@ export const getProjectTasks = async (req, res) => {
     }
 };
 
+// Fields a client is allowed to change on a task. Prevents mass-assignment of
+// `project`, `position`, timestamps, etc. via a crafted request body.
+const TASK_UPDATABLE = ['title', 'description', 'status', 'priority', 'assignee', 'dueDate', 'labels'];
+
 export const updateTask = async (req, res) => {
     try {
-        const { taskId } = req.params;
-        const updates = req.body;
+        const { taskId, projectId } = req.params;
 
-        // Capture the previous assignee so we can detect a change
-        const before = await Task.findById(taskId).select('assignee title');
+        // Scope to the project in the URL so a contributor on project A can't
+        // edit a task that lives in project B by guessing its id (IDOR).
+        const before = await Task.findOne({ _id: taskId, project: projectId }).select('assignee title');
         if (!before) {
             return res.status(404).json({ message: "Task not found" });
+        }
+
+        const updates = {};
+        for (const key of TASK_UPDATABLE) {
+            if (req.body[key] !== undefined) updates[key] = req.body[key];
         }
 
         const updatedTask = await Task.findByIdAndUpdate(
@@ -133,8 +142,8 @@ export const updateTask = async (req, res) => {
 
 export const deleteTask = async (req, res) => {
     try {
-        const { taskId } = req.params;
-        const deletedTask = await Task.findByIdAndDelete(taskId);
+        const { taskId, projectId } = req.params;
+        const deletedTask = await Task.findOneAndDelete({ _id: taskId, project: projectId });
 
         if (!deletedTask) {
             return res.status(404).json({ message: "Task not found" });
