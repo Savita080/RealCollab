@@ -23,7 +23,7 @@ import KanbanCalendar from '../../components/kanban/KanbanCalendar';
 export default function ProjectKanban() {
   const { canEdit, isContributor, workspaceRole } = useOutletContext() || {};
   const { current: ws, currentProject } = useWorkspace();
-  const { tasks, fetch, create, move, loading, bindSocket, unbindSocket, setMoveRejectHandler, delete: deleteTaskStore } = useTasks();
+  const { tasks, fetch, create, move, update, loading, bindSocket, unbindSocket, setMoveRejectHandler, delete: deleteTaskStore } = useTasks();
   const { toast } = useUI();
   const { user } = useAuth();
   const online = usePresence(currentProject?._id);
@@ -130,8 +130,16 @@ export default function ProjectKanban() {
           )}
           {/* 👇 add this */}
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--r-sm)', overflow: 'hidden' }}>
-            <button style={{ padding: '4px 12px', fontSize: 13, background: viewMode === 'board' ? 'var(--bg-3)' : 'transparent', color: viewMode === 'board' ? 'var(--text-1)' : 'var(--text-2)', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => setViewMode('board')}>Board</button>
-            <button style={{ padding: '4px 12px', fontSize: 13, background: viewMode === 'calendar' ? 'var(--bg-3)' : 'transparent', color: viewMode === 'calendar' ? 'var(--text-1)' : 'var(--text-2)', border: 'none', borderLeft: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => setViewMode('calendar')}>Calendar</button>
+            <button 
+              style={{ padding: '4px 12px', fontSize: 13, background: viewMode === 'board' ? 'var(--indigo)' : 'transparent', color: viewMode === 'board' ? 'white' : 'var(--text-2)', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: viewMode === 'board' ? 600 : 400 }} 
+              onClick={() => setViewMode('board')}>
+              Board
+            </button>
+            <button 
+              style={{ padding: '4px 12px', fontSize: 13, background: viewMode === 'calendar' ? 'var(--indigo)' : 'transparent', color: viewMode === 'calendar' ? 'white' : 'var(--text-2)', border: 'none', borderLeft: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'inherit', fontWeight: viewMode === 'calendar' ? 600 : 400 }} 
+              onClick={() => setViewMode('calendar')}>
+              Calendar
+            </button>
           </div>
           <Button variant="ghost" size="sm" onClick={() => setShowFilters(f => !f)}>
             Filters {activeFilterCount > 0 && <span className={s.filterBadge}>{activeFilterCount}</span>}
@@ -258,7 +266,10 @@ export default function ProjectKanban() {
           onTaskClick={(task) => {
             setDetailEditMode(false);
             setDetailTask(task);
-          }} 
+          }}
+          onTaskDrop={async (taskId, newDate) => {
+            await update(ws._id, currentProject._id, taskId, { dueDate: newDate });
+          }}
         />
       )}
 

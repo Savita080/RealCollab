@@ -44,6 +44,12 @@ function DayTasksModal({ date, tasks, onClose, onTaskClick }) {
               key={t._id} 
               className={s.modalTaskItem} 
               onClick={() => { onClose(); onTaskClick(t); }}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', t._id);
+                // Close modal immediately so the user can see the calendar to drop it
+                setTimeout(onClose, 0); 
+              }}
             >
               <div className={s.modalTaskTitle}>{t.title}</div>
               <div className={s.modalTaskMeta}>
@@ -66,7 +72,7 @@ function DayTasksModal({ date, tasks, onClose, onTaskClick }) {
   );
 }
 
-export default function KanbanCalendar({ tasks, onTaskClick }) {
+export default function KanbanCalendar({ tasks, onTaskClick, onTaskDrop }) {
   const [currentDate, setCurrentDate] = useState(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -96,15 +102,12 @@ export default function KanbanCalendar({ tasks, onTaskClick }) {
   const tasksByDate = useMemo(() => {
     const map = {};
     tasks.forEach(t => {
-      if (!t.dueDate) return;
-      const d = new Date(t.dueDate);
-      // Create YYYY-MM-DD using local time
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      const key = `${yyyy}-${mm}-${dd}`;
-      if (!map[key]) map[key] = [];
-      map[key].push(t);
+      if (t.dueDate) {
+        // Use substring to avoid timezone shift on YYYY-MM-DD parsing
+        const key = typeof t.dueDate === 'string' ? t.dueDate.substring(0, 10) : new Date(t.dueDate).toISOString().substring(0, 10);
+        if (!map[key]) map[key] = [];
+        map[key].push(t);
+      }
     });
     return map;
   }, [tasks]);
@@ -120,7 +123,7 @@ export default function KanbanCalendar({ tasks, onTaskClick }) {
   const unscheduledTasks = useMemo(() => tasks.filter(t => !t.dueDate), [tasks]);
 
   return (
-    <div style={{ display: 'flex', gap: '16px', height: '100%', minHeight: 0, margin: '16px' }}>
+    <div style={{ display: 'flex', gap: '16px', flex: 1, minHeight: 0, margin: '0 16px 16px 16px' }}>
       <div className={s.calendarContainer} style={{ margin: 0, flex: 1, minHeight: 0 }}>
       <div className={s.header}>
         <div className={s.monthNav}>
@@ -153,6 +156,21 @@ export default function KanbanCalendar({ tasks, onTaskClick }) {
               key={i} 
               className={`${s.cell} ${isOtherMonth ? s.otherMonth : ''} ${isToday ? s.today : ''}`}
               onClick={() => setSelectedDate(date)}
+              onDragOver={(e) => {
+                e.preventDefault(); // allow drop
+                e.currentTarget.style.backgroundColor = 'var(--bg-card-premium)';
+              }}
+              onDragLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.currentTarget.style.backgroundColor = '';
+                const taskId = e.dataTransfer.getData('text/plain');
+                if (taskId && onTaskDrop) {
+                  onTaskDrop(taskId, dateKey); // dateKey is "YYYY-MM-DD"
+                }
+              }}
             >
               <div className={s.cellHeader}>
                 {dayTasks.length > 0 ? (
@@ -169,6 +187,10 @@ export default function KanbanCalendar({ tasks, onTaskClick }) {
                     <div 
                       key={t._id} 
                       className={s.taskIndicator}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', t._id);
+                      }}
                     >
                       <span 
                         style={{ 
@@ -208,7 +230,24 @@ export default function KanbanCalendar({ tasks, onTaskClick }) {
           Unscheduled Tasks
           <span className={s.unscheduledCount}>{unscheduledTasks.length}</span>
         </div>
-        <div className={s.unscheduledList}>
+        <div 
+          className={s.unscheduledList}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.currentTarget.style.backgroundColor = 'var(--bg-2)';
+          }}
+          onDragLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '';
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            e.currentTarget.style.backgroundColor = '';
+            const taskId = e.dataTransfer.getData('text/plain');
+            if (taskId && onTaskDrop) {
+              onTaskDrop(taskId, null); // clear due date
+            }
+          }}
+        >
           {unscheduledTasks.length === 0 ? (
             <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-2)', fontSize: '0.85rem' }}>
               All tasks are scheduled!
@@ -219,6 +258,10 @@ export default function KanbanCalendar({ tasks, onTaskClick }) {
                 key={t._id} 
                 className={s.unscheduledTask}
                 onClick={() => onTaskClick(t)}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', t._id);
+                }}
               >
                 <div className={s.unscheduledTitle}>{t.title}</div>
                 <div className={s.modalTaskMeta}>
