@@ -60,12 +60,12 @@ function WikiFolderTree({
   onCreateFolder, onRenameFolder, onDeleteFolder,
   onMovePage,       // (pageId, folderId | null) => void
   onMoveFolder,     // (folderId, parentId | null) => void  [future]
+  newFolderParent, setNewFolderParent,
+  newFolderName, setNewFolderName
 }) {
   const [openFolders, setOpenFolders] = useState({});
   const [renamingFolder, setRenamingFolder] = useState(null);
   const [renamingVal, setRenamingVal] = useState('');
-  const [newFolderParent, setNewFolderParent] = useState(undefined); // undefined = hidden
-  const [newFolderName, setNewFolderName] = useState('');
   // drag-and-drop state
   const dragging = useRef(null); // { type: 'page'|'folder', id }
 
@@ -174,16 +174,12 @@ function WikiFolderTree({
       </div>
 
       {/* Create new root folder */}
-      {newFolderParent === null ? (
+      {newFolderParent === null && (
         <form className={s.newFolderForm} onSubmit={e => { e.preventDefault(); onCreateFolder(newFolderName, null); setNewFolderParent(undefined); }}>
           <input className={s.folderRenameInput} value={newFolderName} onChange={e => setNewFolderName(e.target.value)} placeholder="Folder name" autoFocus />
           <button type="submit" className={s.miniBtn}>✓</button>
           <button type="button" className={s.miniBtn} onClick={() => setNewFolderParent(undefined)}>✕</button>
         </form>
-      ) : (
-        <button className={s.newFolderBtn} onClick={() => { setNewFolderParent(null); setNewFolderName(''); }}>
-          + New folder
-        </button>
       )}
     </div>
   );
@@ -384,6 +380,8 @@ export default function Wiki() {
 
   // Folders
   const [folders, setFolders] = useState([]);
+  const [newFolderParent, setNewFolderParent] = useState(undefined);
+  const [newFolderName, setNewFolderName] = useState('');
 
   // Modals
   const [createModal, setCreateModal] = useState(false);
@@ -645,7 +643,20 @@ export default function Wiki() {
       <aside className={s.sidebar}>
         <div className={s.sideHeader}>
           <span className={s.sideTitle}>Pages</span>
-          <button className={s.addBtn} onClick={() => setCreateModal(true)} title="New page">+</button>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <button className={s.miniIconBtn} onClick={() => setCreateModal(true)} title="New page">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2.5 1.5h6l3 3v8a1 1 0 0 1-1 1h-8a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z" stroke="currentColor" strokeLinejoin="round"/>
+                <path d="M7 6v5M4.5 8.5h5" stroke="currentColor" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <button className={s.miniIconBtn} onClick={() => { setNewFolderParent(null); setNewFolderName(''); }} title="New folder">
+              <svg width="15" height="14" viewBox="0 0 15 14" fill="none">
+                <path d="M1.5 3h4l1.5-2h6.5a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-12a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z" stroke="currentColor" strokeLinejoin="round"/>
+                <path d="M7.5 6v5M5 8.5h5" stroke="currentColor" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <WikiFolderTree
@@ -658,6 +669,10 @@ export default function Wiki() {
           onRenameFolder={renameFolder}
           onDeleteFolder={deleteFolder}
           onMovePage={movePage}
+          newFolderParent={newFolderParent}
+          setNewFolderParent={setNewFolderParent}
+          newFolderName={newFolderName}
+          setNewFolderName={setNewFolderName}
         />
       </aside>
 

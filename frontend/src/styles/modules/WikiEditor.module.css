@@ -57,3 +57,14 @@
   overflow-x: auto;
   white-space: pre;
 }
+
+.wikiLink {
+  color: var(--accent, #7b78ff);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.wikiLink:hover {
+  color: var(--indigo, #5b58ff);
+}

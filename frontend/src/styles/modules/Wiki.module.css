@@ -214,8 +214,6 @@
   color: var(--text-2);
   border-radius: 4px;
   transition: color .12s;
-  /* Let all pointer/drag events fall through to the draggable parent .pageRow */
-  pointer-events: none;
   cursor: inherit;
 }
 .pageItem.active { color: var(--accent, #7b78ff); font-weight: 500; }
