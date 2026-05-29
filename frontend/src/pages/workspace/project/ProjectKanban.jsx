@@ -1,4 +1,4 @@
-// pages/workspace/project/ProjectKanban.jsx — Wrapper that reads IDs from URL and uses existing Kanban logic
+// pages/workspace/project/ProjectKanban.jsx
 import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useTasks, TASK_COLUMNS, TASK_STATUS_COLORS } from '../../../store/tasks';
@@ -13,7 +13,10 @@ import { SkeletonCard } from '../../../components/ui/Skeleton';
 import { fmtDate } from '../../../lib/utils';
 import TaskDetail from '../../../components/kanban/TaskDetail';
 import RoleGate from '../../../components/common/RoleGate';
+// ↓ new imports
+import KanbanFilters, { applyFilters, EMPTY_FILTERS } from '../../../components/kanban/KanbanFilters';
 import s from '../../../styles/modules/Kanban.module.css';
+import fs from '../../../styles/modules/KanbanFilters.module.css';
 
 export default function ProjectKanban() {
   const ctx = useOutletContext();
@@ -28,6 +31,17 @@ export default function ProjectKanban() {
   const [createModal, setCreateModal] = useState(false);
   const [detailTask, setDetailTask] = useState(null);
   const [detailEditMode, setDetailEditMode] = useState(false);
+
+  // ── Filter state (local — never shared with other viewers) ──────────────
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+
+  const activeFilterCount =
+    (filters.assignees?.length  || 0) +
+    (filters.priorities?.length || 0) +
+    (filters.statuses?.length   || 0) +
+    (filters.deadline ? 1 : 0) +
+    (filters.tags?.length || 0);
 
   const handleDeleteTask = async (task) => {
     if (!confirm('Delete this task?')) return;
@@ -49,8 +63,13 @@ export default function ProjectKanban() {
     fetch(workspaceId, projectId);
   }, [workspaceId, projectId]);
 
+  // Apply client-side filters — tasks from store are never mutated
+  const visibleTasks = activeFilterCount > 0
+    ? applyFilters(tasks, filters, user?._id)
+    : tasks;
+
   const columns = TASK_COLUMNS.reduce((acc, col) => ({
-    ...acc, [col.key]: tasks.filter(t => t.status === col.key),
+    ...acc, [col.key]: visibleTasks.filter(t => t.status === col.key),
   }), {});
 
   const handleCreate = async (e) => {
@@ -76,8 +95,6 @@ export default function ProjectKanban() {
   const handleDragOver = (status, e) => { if (canEdit) { e.preventDefault(); setDragOver(status); } };
   const handleDrop = (status) => {
     if (dragging && dragging.status !== status && canEdit) {
-      // 5th arg goes onto the socket payload — must be canonical _id (kanban
-      // rooms are keyed by _id, not slug).
       move(workspaceId, projectId, dragging._id, status, project?._id || projectId);
     }
     setDragging(null);
@@ -93,11 +110,88 @@ export default function ProjectKanban() {
             {online.map(u => <Avatar key={u._id} name={u.name} online size={24} />)}
             <span className={s.onlineCount}>{online.length} online</span>
           </div>
+
+          {/* ── Filter toggle button ─────────────────────── */}
+          <button
+            className={`${s.filterBtn || ''} ${activeFilterCount > 0 ? s.filterBtnActive || '' : ''}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '5px 12px',
+              borderRadius: 6,
+              border: activeFilterCount > 0
+                ? '1px solid var(--accent, #6c63ff)'
+                : '1px solid var(--border, rgba(255,255,255,0.12))',
+              background: activeFilterCount > 0
+                ? 'rgba(108,99,255,0.12)'
+                : 'transparent',
+              color: activeFilterCount > 0
+                ? 'var(--text-primary, #fff)'
+                : 'var(--text-secondary, rgba(255,255,255,0.55))',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'all 0.12s',
+            }}
+            onClick={() => setShowFilters(v => !v)}
+            title="Filter tasks (your view only)"
+          >
+            {/* Funnel icon */}
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 3h12l-4.5 5.5V13l-3-1.5V8.5L2 3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" fill="none"/>
+            </svg>
+            Filter
+            {activeFilterCount > 0 && (
+              <span className={fs.badge}>{activeFilterCount}</span>
+            )}
+          </button>
+
           <RoleGate show={canEdit}>
             <Button variant="primary" size="sm" onClick={() => setCreateModal(true)}>+ Add Task</Button>
           </RoleGate>
         </div>
       </div>
+
+      {/* ── Filter bar (shown below header, above board) ───────────────── */}
+      {showFilters && (
+        <KanbanFilters
+          wsMembers={wsMembers || []}
+          allTasks={tasks}
+          filters={filters}
+          onChange={setFilters}
+          onClose={() => setShowFilters(false)}
+        />
+      )}
+
+      {/* ── Active filter summary strip ──────────────────────────────── */}
+      {!showFilters && activeFilterCount > 0 && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '6px 2px',
+          marginBottom: 10,
+          fontSize: 12,
+          color: 'var(--text-secondary, rgba(255,255,255,0.5))',
+        }}>
+          <span>Showing {visibleTasks.length} of {tasks.length} tasks</span>
+          <button
+            onClick={() => setFilters(EMPTY_FILTERS)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#f87171',
+              cursor: 'pointer',
+              fontSize: 12,
+              padding: '0 4px',
+              textDecoration: 'underline',
+            }}
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className={s.board}>
