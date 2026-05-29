@@ -152,9 +152,9 @@
   font-size: 12px;
   padding: 2px 5px;
   border-radius: 4px;
-  border: 1px solid var(--border, #3a3a4a);
-  background: var(--surface-2, #1e1e2e);
-  color: var(--text-1, #eee);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-1);
   outline: none;
   min-width: 0;
   max-width: 110px;
@@ -162,15 +162,19 @@
 
 .miniBtn {
   background: none;
-  border: 1px solid var(--border, #3a3a4a);
+  border: 1px solid var(--border);
   border-radius: 3px;
   color: var(--text-2);
   cursor: pointer;
   font-size: 10px;
   padding: 1px 4px;
-  line-height: 1.4;
+  transition: all .12s;
 }
-.miniBtn:hover { background: var(--surface-3, rgba(255,255,255,.08)); }
+.miniBtn:hover {
+  background: var(--bg-2);
+  color: var(--text-1);
+  border-color: var(--accent);
+}
 
 .miniIconBtn {
   background: none;
@@ -410,7 +414,7 @@
 .formLabel {
   display: block;
   font-size: 11.5px;
-  color: var(--text-3, #aaa);
+  color: var(--text-3);
   margin-bottom: 5px;
   font-weight: 500;
 }
@@ -418,14 +422,14 @@
 .select {
   width: 100%;
   padding: 7px 10px;
-  background: var(--surface-2, #1e1e2e);
-  border: 1px solid var(--border, #2e2e3e);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  color: var(--text-1, #eee);
+  color: var(--text-1);
   font-size: 13px;
   outline: none;
   cursor: pointer;
   transition: border-color .15s;
 }
-.select:focus { border-color: var(--accent, #7b78ff); }
-.select option { background: var(--surface-1, #18181f); }
+.select:focus { border-color: var(--accent); }
+.select option { background: var(--bg-2); }
