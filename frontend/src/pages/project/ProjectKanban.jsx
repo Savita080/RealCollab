@@ -18,6 +18,7 @@ import ProjectMembersModal from '../../components/ProjectMembersModal';
 import { workspaces as wsApi, projects as projectsApi } from '../../lib/api';
 import s from '../../styles/modules/Kanban.module.css';
 import KanbanFilters, { applyFilters, EMPTY_FILTERS } from '../../components/kanban/KanbanFilters';
+import KanbanCalendar from '../../components/kanban/KanbanCalendar';
 
 export default function ProjectKanban() {
   const { canEdit, isContributor, workspaceRole } = useOutletContext() || {};
@@ -35,6 +36,7 @@ export default function ProjectKanban() {
   const [detailEditMode, setDetailEditMode] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [viewMode, setViewMode] = useState('board');
   const activeFilterCount =
   (filters.assignees?.length || 0) + (filters.priorities?.length || 0) +
   (filters.statuses?.length || 0) + (filters.tags?.length || 0) +
@@ -127,6 +129,10 @@ export default function ProjectKanban() {
             </div>
           )}
           {/* 👇 add this */}
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 'var(--r-sm)', overflow: 'hidden' }}>
+            <button style={{ padding: '4px 12px', fontSize: 13, background: viewMode === 'board' ? 'var(--bg-3)' : 'transparent', color: viewMode === 'board' ? 'var(--text-1)' : 'var(--text-2)', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => setViewMode('board')}>Board</button>
+            <button style={{ padding: '4px 12px', fontSize: 13, background: viewMode === 'calendar' ? 'var(--bg-3)' : 'transparent', color: viewMode === 'calendar' ? 'var(--text-1)' : 'var(--text-2)', border: 'none', borderLeft: '1px solid var(--border)', cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => setViewMode('calendar')}>Calendar</button>
+          </div>
           <Button variant="ghost" size="sm" onClick={() => setShowFilters(f => !f)}>
             Filters {activeFilterCount > 0 && <span className={s.filterBadge}>{activeFilterCount}</span>}
           </Button>
@@ -151,100 +157,110 @@ export default function ProjectKanban() {
           onClose={() => setShowFilters(false)}
         />
       )}
-      <div className={s.board}>
-        {TASK_COLUMNS.map(col => (
-          <div
-            key={col.key}
-            className={`${s.column} ${dragOver === col.key ? s.dragOver : ''}`}
-            onDragOver={e => { e.preventDefault(); setDragOver(col.key); }}
-            onDrop={() => handleDrop(col.key)}
-            onDragLeave={() => setDragOver(null)}
-          >
-            <div className={s.colHeader} style={{ '--c': TASK_STATUS_COLORS[col.key] }}>
-              <div className={s.colDot} />
-              <span className={s.colName}>{col.label}</span>
-              <span className={s.colCount}>{columns[col.key]?.length ?? 0}</span>
-            </div>
+      {viewMode === 'board' ? (
+        <div className={s.board}>
+          {TASK_COLUMNS.map(col => (
+            <div
+              key={col.key}
+              className={`${s.column} ${dragOver === col.key ? s.dragOver : ''}`}
+              onDragOver={e => { e.preventDefault(); setDragOver(col.key); }}
+              onDrop={() => handleDrop(col.key)}
+              onDragLeave={() => setDragOver(null)}
+            >
+              <div className={s.colHeader} style={{ '--c': TASK_STATUS_COLORS[col.key] }}>
+                <div className={s.colDot} />
+                <span className={s.colName}>{col.label}</span>
+                <span className={s.colCount}>{columns[col.key]?.length ?? 0}</span>
+              </div>
 
-            <div className={s.cards}>
-              {loading && (columns[col.key]?.length ?? 0) === 0 && (
-                <><SkeletonCard /><SkeletonCard /></>
-              )}
-              {(columns[col.key] || []).map(task => {
-                const assigneeName = task.assignee?.name ||
-                  wsMembers.find(m => m.user?._id === task.assignee)?.user?.name;
-                const assigneeAvatar = task.assignee?.avatar ||
-                  wsMembers.find(m => m.user?._id === task.assignee)?.user?.avatar;
-                return (
-                  <div
-                    key={task._id}
-                    className={`${s.card} ${dragging?._id === task._id ? s.dragging : ''}`}
-                    draggable={canEdit}
-                    onDragStart={canEdit ? () => setDragging(task) : undefined}
-                    onDragEnd={canEdit ? () => setDragging(null) : undefined}
-                    onClick={() => {
-                      setDetailEditMode(false);
-                      setDetailTask(task);
-                    }}
-                  >
-                    <div className={s.cardHeader}>
-                      <p className={s.taskTitle}>{task.title}</p>
-                      {canEdit && (
-                        <div className={s.cardActions}>
-                          <button
-                            className={s.actionBtn}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDetailEditMode(true);
-                              setDetailTask(task);
-                            }}
-                            title="Edit Task"
-                          >
-                            ✎
-                          </button>
-                          <button
-                            className={`${s.actionBtn} ${s.deleteBtn}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteTask(task);
-                            }}
-                            title="Delete Task"
-                          >
-                            ✕
-                          </button>
+              <div className={s.cards}>
+                {loading && (columns[col.key]?.length ?? 0) === 0 && (
+                  <><SkeletonCard /><SkeletonCard /></>
+                )}
+                {(columns[col.key] || []).map(task => {
+                  const assigneeName = task.assignee?.name ||
+                    wsMembers.find(m => m.user?._id === task.assignee)?.user?.name;
+                  const assigneeAvatar = task.assignee?.avatar ||
+                    wsMembers.find(m => m.user?._id === task.assignee)?.user?.avatar;
+                  return (
+                    <div
+                      key={task._id}
+                      className={`${s.card} ${dragging?._id === task._id ? s.dragging : ''}`}
+                      draggable={canEdit}
+                      onDragStart={canEdit ? () => setDragging(task) : undefined}
+                      onDragEnd={canEdit ? () => setDragging(null) : undefined}
+                      onClick={() => {
+                        setDetailEditMode(false);
+                        setDetailTask(task);
+                      }}
+                    >
+                      <div className={s.cardHeader}>
+                        <p className={s.taskTitle}>{task.title}</p>
+                        {canEdit && (
+                          <div className={s.cardActions}>
+                            <button
+                              className={s.actionBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDetailEditMode(true);
+                                setDetailTask(task);
+                              }}
+                              title="Edit Task"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className={`${s.actionBtn} ${s.deleteBtn}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTask(task);
+                              }}
+                              title="Delete Task"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {task.description && (
+                        <p className={s.taskDesc}>{task.description.slice(0, 80)}{task.description.length > 80 ? '…' : ''}</p>
+                      )}
+                      <div className={s.cardMeta}>
+                        <PriorityChip priority={task.priority} />
+                        {task.dueDate && (
+                          <span className={s.due}>{fmtDate(task.dueDate)}</span>
+                        )}
+                      </div>
+                      {task.labels?.length > 0 && (
+                        <div className={s.labels}>
+                          {task.labels.map(l => (
+                            <span key={l} className={s.label}>{l}</span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Assignee avatar */}
+                      {assigneeName && (
+                        <div className={s.cardAssignee}>
+                          <Avatar name={assigneeName} src={assigneeAvatar} size={20} />
+                          <span className={s.assigneeName}>{assigneeName}</span>
                         </div>
                       )}
                     </div>
-                    {task.description && (
-                      <p className={s.taskDesc}>{task.description.slice(0, 80)}{task.description.length > 80 ? '…' : ''}</p>
-                    )}
-                    <div className={s.cardMeta}>
-                      <PriorityChip priority={task.priority} />
-                      {task.dueDate && (
-                        <span className={s.due}>{fmtDate(task.dueDate)}</span>
-                      )}
-                    </div>
-                    {task.labels?.length > 0 && (
-                      <div className={s.labels}>
-                        {task.labels.map(l => (
-                          <span key={l} className={s.label}>{l}</span>
-                        ))}
-                      </div>
-                    )}
-                    {/* Assignee avatar */}
-                    {assigneeName && (
-                      <div className={s.cardAssignee}>
-                        <Avatar name={assigneeName} src={assigneeAvatar} size={20} />
-                        <span className={s.assigneeName}>{assigneeName}</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <KanbanCalendar 
+          tasks={filteredTasks} 
+          onTaskClick={(task) => {
+            setDetailEditMode(false);
+            setDetailTask(task);
+          }} 
+        />
+      )}
 
       {/* Create task modal */}
       <Modal open={createModal} onClose={() => setCreateModal(false)} title="Create Task">
