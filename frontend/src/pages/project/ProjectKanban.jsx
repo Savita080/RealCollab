@@ -143,13 +143,13 @@ export default function ProjectKanban() {
 
       {/* Board */}
       {showFilters && (
-      <KanbanFilters
-        wsMembers={wsMembers}
-        allTasks={tasks}
-        filters={filters}
-        onChange={setFilters}
-        onClose={() => setShowFilters(false)}
-      />
+        <KanbanFilters
+          wsMembers={projMembers}  
+          allTasks={tasks}
+          filters={filters}
+          onChange={setFilters}
+          onClose={() => setShowFilters(false)}
+        />
       )}
       <div className={s.board}>
         {TASK_COLUMNS.map(col => (
@@ -270,7 +270,7 @@ export default function ProjectKanban() {
               onChange={e => setForm(f => ({ ...f, assignee: e.target.value }))}
             >
               <option value="">Unassigned</option>
-              {wsMembers.map(m => (
+              {projMembers.map(m => (
                 <option key={m.user?._id} value={m.user?._id}>{m.user?.name}</option>
               ))}
             </select>
