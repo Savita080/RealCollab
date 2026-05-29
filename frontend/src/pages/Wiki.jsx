@@ -388,6 +388,7 @@ export default function Wiki() {
   // Modals
   const [createModal, setCreateModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
+  const [newFolderId, setNewFolderId] = useState('');
   const [historyModal, setHistoryModal] = useState(false);
   const [versions, setVersions] = useState([]);
   const [loadingVersions, setLoadingVersions] = useState(false);
@@ -450,13 +451,14 @@ export default function Wiki() {
   const createPage = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await wikiApi.create(ws._id, currentProject._id, { title: newTitle, content: '' });
+      const { data } = await wikiApi.create(ws._id, currentProject._id, { title: newTitle, content: '', folderId: newFolderId || null });
       const page = data.page ?? data;
       setPages(p => [page, ...p]);
       setActivePage(page);
       setActiveContent('');
       setCreateModal(false);
       setNewTitle('');
+      setNewFolderId('');
       toast('Page created', 'success');
     } catch { toast('Failed to create page', 'error'); }
   };
@@ -569,7 +571,7 @@ export default function Wiki() {
 
   const movePage = async (pageId, folderId) => {
     try {
-      await wikiApi.movePage(ws._id, currentProject._id, pageId, { folderId: folderId || null });
+      await wikiApi.move(ws._id, currentProject._id, pageId, { folderId: folderId || null });
       setPages(p => p.map(pg => pg._id === pageId ? { ...pg, folder: folderId || null } : pg));
     } catch { toast('Failed to move page', 'error'); }
   };
@@ -731,6 +733,15 @@ export default function Wiki() {
       <Modal open={createModal} onClose={() => setCreateModal(false)} title="New Wiki Page" size="sm">
         <form onSubmit={createPage} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <Input label="Page title" placeholder="Getting Started" value={newTitle} onChange={e => setNewTitle(e.target.value)} required />
+          <div>
+            <label className={s.formLabel}>Folder (optional)</label>
+            <select className={s.select} value={newFolderId} onChange={e => setNewFolderId(e.target.value)}>
+              <option value="">— root —</option>
+              {folders.map(f => (
+                <option key={f._id} value={f._id}>{f.name}</option>
+              ))}
+            </select>
+          </div>
           <Button type="submit" variant="primary" size="md">Create Page</Button>
         </form>
       </Modal>

@@ -123,14 +123,19 @@ export const snippets = {
 // ── Wiki ──────────────────────────────────────────────
 // Mounted at: /api/workspaces/:wId/projects/:pId/wiki
 export const wiki = {
-  pages:    (wid, pid)           => api.get(`/workspaces/${wid}/projects/${pid}/wiki`),
-  get:      (wid, pid, pgId)     => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
-  create:   (wid, pid, d)        => api.post(`/workspaces/${wid}/projects/${pid}/wiki`, d),
-  update:   (wid, pid, pgId, d)  => api.patch(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`, d),
-  versions: (wid, pid, pgId)     => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}/versions`),
-  delete:   (wid, pid, pgId)     => api.delete(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
+  pages:        (wid, pid)           => api.get(`/workspaces/${wid}/projects/${pid}/wiki`),
+  get:          (wid, pid, pgId)     => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
+  create:       (wid, pid, d)        => api.post(`/workspaces/${wid}/projects/${pid}/wiki`, d),
+  update:       (wid, pid, pgId, d)  => api.patch(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`, d),
+  versions:     (wid, pid, pgId)     => api.get(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}/versions`),
+  delete:       (wid, pid, pgId)     => api.delete(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}`),
+  move:         (wid, pid, pgId, d)  => api.patch(`/workspaces/${wid}/projects/${pid}/wiki/${pgId}/move`, d),
+  // Folders
+  folders:      (wid, pid)           => api.get(`/workspaces/${wid}/projects/${pid}/wiki/folders`),
+  createFolder: (wid, pid, d)        => api.post(`/workspaces/${wid}/projects/${pid}/wiki/folders`, d),
+  updateFolder: (wid, pid, fId, d)   => api.patch(`/workspaces/${wid}/projects/${pid}/wiki/folders/${fId}`, d),
+  deleteFolder: (wid, pid, fId)      => api.delete(`/workspaces/${wid}/projects/${pid}/wiki/folders/${fId}`),
 };
-
 // ── Whiteboards ───────────────────────────────────────
 // Mounted at: /api/workspaces/:wId/projects/:pId/whiteboards
 export const whiteboards = {
