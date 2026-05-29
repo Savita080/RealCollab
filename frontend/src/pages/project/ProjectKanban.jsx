@@ -17,6 +17,7 @@ import TaskDetail from '../../components/kanban/TaskDetail';
 import ProjectMembersModal from '../../components/ProjectMembersModal';
 import { workspaces as wsApi, projects as projectsApi } from '../../lib/api';
 import s from '../../styles/modules/Kanban.module.css';
+import KanbanFilters, { applyFilters, EMPTY_FILTERS } from '../../components/kanban/KanbanFilters';
 
 export default function ProjectKanban() {
   const { canEdit, isContributor, workspaceRole } = useOutletContext() || {};
@@ -32,6 +33,12 @@ export default function ProjectKanban() {
   const [membersModal, setMembersModal] = useState(false);
   const [detailTask, setDetailTask] = useState(null);
   const [detailEditMode, setDetailEditMode] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const activeFilterCount =
+  (filters.assignees?.length || 0) + (filters.priorities?.length || 0) +
+  (filters.statuses?.length || 0) + (filters.tags?.length || 0) +
+  (filters.deadline ? 1 : 0);
 
   const handleDeleteTask = async (task) => {
     if (!confirm('Delete this task?')) return;
@@ -72,9 +79,10 @@ export default function ProjectKanban() {
     return () => { leaveProject(currentProject._id); unbindSocket(); };
   }, [currentProject?._id, ws?._id]);
 
+  const filteredTasks = applyFilters(tasks, filters, user?.id || user?._id);
   const columns = TASK_COLUMNS.reduce((acc, col) => ({
     ...acc,
-    [col.key]: tasks.filter(t => t.status === col.key),
+    [col.key]: filteredTasks.filter(t => t.status === col.key),
   }), {});
 
   const handleDrop = async (status) => {
@@ -118,6 +126,10 @@ export default function ProjectKanban() {
               <span>{online.length} online</span>
             </div>
           )}
+          {/* 👇 add this */}
+          <Button variant="ghost" size="sm" onClick={() => setShowFilters(f => !f)}>
+            Filters {activeFilterCount > 0 && <span className={s.filterBadge}>{activeFilterCount}</span>}
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => setMembersModal(true)}>
             Members
           </Button>
@@ -130,6 +142,15 @@ export default function ProjectKanban() {
       </div>
 
       {/* Board */}
+      {showFilters && (
+      <KanbanFilters
+        wsMembers={wsMembers}
+        allTasks={tasks}
+        filters={filters}
+        onChange={setFilters}
+        onClose={() => setShowFilters(false)}
+      />
+      )}
       <div className={s.board}>
         {TASK_COLUMNS.map(col => (
           <div
