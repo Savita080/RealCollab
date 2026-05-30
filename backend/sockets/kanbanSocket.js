@@ -4,16 +4,7 @@ import Workspace from '../models/workspace.js';
 import redis from '../config/redis.js';
 
 // In-memory fallback so presence works even when Redis is not configured
-const memSocketUser = new Map(); // socketId -> { userId, name }
-
-async function resolveUserId(socketId) {
-    if (redis) {
-        const id = await redis.get(`socket:${socketId}`);
-        if (id) return String(id);
-    }
-    const mem = memSocketUser.get(socketId);
-    return mem?.userId || null;
-}
+const memSocketUser = new Map(); // socketId -> { userId, name, avatar }
 
 // Returns true if userId is allowed to mutate tasks in the given project.
 // Project CONTRIBUTOR or workspace OWNER/ADMIN qualify.
@@ -32,31 +23,36 @@ export const setupKanbanSockets = (io) => {
     io.on('connection', (socket) => {
         console.log(`[Socket] User connected: ${socket.id}`);
 
-        // WHEN A USER LOGS IN (Tracking Presence)
+        // Identity is set by the io.use handshake guard (socket.userId). Join a
+        // per-user room so notifications reach EVERY tab/device this user has open.
+        const userId = socket.userId;
+        socket.join(`user:${userId}`);
+
+        // user_online now only carries DISPLAY data (name/avatar) for presence.
+        // The userId is never taken from the client — it comes from the verified JWT.
         socket.on('user_online', async (payload) => {
-            // payload can be userId string or { userId, name, avatar }
-            const userId = payload?.userId || payload;
             const name = payload?.name || '';
             const avatar = payload?.avatar || '';
-            if (!userId) return;
 
-            // Store directly on socket object for 0-latency synchronous lookup
-            socket.userId = String(userId);
             socket.userName = name;
             socket.userAvatar = avatar;
 
-            memSocketUser.set(socket.id, { userId: String(userId), name, avatar });
+            memSocketUser.set(socket.id, { userId, name, avatar });
             if (redis) {
-                await redis.set(`user:online:${userId}`, socket.id);
-                await redis.set(`socket:${socket.id}`, String(userId));
+                await redis.set(`socket:${socket.id}`, userId);
                 if (name) await redis.set(`user:name:${userId}`, name);
                 if (avatar) await redis.set(`user:avatar:${userId}`, avatar);
-                console.log(`[Redis] User ${userId} is now online!`);
             }
-            // Re-broadcast presence for project rooms this socket is already in.
-            // Skip workspace_ rooms — they don't use presence tracking.
+            // Re-broadcast presence for rooms this socket is already in, so the
+            // freshly-arrived name/avatar shows up for everyone. Project rooms use
+            // presence:update; scope: rooms use presence:scope_update. Skip
+            // workspace_ / whiteboard: rooms (no presence tracking) and user: room.
             for (const room of socket.rooms) {
-                if (room !== socket.id && !room.startsWith('workspace_') && !room.startsWith('whiteboard:')) {
+                if (room === socket.id || room === `user:${userId}` ||
+                    room.startsWith('workspace_') || room.startsWith('whiteboard:')) continue;
+                if (room.startsWith('scope:')) {
+                    await broadcastScopePresence(io, room.slice('scope:'.length), redis);
+                } else {
                     await broadcastPresence(io, room, redis);
                 }
             }
@@ -80,6 +76,31 @@ export const setupKanbanSockets = (io) => {
         socket.on('request_presence', async (projectId) => {
             const users = await collectPresence(io, projectId, redis);
             socket.emit('presence:update', { projectId, users });
+        });
+
+        // ── Generic SCOPED presence ────────────────────────────────────────
+        // Lets a specific page (chat, whiteboard, etc.) track who is *on that
+        // page* rather than who is in the whole project. Room keys are namespaced
+        // `scope:<key>` so they never collide with project rooms. Reuses the same
+        // collectPresence helper — identity comes from the verified socket.
+        socket.on('presence:join', async (scopeKey) => {
+            if (!scopeKey) return;
+            const room = `scope:${scopeKey}`;
+            socket.join(room);
+            await broadcastScopePresence(io, scopeKey, redis);
+        });
+
+        socket.on('presence:leave', async (scopeKey) => {
+            if (!scopeKey) return;
+            const room = `scope:${scopeKey}`;
+            socket.leave(room);
+            await broadcastScopePresence(io, scopeKey, redis);
+        });
+
+        socket.on('presence:request', async (scopeKey) => {
+            if (!scopeKey) return;
+            const users = await collectPresence(io, `scope:${scopeKey}`, redis);
+            socket.emit('presence:scope_update', { scopeKey, users });
         });
 
         // WORKSPACE ROOMS: for workspace-level chat broadcasts
@@ -109,8 +130,7 @@ export const setupKanbanSockets = (io) => {
             const { taskId, projectId, newStatus, newPosition } = data;
 
             // Authorization: only project CONTRIBUTORs (or ws OWNER/ADMIN) may move tasks.
-            const userId = await resolveUserId(socket.id);
-            const allowed = await canEditProject(userId, projectId);
+            const allowed = await canEditProject(socket.userId, projectId);
             if (!allowed) {
                 socket.emit('task_move_error', { taskId, reason: 'forbidden' });
                 return;
@@ -145,19 +165,19 @@ export const setupKanbanSockets = (io) => {
         socket.on('disconnect', async () => {
             console.log(`[Socket] User disconnected: ${socket.id}`);
             const rooms = socket.roomsToLeave || [];
-            
-            const userId = socket.userId || (await resolveUserId(socket.id));
-            if (userId) {
-                if (redis) {
-                    await redis.del(`user:online:${userId}`);
-                    await redis.del(`socket:${socket.id}`);
-                }
-                console.log(`[Redis] User ${userId} is now offline.`);
+
+            if (redis) {
+                await redis.del(`socket:${socket.id}`);
             }
             memSocketUser.delete(socket.id);
-            // Only broadcast presence for project rooms, not workspace_ or whiteboard: rooms
+            // Rebroadcast presence for the rooms this socket was in so others see
+            // it drop off. Project rooms → presence:update, scope: → scope_update.
             for (const room of rooms) {
-                if (!room.startsWith('workspace_') && !room.startsWith('whiteboard:')) {
+                if (room.startsWith('workspace_') || room.startsWith('whiteboard:') ||
+                    room.startsWith('user:')) continue;
+                if (room.startsWith('scope:')) {
+                    await broadcastScopePresence(io, room.slice('scope:'.length), redis);
+                } else {
                     await broadcastPresence(io, room, redis);
                 }
             }
@@ -207,4 +227,10 @@ async function collectPresence(io, projectId, redis) {
 async function broadcastPresence(io, projectId, redis) {
     const users = await collectPresence(io, projectId, redis);
     io.to(projectId).emit('presence:update', { projectId, users });
+}
+
+// Broadcast presence for a namespaced scope room (chat, whiteboard, …).
+async function broadcastScopePresence(io, scopeKey, redis) {
+    const users = await collectPresence(io, `scope:${scopeKey}`, redis);
+    io.to(`scope:${scopeKey}`).emit('presence:scope_update', { scopeKey, users });
 }

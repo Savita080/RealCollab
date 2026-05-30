@@ -151,5 +151,18 @@ export const checkAIQuota = async (req, res, next) => {
     }
 };
 
+// Refund one AI request to a user — called by AI controllers when the downstream
+// AI service fails, so users aren't charged a request for an error they didn't cause.
+export const refundAIQuota = async (userId) => {
+    try {
+        await User.updateOne(
+            { _id: userId, 'subscription.aiRequestsUsed': { $gt: 0 } },
+            { $inc: { 'subscription.aiRequestsUsed': -1 } }
+        );
+    } catch (error) {
+        console.error("Error refunding AI quota:", error.message);
+    }
+};
+
 // Exposed for the subscription status endpoint to report current limits.
 export { PLAN_LIMITS };

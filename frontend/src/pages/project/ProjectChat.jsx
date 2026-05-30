@@ -4,7 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import { Send, Pencil, Trash2, Check, X, Pin, PinOff, Search } from 'lucide-react';
 import { useAuth } from '../../store/auth';
 import { useUI } from '../../store/ui';
-import { usePresence } from '../../lib/hooks';
+import { useScopedPresence } from '../../lib/hooks';
 import { chat as chatApi, projects as projectsApi, tasks as tasksApi } from '../../lib/api';
 import { useChat } from '../../store/chat';
 import { Avatar } from '../../components/ui/Badge';
@@ -18,14 +18,19 @@ import { fmtRelative } from '../../lib/utils';
 import { emitTyping } from '../../lib/socket';
 import socket from '../../lib/socket';
 import s from '../../styles/modules/Chat.module.css';
+import ChatHeader from '../../components/chat/ChatHeader';
+import ChatPinned from '../../components/chat/ChatPinned';
+import MessageBubble from '../../components/chat/MessageBubble';
+
 
 export default function ProjectChat() {
   const { workspaceId, projectId, project } = useOutletContext();
   const { user } = useAuth();
   const { toast } = useUI();
   const clearUnread = useChat(s => s.clear);
-  // Backend rooms are keyed by canonical _id, not the URL token (which may be a slug).
-  const online = usePresence(project?._id);
+  // Scoped presence: only people viewing THIS chat (not the whole project).
+  // Keyed by canonical _id, not the URL token (which may be a slug).
+  const online = useScopedPresence(project?._id ? `chat:${project._id}` : null);
 
   const [members, setMembers] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -311,219 +316,45 @@ export default function ProjectChat() {
 
   return (
     <div className={s.page}>
-      <div className={s.header}>
-        <div>
-          <h1 className={s.title}>{project?.name || 'Project'} Chat</h1>
-          <p className={s.subtitle}>
-            {online.length > 0 ? `${online.length} online` : 'Project conversation'}
-          </p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative' }}>
-          <div style={{ position: 'relative' }}>
-            <button
-              type="button"
-              onClick={() => setSearchOpen(o => !o)}
-              title="Search messages"
-              style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, padding: 6, cursor: 'pointer', color: 'var(--text-2)', display: 'flex', alignItems: 'center' }}
-            >
-              <Search size={14} />
-            </button>
-            {searchOpen && (
-              <div style={{ position: 'absolute', top: '110%', right: 0, width: 320, background: 'var(--bg-dropdown, var(--bg-card, #fff))', color: 'var(--text-1)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, zIndex: 10, boxShadow: '0 6px 24px rgba(0,0,0,0.18)' }}>
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Search messages…"
-                  value={searchQ}
-                  onChange={e => setSearchQ(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQ(''); } }}
-                  style={{ width: '100%', padding: '6px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-2, transparent)', color: 'var(--text-1)', font: 'inherit', marginBottom: 6 }}
-                />
-                <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-                  {searchQ.trim() === '' ? (
-                    <div style={{ fontSize: 11, color: 'var(--text-3)', padding: '4px 2px' }}>Type to search this chat</div>
-                  ) : (() => {
-                    const q = searchQ.toLowerCase();
-                    const hits = messages.filter(m => !m.deletedAt && (m.content || '').toLowerCase().includes(q)).slice(-30).reverse();
-                    if (hits.length === 0) return <div style={{ fontSize: 11, color: 'var(--text-3)', padding: '4px 2px' }}>No matches</div>;
-                    return hits.map(h => (
-                      <button
-                        key={h._id}
-                        onClick={() => { setSearchOpen(false); setSearchQ(''); jumpToMessage(h._id); }}
-                        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '6px 4px', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}
-                      >
-                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{h.sender?.name || 'Unknown'} · {fmtRelative(h.createdAt)}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.content}</div>
-                      </button>
-                    ));
-                  })()}
-                </div>
-              </div>
-            )}
-          </div>
-          {online.slice(0, 5).map(u => (
-            <Avatar key={u._id || u.userId} name={u.name} src={u.avatar} online size={26} />
-          ))}
-          <span className={s.livePill}>● LIVE</span>
-        </div>
-      </div>
+      <ChatHeader
+        project={project}
+        online={online}
+        messages={messages}
+        searchQ={searchQ}
+        setSearchQ={setSearchQ}
+        searchOpen={searchOpen}
+        setSearchOpen={setSearchOpen}
+        jumpToMessage={jumpToMessage}
+      />
 
-      {(() => {
-        const pinned = messages.filter(m => m.pinned && !m.deletedAt);
-        if (pinned.length === 0) return null;
-        return (
-          <div style={{ borderBottom: '1px solid var(--border)', padding: '6px 12px', background: 'var(--bg-2, rgba(0,0,0,0.04))', display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 120, overflowY: 'auto' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: 0.4 }}>
-              <Pin size={11} /> Pinned ({pinned.length})
-            </div>
-            {pinned.slice(0, 3).map(p => (
-              <button
-                key={p._id}
-                onClick={() => jumpToMessage(p._id)}
-                style={{ background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', color: 'var(--text-2)', fontSize: 12, padding: '2px 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                title="Jump to message"
-              >
-                <strong style={{ marginRight: 6 }}>{p.sender?.name || 'Unknown'}:</strong>
-                {p.content}
-              </button>
-            ))}
-            {pinned.length > 3 && <div style={{ fontSize: 11, color: 'var(--text-3)' }}>+{pinned.length - 3} more pinned</div>}
-          </div>
-        );
-      })()}
+      <ChatPinned messages={messages} jumpToMessage={jumpToMessage} />
 
       <div className={s.messages}>
         {loading && <p className={s.empty}>Loading messages…</p>}
         {!loading && messages.length === 0 && <p className={s.empty}>No messages yet. Say hello!</p>}
-        {messages.map((m, i) => {
-          const mine = isMe(m);
-          const senderName = m.sender?.name ?? 'Unknown';
-          const prevSenderId = messages[i - 1]?.sender?._id ?? messages[i - 1]?.sender;
-          const thisSenderId = m.sender?._id ?? m.sender;
-          const showName = !mine && (i === 0 || prevSenderId !== thisSenderId);
-          return (
-            <div
-              key={m._id ?? i}
-              ref={el => { if (m._id) messageRefs.current[m._id] = el; }}
-              className={`${s.msgGroup} ${mine ? s.mine : ''}`}
-            >
-              {showName && (
-                <div className={s.senderMeta}>
-                  <Avatar name={senderName} src={m.sender?.avatar} size={20} />
-                  <span className={s.senderName}>{senderName}</span>
-                </div>
-              )}
-              <div className={s.bubble}>
-                <QuoteChip replyTo={m.replyTo} mine={mine} onJump={jumpToMessage} />
-                {m.deletedAt ? (
-                  <span className={s.msgText} style={{ fontStyle: 'italic', opacity: 0.6 }}>
-                    [message deleted]
-                  </span>
-                ) : editingId === m._id ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <textarea
-                      autoFocus
-                      value={editingText}
-                      onChange={e => setEditingText(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); }
-                        if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
-                      }}
-                      rows={Math.min(4, editingText.split('\n').length)}
-                      style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, padding: 6, color: 'inherit', font: 'inherit', resize: 'vertical', minWidth: 200 }}
-                    />
-                    <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                      <button type="button" onClick={cancelEdit} title="Cancel" style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, padding: '2px 6px', cursor: 'pointer', color: 'inherit' }}>
-                        <X size={12} />
-                      </button>
-                      <button type="button" onClick={saveEdit} title="Save (Enter)" style={{ background: 'var(--accent)', border: 'none', borderRadius: 6, padding: '2px 6px', cursor: 'pointer', color: '#fff' }}>
-                        <Check size={12} />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <span className={s.msgText}><MessageBody text={m.content} /></span>
-                )}
-                {m.linkPreview?.url && !m.deletedAt && editingId !== m._id && (
-                  <a
-                    href={m.linkPreview.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'flex',
-                      gap: 8,
-                      marginTop: 6,
-                      padding: 8,
-                      borderRadius: 8,
-                      background: 'rgba(0,0,0,0.06)',
-                      border: '1px solid var(--border)',
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      maxWidth: 360,
-                      alignItems: 'flex-start',
-                    }}
-                  >
-                    {m.linkPreview.image && (
-                      <img
-                        src={m.linkPreview.image}
-                        alt=""
-                        style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }}
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                    )}
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      {m.linkPreview.siteName && (
-                        <div style={{ fontSize: 10, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                          {m.linkPreview.siteName}
-                        </div>
-                      )}
-                      {m.linkPreview.title && (
-                        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          {m.linkPreview.title}
-                        </div>
-                      )}
-                      {m.linkPreview.description && (
-                        <div style={{ fontSize: 11, color: 'var(--text-3)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          {m.linkPreview.description}
-                        </div>
-                      )}
-                    </div>
-                  </a>
-                )}
-                <span className={s.msgTime}>
-                  {fmtRelative(m.createdAt)}
-                  {m.editedAt && !m.deletedAt && <span style={{ marginLeft: 4, opacity: 0.7 }}>(edited)</span>}
-                </span>
-              </div>
-              {!m.deletedAt && editingId !== m._id && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <ReactionBar
-                    reactions={m.reactions}
-                    currentUserId={myId}
-                    members={members}
-                    onToggle={(emoji) => handleReact(m._id, emoji)}
-                  />
-                  <ReplyButton onClick={() => setReplyingTo(m)} />
-                  {!m._optimistic && (
-                    <button type="button" onClick={() => handleTogglePin(m)} title={m.pinned ? 'Unpin' : 'Pin'} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: m.pinned ? 'var(--amber, #f59e0b)' : 'var(--text-3)', padding: 2, display: 'flex', alignItems: 'center' }}>
-                      {m.pinned ? <PinOff size={12} /> : <Pin size={12} />}
-                    </button>
-                  )}
-                  {mine && !m._optimistic && (
-                    <>
-                      <button type="button" onClick={() => startEdit(m)} title="Edit" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2, display: 'flex', alignItems: 'center' }}>
-                        <Pencil size={12} />
-                      </button>
-                      <button type="button" onClick={() => handleDelete(m._id)} title="Delete" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-3)', padding: 2, display: 'flex', alignItems: 'center' }}>
-                        <Trash2 size={12} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {messages.map((m, i) => (
+          <MessageBubble
+            key={m._id ?? i}
+            m={m}
+            index={i}
+            messages={messages}
+            isMe={isMe}
+            myId={myId}
+            members={members}
+            editingId={editingId}
+            editingText={editingText}
+            setEditingText={setEditingText}
+            saveEdit={saveEdit}
+            cancelEdit={cancelEdit}
+            startEdit={startEdit}
+            handleDelete={handleDelete}
+            handleTogglePin={handleTogglePin}
+            handleReact={handleReact}
+            setReplyingTo={setReplyingTo}
+            jumpToMessage={jumpToMessage}
+            messageRefs={messageRefs}
+          />
+        ))}
         {(() => {
           // Show "Seen by" avatars for users who've read past the latest message.
           // Skip self; only show when there's a latest message.

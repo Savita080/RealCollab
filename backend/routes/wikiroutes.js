@@ -35,11 +35,11 @@ router.delete('/folders/:folderId', protectRoute, requireProjectRole('CONTRIBUTO
 // ─────────────────────────────────────────────
 router.post('/', protectRoute, requireProjectRole('CONTRIBUTOR'), checkLimit('wikiPages'), createWikiPage);
 router.get('/', protectRoute, requireProjectRole('VIEWER'), getProjectWikiPages);
+router.patch('/:pageId/move', protectRoute, requireProjectRole('CONTRIBUTOR'), moveWikiPage); // ← before /:pageId
+router.get('/:pageId/versions', protectRoute, requireProjectRole('VIEWER'), getWikiPageVersions);
 router.get('/:pageId', protectRoute, requireProjectRole('VIEWER'), getWikiPageById);
 router.patch('/:pageId', protectRoute, requireProjectRole('CONTRIBUTOR'), updateWikiPage);
-router.get('/:pageId/versions', protectRoute, requireProjectRole('VIEWER'), getWikiPageVersions);
 router.delete('/:pageId', protectRoute, requireProjectRole('CONTRIBUTOR'), deleteWikiPage);
-router.patch('/:pageId/move', protectRoute, requireProjectRole('CONTRIBUTOR'), moveWikiPage);
 
 
 

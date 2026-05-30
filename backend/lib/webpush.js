@@ -1,14 +1,22 @@
 import webpush from 'web-push';
 
-webpush.setVapidDetails(
-    process.env.VAPID_EMAIL,
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-);
+// Web push is optional — only configure if all VAPID env vars are present.
+// Without them, sendPushToUser becomes a no-op (mirrors the optional-Redis pattern).
+const pushEnabled = !!(process.env.VAPID_EMAIL && process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
+if (pushEnabled) {
+    webpush.setVapidDetails(
+        process.env.VAPID_EMAIL,
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    );
+} else {
+    console.warn("WARNING: VAPID_* env vars missing. Web push notifications are disabled.");
+}
 
 // Send a push to all of a user's saved subscriptions.
 // Silently removes subscriptions that the browser has invalidated (410 Gone).
 export async function sendPushToUser(user, payload) {
+    if (!pushEnabled) return;
     if (!user?.pushSubscriptions?.length) return;
 
     const data = JSON.stringify({

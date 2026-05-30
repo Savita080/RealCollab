@@ -37,6 +37,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
     status: currentTask.status || 'To Do',
     assignee: currentTask.assignee?._id || currentTask.assignee || '',
     dueDate: currentTask.dueDate ? currentTask.dueDate.slice(0, 10) : '',
+    labels: currentTask.labels?.join(', ') || '',
   });
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
@@ -54,6 +55,7 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
       status: currentTask.status || 'To Do',
       assignee: currentTask.assignee?._id || currentTask.assignee || '',
       dueDate: currentTask.dueDate ? currentTask.dueDate.slice(0, 10) : '',
+      labels: currentTask.labels?.join(', ') || '',
     });
   }, [currentTask]);
 
@@ -97,11 +99,18 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
 
   const handleSave = async () => {
     try {
-      await update(ws._id, currentProject._id, currentTask._id, form);
+      const parsedLabels = form.labels.split(',').map(l => l.trim()).filter(Boolean);
+      const payload = { ...form, labels: parsedLabels };
+      
+      if (!payload.assignee) payload.assignee = null;
+      if (!payload.dueDate) payload.dueDate = null;
+
+      await update(ws._id, currentProject._id, currentTask._id, payload);
       toast('Task updated', 'success');
       setEditing(false);
-    } catch {
-      toast('Failed to update task', 'error');
+    } catch (err) {
+      const msg = err?.response?.data?.message || err?.response?.data?.error || 'Failed to update task';
+      toast(msg, 'error');
     }
   };
 
@@ -229,6 +238,8 @@ export default function TaskDetail({ task, onClose, wsMembers = [], mentionMembe
               options={TASK_COLUMNS.map(c => ({ value: c.key, label: c.label }))} />
             <Input label="Due date" type="date" value={form.dueDate}
               onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+            <Input label="Labels (comma separated)" placeholder="frontend, bug, auth"
+              value={form.labels} onChange={e => setForm(f => ({ ...f, labels: e.target.value }))} />
             {/* Assignee */}
             <div>
               <label style={{ fontSize: 12, color: 'var(--text-2)', fontWeight: 600, marginBottom: 6, display: 'block' }}>Assignee</label>

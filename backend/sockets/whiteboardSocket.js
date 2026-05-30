@@ -2,19 +2,6 @@ import Whiteboard from '../models/whiteboard.js';
 import Project from '../models/project.js';
 import Workspace from '../models/workspace.js';
 import redis from '../config/redis.js';
-import fs from 'fs';
-import path from 'path';
-
-// Mirror of kanbanSocket's resolveUserId — keep in-memory map fallback when Redis is missing.
-const memSocketUser = new Map();
-async function resolveUserId(socketId) {
-    if (redis) {
-        const id = await redis.get(`socket:${socketId}`);
-        if (id) return String(id);
-    }
-    const mem = memSocketUser.get(socketId);
-    return mem?.userId || null;
-}
 
 // Boards inherit project RBAC: project CONTRIBUTOR or workspace OWNER/ADMIN may draw/save.
 // Cached briefly so a flurry of draw events doesn't hammer Mongo.
@@ -43,13 +30,6 @@ async function canEditWhiteboard(userId, whiteboardId) {
     return allowed;
 }
 
-const _dbgLog = (payload) => {
-    try {
-        const line = JSON.stringify({ sessionId: '6711b2', timestamp: Date.now(), ...payload }) + '\n';
-        fs.appendFileSync(path.join(process.cwd(), 'debug-6711b2.log'), line);
-    } catch (_) {}
-};
-
 export const setupWhiteboardSockets = (io) => {
     io.on('connection', (socket) => {
         
@@ -58,15 +38,11 @@ export const setupWhiteboardSockets = (io) => {
             socket.join(`whiteboard:${whiteboardId}`);
             console.log(`[Socket] User ${socket.id} joined whiteboard ${whiteboardId}`);
 
-            let syncSource = 'none';
-            let syncCount = 0;
             const emitSyncFromBoard = async (board) => {
                 if (!board?.canvasState || board.canvasState === '[]') return;
                 const parsed = JSON.parse(board.canvasState);
-                syncCount = Array.isArray(parsed) ? parsed.length : 0;
-                if (syncCount > 0) {
+                if (Array.isArray(parsed) && parsed.length > 0) {
                     socket.emit('whiteboard_sync', parsed);
-                    syncSource = 'mongo';
                     if (redis) await redis.set(`whiteboard:${whiteboardId}`, board.canvasState);
                 }
             };
@@ -76,18 +52,13 @@ export const setupWhiteboardSockets = (io) => {
                 const cachedState = await redis.get(`whiteboard:${whiteboardId}`);
                 if (cachedState) {
                     const parsed = JSON.parse(cachedState);
-                    syncCount = Array.isArray(parsed) ? parsed.length : 0;
                     socket.emit('whiteboard_sync', parsed);
-                    syncSource = 'redis';
                 } else {
                     await emitSyncFromBoard(await Whiteboard.findById(whiteboardId));
                 }
             } else {
                 await emitSyncFromBoard(await Whiteboard.findById(whiteboardId));
             }
-            // #region agent log
-            _dbgLog({ hypothesisId: 'B', location: 'whiteboardSocket.js:join', message: 'join_whiteboard sync', data: { whiteboardId, redisConfigured: !!redis, syncSource, syncCount } });
-            // #endregion
         });
 
         // 2. Someone drew a line or moved a shape! (Receives ONLY the diff)
@@ -96,8 +67,7 @@ export const setupWhiteboardSockets = (io) => {
 
             // Authz: only project CONTRIBUTORs (or ws OWNER/ADMIN) may draw — viewers
             // joining the room can still receive whiteboard_update broadcasts (read-only).
-            const userId = await resolveUserId(socket.id);
-            const allowed = await canEditWhiteboard(userId, whiteboardId);
+            const allowed = await canEditWhiteboard(socket.userId, whiteboardId);
             if (!allowed) {
                 socket.emit('whiteboard_error', { reason: 'forbidden', whiteboardId });
                 return;
@@ -127,8 +97,7 @@ export const setupWhiteboardSockets = (io) => {
         socket.on('save_whiteboard', async (data) => {
             const { whiteboardId, elements } = data;
 
-            const userId = await resolveUserId(socket.id);
-            const allowed = await canEditWhiteboard(userId, whiteboardId);
+            const allowed = await canEditWhiteboard(socket.userId, whiteboardId);
             if (!allowed) {
                 socket.emit('whiteboard_error', { reason: 'forbidden', whiteboardId });
                 return;
@@ -148,14 +117,8 @@ export const setupWhiteboardSockets = (io) => {
                 }
                 
                 console.log(`[MongoDB & Redis] Saved full whiteboard state ${whiteboardId}`);
-                // #region agent log
-                _dbgLog({ hypothesisId: 'D', location: 'whiteboardSocket.js:save', message: 'save_whiteboard ok', data: { whiteboardId, elementCount: elements?.length ?? 0, redisConfigured: !!redis } });
-                // #endregion
             } catch (error) {
                 console.error("Error saving whiteboard to DB:", error);
-                // #region agent log
-                _dbgLog({ hypothesisId: 'D', location: 'whiteboardSocket.js:save', message: 'save_whiteboard error', data: { whiteboardId, error: error.message } });
-                // #endregion
             }
         });
 

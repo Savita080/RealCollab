@@ -116,10 +116,14 @@ export const updateWorkspace = async (req, res) => {
             });
         }
 
+        // Capture the OLD normalized name before mutating so we can tell whether
+        // the name actually changed (the slug should only move when it did).
+        const nameChanged = req.workspace.normalizedName !== normalized;
+
         req.workspace.name = name.trim();
         req.workspace.normalizedName = normalized;
         // Regenerate slug only if normalized name changed — preserves URLs through cosmetic edits.
-        if (req.workspace.normalizedName !== normalizeName(req.workspace.name) || !req.workspace.slug) {
+        if (nameChanged || !req.workspace.slug) {
             req.workspace.slug = await generateUniqueSlug(Workspace, name, { excludeId: req.workspace._id });
         }
 
@@ -234,6 +238,15 @@ export const acceptInvite = async (req, res) => {
             workspace.invites.splice(inviteIndex, 1);
             await workspace.save();
             return res.status(400).json({ message: "This invite link has expired" });
+        }
+
+        // Bind the invite to the email it was issued to — a leaked/forwarded link
+        // can't be redeemed by a different account (prevents role escalation).
+        if (invite.email) {
+            const accepter = await User.findById(req.userId).select('email');
+            if (!accepter || accepter.email.toLowerCase() !== invite.email.toLowerCase()) {
+                return res.status(403).json({ message: "This invite was issued to a different email address." });
+            }
         }
 
         // Check if the user is already a member

@@ -1,0 +1,231 @@
+/* styles/modules/KanbanFilters.module.css */
+
+/* ── Slide-down filter bar ──────────────────────────────────────────────── */
+.bar {
+  background: var(--bg-dropdown);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 0 0 2px 0;
+  overflow: hidden;
+  animation: slideDown 0.18s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.barInner {
+  padding: 14px 16px 10px;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0;
+}
+
+.barInner::-webkit-scrollbar {
+  height: 6px;
+}
+
+.barInner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.barInner::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+.barInner::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ── Filter group ──────────────────────────────────────────────────────── */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 14px 6px 0;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.groupLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.groupBody {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.divider {
+  width: 1px;
+  background: var(--border);
+  margin: 6px 14px 6px 0;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+/* ── Chip row ──────────────────────────────────────────────────────────── */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+/* ── Chip ──────────────────────────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.chip:hover {
+  border-color: var(--indigo);
+  color: var(--text-1);
+  background: var(--accent-soft);
+}
+
+.chipActive {
+  border-color: var(--indigo);
+  background: var(--focus-ring);
+  color: var(--text-1);
+}
+
+/* Accent variants */
+.accent_red.chipActive   { border-color: #ef4444; background: rgba(239,68,68,0.15);  color: #fca5a5; }
+.accent_red:hover        { border-color: #ef4444; background: rgba(239,68,68,0.08);  }
+.accent_amber.chipActive { border-color: #f59e0b; background: rgba(245,158,11,0.15); color: #fcd34d; }
+.accent_amber:hover      { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+.accent_slate.chipActive { border-color: #64748b; background: rgba(100,116,139,0.2); color: #cbd5e1; }
+
+/* ── Tag input ─────────────────────────────────────────────────────────── */
+.tagInputRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tagInput {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 12px;
+  color: var(--text-1);
+  outline: none;
+  width: 180px;
+  transition: border-color 0.12s;
+}
+
+.tagInput::placeholder {
+  color: var(--text-3);
+}
+
+.tagInput:focus {
+  border-color: var(--indigo);
+}
+
+/* ── Active tag pill ───────────────────────────────────────────────────── */
+.activeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px 3px 9px;
+  border-radius: 5px;
+  background: var(--focus-ring);
+  border: 1px solid var(--indigo);
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tagRemove {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.1s;
+}
+
+.tagRemove:hover {
+  color: var(--status-danger);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.clearBtn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--status-danger);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.clearBtn:hover {
+  background: var(--bg-hover);
+  border-color: var(--status-danger);
+}
+
+.doneBtn {
+  background: var(--indigo);
+  border: none;
+  border-radius: 5px;
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+
+.doneBtn:hover {
+  opacity: 0.85;
+}
+
+/* ── Active filter badge (used in ProjectKanban trigger button) ─────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--indigo);
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  margin-left: 5px;
+}

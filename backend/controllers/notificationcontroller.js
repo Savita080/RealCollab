@@ -1,49 +1,5 @@
 import Notification from '../models/notification.js';
 import User from '../models/user.js';
-import redis from '../config/redis.js';
-import { sendPushToUser } from '../lib/webpush.js';
-
-// This function gets called when someone tags a user in a comment
-export const createNotification = async (req, res) => {
-    try {
-        const { recipientId, type, content, link } = req.body;
-
-        // Flowchart Step 1: Backend saves message -> writes notification row (seen: false, notified: false)
-        const notification = await Notification.create({
-            recipient: recipientId,
-            sender: req.userId, // We get this from our protectRoute middleware
-            type,
-            content,
-            link
-        });
-
-        // Live socket ping (user has tab open)
-        if (redis) {
-            const socketId = await redis.get(`user:online:${recipientId}`);
-            if (socketId) {
-                req.io.to(socketId).emit('new_notification', notification);
-                notification.notified = true;
-                await notification.save();
-            }
-        }
-
-        // Web Push (works even when browser tab is closed)
-        const recipient = await User.findById(recipientId).select('pushSubscriptions');
-        if (recipient) {
-            sendPushToUser(recipient, {
-                title: 'RealCollab',
-                body: content,
-                link,
-            });
-        }
-
-        res.status(201).json({ message: "Notification processed", notification });
-
-    } catch (error) {
-        console.error("Error triggering notification:", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-};
 
 export const getUnreadNotifications = async (req, res) => {
     try {
